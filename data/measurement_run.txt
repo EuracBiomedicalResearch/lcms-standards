@@ -1,0 +1,3 @@
+source_id	name	description	contact_person
+LCMS_polar_metabolome_CHRIS_serum	Polar metabolome standards, water	Measurement of standards in water on the LC/MS setup used for measurement of the polar metabolome at Eurac Researc	Giuseppe Paglia
+LCMS_polar_metabolome_standards_water	Polar metabolome standards, CHRIS samples	Measurement of standards in CHRIS study samples on the LC/MS setup used for measurement of the polar metabolome at Eurac Researc	Giuseppe Paglia
