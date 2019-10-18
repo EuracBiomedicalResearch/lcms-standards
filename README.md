@@ -35,9 +35,9 @@ water and serum might differ.
 
 The information about the original (mzML) files is available in the files:
 
-- [standards-dilution.txt](data/standards-dilution.txt): the experiment in which
+- [standards_dilution_files.txt](data/standards_dilution_files.txt): the experiment in which
   sets of standards (solved in water) were measured (in different
   concentrations).
-- [internal_standards_mzML.txt](data/internal_standards_mzML.txt): the
+- [internal_standards_files.txt](data/internal_standards_files.txt): the
   experiment (from September 2019) in which internal standards (solved in water)
   were repeatedly measured.
