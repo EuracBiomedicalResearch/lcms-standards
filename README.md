@@ -30,3 +30,14 @@ samples by manually evaluating the peaks close to the retention time measured in
 water. This was done by Giuseppe Paglia. Standards/compounds are supposed to
 elute later in a more *rich* sample like serum. Thus, the retention times for
 water and serum might differ.
+
+## Original files
+
+The information about the original (mzML) files is available in the files:
+
+- [standards-dilution.txt](data/standards-dilution.txt): the experiment in which
+  sets of standards (solved in water) were measured (in different
+  concentrations).
+- [internal_standards_mzML.txt](data/internal_standards_mzML.txt): the
+  experiment (from September 2019) in which internal standards (solved in water)
+  were repeatedly measured.
