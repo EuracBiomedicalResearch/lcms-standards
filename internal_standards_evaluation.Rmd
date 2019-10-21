@@ -1,0 +1,110 @@
+---
+title: "Evaluate internal standards"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+```{r settings, echo = FALSE, results = "hide", message = FALSE}
+polarity <- "NEG" # specify "POS" or "NEG"
+
+#' Define the path where we can find the mzML files:
+MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+#if (!file.exists(MZML_PATH))
+#    stop("Can not find the directory with the mzML files: ", MZML_PATH)
+```
+
+# Preliminaries
+```{r, message=FALSE}
+source("R/listpeaks.R")
+
+library(xcms)
+library(reshape2)
+library(ggplot2)
+```
+
+# Data import
+In the file `internal_standards_files.txt` there is the information regarding 
+the injection sequence.
+```{r}
+injections <- read.table("data/internal_standards_files.txt", # import the file
+                         sep = "\t", header = TRUE, as.is = TRUE)
+myfiles <- injections$mzML # get file names
+myfiles <- myfiles[grep(polarity, myfiles)]# select files names of our polarity
+```
+
+In the file `internal_standards.txt` there is the information regarding 
+the standards that are in the samples.
+```{r}
+is_info <- read.table("data/internal_standards.txt",
+                      sep = "\t", header = TRUE, as.is = TRUE)
+colnames(is_info) <- c("name", "molecular_weight", "POS", "NEG", "RT")
+is_info <- is_info[,1:5]
+is_info <- is_info[!is.na(is_info[, grep(polarity, colnames(is_info))]),]
+head(is_info)
+```
+
+# Peak detection
+Apply the `listpeaks()` function in order to detect the peaks of ISs:
+```{r, warning=FALSE}
+mzvalues <- is_info[, grep(polarity, colnames(is_info))]
+rtvalues <- is_info$RT
+peaktb <- listpeaks(file = paste0(MZML_PATH, myfiles),
+                    mz = mzvalues,
+                    param = CentWaveParam(peakwidth = c(2, 10), 
+                                          ppm = 30))
+peaktb$name <- is_info$name[peaktb$row]
+
+rtvalues <- rtvalues[peaktb$row]
+peaktb <- peaktb[(peaktb$rtmin <= (rtvalues)) & (peaktb$rtmax >= (rtvalues)),]
+
+peaktb_wide <- dcast(peaktb, peaktb$name ~ peaktb$colum, value.var = "into")
+peaktb_wide <- setNames(data.frame(t(peaktb_wide[,-1])), peaktb_wide[,1])
+peaktb_wide[is.na(peaktb_wide)] <- 0
+
+```
+  
+# Plots  
+## Absolute intensities  
+```{r}
+myplots = list()
+for(i in seq(ncol(peaktb_wide))){
+  tb <- data.frame(sample=seq(length(myfiles)), intensity=peaktb_wide[,i])
+  myplots[[i]] <- 
+    ggplot(tb, aes(sample, intensity)) + 
+    geom_point() + geom_line() + theme_classic() + 
+    ggtitle(colnames(peaktb_wide)[i]) +
+    xlab("") + ylab("Intensity")
+}
+ggsave(paste0("internal_standard_evaluation_absolute_", polarity, ".pdf"), 
+       gridExtra::marrangeGrob(grobs = myplots, top="", 
+                               layout_matrix = 
+                                 rbind(c(1,2,3,4), c(5,6,7,8), c(9,10,11,12), 
+                                       c(13,14,15,16), c(17,18,19,20))), 
+       width=21, height=15)
+```
+  
+## Relative intensities  
+```{r}
+myplots = list()
+for(i in seq(ncol(peaktb_wide))){
+  tb <- data.frame(sample = seq(length(myfiles)), 
+                   intensity = peaktb_wide[,i] / 
+                     mean(peaktb_wide[peaktb_wide[,i] != 0, i]))
+  myplots[[i]] <- 
+    ggplot(tb, aes(sample, intensity)) + 
+    geom_point() + geom_line() + theme_classic() + 
+    ggtitle(colnames(peaktb_wide)[i]) +
+    xlab("") + ylab("Intensity")
+}
+ggsave(paste0("internal_standard_evaluation_relative_", polarity, ".pdf"), 
+       gridExtra::marrangeGrob(grobs = myplots, top="", 
+                               layout_matrix = 
+                                 rbind(c(1,2,3,4), c(5,6,7,8), c(9,10,11,12), 
+                                       c(13,14,15,16), c(17,18,19,20))), 
+       width=21, height=15)
+```
+
