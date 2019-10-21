@@ -1,0 +1,185 @@
+---
+title: "Define the retention times"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+```{r settings, echo = FALSE, results = "hide", message = FALSE}
+study <- "standards_dilution" # specify "internal_standards" OR 
+                              #         "standards_dilution"
+mixnum <- 1 # specify which MIX
+polarity <- "NEG" # specify "POS" or "NEG"
+da <- 0.01
+
+#' Define the path where we can find the mzML files:
+MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+#if (!file.exists(MZML_PATH))
+#    stop("Can not find the directory with the mzML files: ", MZML_PATH)
+```
+
+# Preliminaries 
+```{r, message=FALSE}
+library(xcms)
+library(magrittr)
+
+# Set up parallel processing using 3 cores
+if (.Platform$OS.type == "unix") {
+    register(bpstart(MulticoreParam(3)))
+} else {
+    register(bpstart(SnowParam(3)))
+}
+```
+
+# Data import
+In the file `XXXX_files.txt` there is the information regarding 
+the injection sequence.
+```{r}
+injections <- read.table(paste0("data/", study, "_files.txt"), #import the file
+                         sep = "\t", header = TRUE, as.is = TRUE)
+myfiles <- injections$mzML # get file names
+myfiles <- myfiles[grep(polarity, myfiles)]# select files names of our polarity
+if(study == "standards_dilution"){
+  myfiles <- myfiles[grep(paste0("MIX ", mixnum, "K"), myfiles)]
+  }
+myfiles
+```
+
+Import the information regarding the standards that are in the samples.  
+```{r}
+std_info <- read.table(paste0("data/", study, ".txt"),
+                      sep = "\t", header = TRUE, as.is = TRUE)
+if(study == "internal_standards"){
+  colnames(std_info) <- c("name", "molecular_weight", "POS", "NEG", "RT")
+} else if(study == "standards_dilution"){
+  colnames(std_info) <- c("mix", "name", "molecular_weight", "POS", "NEG")
+}
+std_info$name <- c(substring(std_info$name, 1, 33))
+if(study == "standards_dilution"){
+  std_info <- subset(std_info, mix == mixnum)
+}
+std_info
+std_info <- std_info[!is.na(std_info[, grep(polarity, colnames(std_info))]),]
+
+```
+
+# Inspect data
+Steps:  
+  
+* Import the file `j`.  
+* Get the EIC for the compound `i`.  
+* Annotate the RT of the highest peak in the dataframe `myrt`.  
+* Get the spectrum of that RT.  
+* Annotate the mz corresponding to compound `i` in the dataframe `mymz`.   
+* Annotate the relative intensity of the mz within the spectrum.  
+
+```{r}
+mymz <- data.frame(matrix(ncol=nrow(std_info), nrow=length(myfiles)))
+colnames(mymz) <- std_info$name
+
+myrt <- data.frame(matrix(ncol=nrow(std_info), nrow=length(myfiles)))
+colnames(myrt) <- std_info$name
+
+myint <- data.frame(matrix(ncol=nrow(std_info), nrow=length(myfiles)))
+colnames(myint) <- std_info$name
+
+if(study == "internal_standards"){
+  colnames(mymz) <- gsub(" .*","",colnames(mymz))
+  colnames(mymz) <- gsub("L-", "", colnames(mymz))
+  
+  colnames(myrt) <- gsub(" .*","",colnames(myrt))
+  colnames(myrt) <- gsub("L-", "", colnames(myrt))
+  
+  colnames(myint) <- gsub(" .*","",colnames(myint))
+  colnames(myint) <- gsub("L-", "", colnames(myint))
+}
+```
+
+
+```{r}
+for(j in seq(length(myfiles))){
+  # Import the file "j":
+  raw_data <- readMSData(paste0(MZML_PATH, myfiles[j]), 
+                         mode = "onDisk")
+  for(i in seq(nrow(std_info))){
+    # Get the EIC for the compound "i":
+    chr <- chromatogram(raw_data, aggregationFun = "max",
+                        mz=c(std_info[i,grep(polarity, colnames(std_info))]-da,
+                             std_info[i,grep(polarity, colnames(std_info))]+da))
+    
+    # Annotate the RT of the highest peak:
+    myrt[j,i] <- chr@.Data[[1]]@rtime[which.max(chr@.Data[[1]]@intensity)]
+    
+    # Get the spectrum of that RT:
+    sps <- raw_data %>%
+      filterRt(rt = c(chr@.Data[[1]]@rtime[which.max(
+        chr@.Data[[1]]@intensity)] - 0.5,
+        chr@.Data[[1]]@rtime[which.max(
+          chr@.Data[[1]]@intensity)] + 0.5)) %>%
+      spectra 
+    sps.df=as.data.frame(sps[[2]])
+    
+    if(length(sps.df$mz[which(
+      sps.df$mz > (std_info[i,grep(polarity, colnames(std_info))]-da) & 
+        sps.df$mz<(std_info[i,grep(polarity, colnames(std_info))]+da))])>0){
+      
+      # Annotate the mz corresponding to compound "i":
+      mymz[j,i] <- sps.df$mz[which(
+        sps.df$mz > (std_info[i,grep(polarity, colnames(std_info))]-da) & 
+          sps.df$mz<(std_info[i,grep(polarity, colnames(std_info))]+da))]
+      
+      # Annotate the relative intensity of the mz within the spectrum:
+      sps.df$irel <- (sps.df$i*100)/max(sps.df)
+      myint[j,i] <- sps.df$irel[which(
+        sps.df$mz > (std_info[i,grep(polarity, colnames(std_info))]-da) & 
+          sps.df$mz<(std_info[i,grep(polarity, colnames(std_info))]+da))]
+    
+        }
+    
+    
+  }
+}
+```
+
+# Output
+## RT
+```{r}
+t(myrt)
+cbind(colnames(myrt), 
+      matrix(apply(myrt, 2, function(x) round(median(x, na.rm = TRUE)))))
+if(study == "internal_standards"){
+  t(apply(myrt, 2, function(x) round(range(x, na.rm = TRUE))))
+}
+cbind(colnames(myrt), 
+      matrix(apply(myrt, 2, function(x) round(diff(range(x, na.rm = TRUE))))))
+```
+
+## mz
+```{r}
+(mymz.t <- data.frame(t(mymz)))
+cbind(colnames(mymz), 
+      matrix(apply(mymz, 2, function(x) round(median(x, na.rm = TRUE), 5))))
+t(apply(mymz, 2, function(x) round(range(x, na.rm = TRUE), 4)))
+cbind(colnames(mymz), 
+      matrix(apply(mymz, 2, 
+                   function(x, na.rm = TRUE) round(diff(range(x)), 4))))
+```
+
+## Intensity
+```{r}
+t(round(myint))
+cbind(colnames(myint), 
+      matrix(apply(myint, 2, function(x) round(median(x, na.rm = TRUE)))))
+if(study == "internal_standards"){
+  t(apply(myint, 2, function(x) round(range(x, na.rm = TRUE))))
+}
+```
+
+## All
+```{r}
+cbind(t(round(myrt)), mymz.t, t(round(myint)))
+```
+
