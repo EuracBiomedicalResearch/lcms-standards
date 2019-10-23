@@ -1,0 +1,152 @@
+---
+title: "Spectras: maximum ion"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+# Parameters
+```{r}
+polarity <- "POS" # specify "POS" or "NEG"
+study <- "standards_dilution" # specify "internal_standards" OR 
+                              # "standards_dilution"
+mixnum <- 16
+```
+
+# Preliminaries
+```{r, message=FALSE}
+source("R/which_within.R")
+library(xcms)
+library(magrittr)
+
+MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+```
+
+# Data import
+```{r}
+# Get the information regarding the injection sequence:
+injections <- read.table(paste0("data/", study, "_files.txt"),
+                         sep = "\t", header = TRUE, as.is = TRUE)
+myfiles <- injections$mzML # get file names
+myfiles <- myfiles[grep(polarity, myfiles)]
+if(study == "internal_standards"){
+  myfiles <- myfiles[grep(12, myfiles)]
+} else if(study == "standards_dilution"){
+  (myfiles <- myfiles[grep(paste0("MIX ", mixnum, "A_", polarity, "_b"), myfiles)])
+}
+
+
+
+# Get the information regarding the standards that are in the samples:
+std_info <- read.table(paste0("data/", study, ".txt"),
+                       sep = "\t", header = TRUE, as.is = TRUE)
+if(study == "internal_standards"){
+  colnames(std_info) <- c("name", "molecular_weight", "POS", "NEG", "RT")
+} else if(study == "standards_dilution"){
+  colnames(std_info) <- c("mix", "name", "molecular_weight", "POS", "NEG", "RT")
+}
+std_info$name <- substring(std_info$name, 1, 33)
+if(study == "standards_dilution"){
+  std_info <- subset(std_info, mix == mixnum)
+}
+std_info <- std_info[!is.na(std_info[, grep(polarity, colnames(std_info))]),]
+
+da = 0.01
+RTd = 10
+```
+
+## Blanks
+```{r}
+load(paste0("blanks_", polarity, ".RData"))
+source("R/which_within.R")
+
+features.df = data.frame(features)
+
+# Select the features with unique mz values:
+features.filtered <- features.df[
+  which(lengths(which_within(features$mzmed, features$mzmed))==1),]
+
+# Get the featuers with duplicated mz values:
+mywhichwithin <- unique(which_within(features$mzmed, features$mzmed)[
+  which(lengths(which_within(features$mzmed, features$mzmed))>1)])
+features.filtered <- rbind(features.filtered, 
+                           features.df[unlist(lapply(mywhichwithin, `[[`, 1)),])
+
+if(polarity == "NEG"){
+  exclusion <- c(
+    # Formic Acid:
+    44.9820, (46.00547*2)-1.007276, 
+    (44.9820 + seq(14)*67.98745),
+    (44.9820+(c(3,4)*67.98745)+57.95865)
+  )
+  exclusion <- c(exclusion, exclusion + 1.00335)}else if(
+    polarity == "POS"){ exclusion <- c()}
+
+exclusion_list <- 
+  c(exclusion, 
+    features.filtered$mzmed[!features.filtered$mzmed %in% 
+                              features.filtered$mzmed[
+                                unlist(which_within(exclusion, 
+                                                    features.filtered$mzmed))]])
+```
+
+# Output
+```{r}
+for(i in seq(nrow(std_info))){
+  mycompound <- std_info[i,]
+  print(mycompound$name)
+  if(!is.na(mycompound$RT)){
+  mzvalue <- mycompound[, grep(polarity, colnames(mycompound))]
+  
+  # Import data:
+    raw_data <- readMSData(paste0(MZML_PATH, myfiles), mode = "onDisk")
+    
+    # Get EIC:
+    chr <- chromatogram(raw_data, aggregationFun = "max",
+                        mz = c(mzvalue - da, mzvalue + da))
+    
+    # Get the spectrum:
+    if( abs(mycompound$RT - 
+            chr@.Data[[1]]@rtime[which.max(chr@.Data[[1]]@intensity)]) < RTd){
+      sps <- raw_data %>%
+        filterRt(rt = c(chr@.Data[[1]]@rtime[which.max(
+          chr@.Data[[1]]@intensity)] - 0.5,
+          chr@.Data[[1]]@rtime[which.max(
+            chr@.Data[[1]]@intensity)] + 0.5)) %>%
+        spectra
+      sps.df <- as.data.frame(sps[[2]])
+      sps.df.clean <- sps.df[-unlist(which_within(exclusion_list, 
+                                                  sps.df$mz, mzd = 0.02)),]
+      
+      print(round(abs(mzvalue - sps.df.clean$mz[which.max(sps.df.clean$i)]),4))
+      
+      if(study == "internal_standards"){
+        mytitle <- paste0(gsub(".mzML", "", substring(myfiles, 26)), " - RT: ", 
+                   round(sps[[2]]@rt,3))
+      }else if(study == "standards_dilution"){
+        mytitle <- paste0(gsub(".mzML", "", substring(myfiles, 14)), " - RT: ", 
+                   round(sps[[2]]@rt,3))
+      }
+      
+      plot(sps.df.clean$mz, sps.df.clean$i, type="h", xlab="mz", ylab="intensity", 
+       main=mytitle)
+  text(sps.df.clean$mz[order(sps.df.clean$i, decreasing = TRUE)[1:5]], 
+       sps.df.clean$i[order(sps.df.clean$i, decreasing = TRUE)[1:5]], 
+       round(sps.df.clean$mz[order(sps.df.clean$i, decreasing = TRUE)[1:5]], 4), 
+       cex=0.7)
+  points(sps.df.clean$mz[unlist(which_within(mzvalue, sps.df.clean$mz))], 
+         sps.df.clean$i[unlist(which_within(mzvalue, sps.df.clean$mz))],
+         pch = 8, col = "red")
+  
+    }
+      
+  }
+print("######################################################################")
+  }
+
+
+```
+

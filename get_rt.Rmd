@@ -11,7 +11,7 @@ output:
 ```{r settings, echo = FALSE, results = "hide", message = FALSE}
 study <- "standards_dilution" # specify "internal_standards" OR 
                               #         "standards_dilution"
-mixnum <- 1 # specify which MIX
+mixnum <- 4 # specify which MIX
 polarity <- "NEG" # specify "POS" or "NEG"
 da <- 0.01
 
@@ -55,7 +55,7 @@ std_info <- read.table(paste0("data/", study, ".txt"),
 if(study == "internal_standards"){
   colnames(std_info) <- c("name", "molecular_weight", "POS", "NEG", "RT")
 } else if(study == "standards_dilution"){
-  colnames(std_info) <- c("mix", "name", "molecular_weight", "POS", "NEG")
+  colnames(std_info) <- c("mix", "name", "molecular_weight", "POS", "NEG", "RT")
 }
 std_info$name <- c(substring(std_info$name, 1, 33))
 if(study == "standards_dilution"){
@@ -163,9 +163,10 @@ cbind(colnames(myrt),
 cbind(colnames(mymz), 
       matrix(apply(mymz, 2, function(x) round(median(x, na.rm = TRUE), 5))))
 t(apply(mymz, 2, function(x) round(range(x, na.rm = TRUE), 4)))
-cbind(colnames(mymz), 
-      matrix(apply(mymz, 2, 
-                   function(x, na.rm = TRUE) round(diff(range(x)), 4))))
+round(abs((((mymz.t) - 
+              std_info[,grep(polarity, (colnames(std_info)))]) / 
+             std_info[,grep(polarity, (colnames(std_info)))])*1e6))
+round(abs((((mymz.t) - std_info[,grep(polarity, (colnames(std_info)))]))*1e3))
 ```
 
 ## Intensity
