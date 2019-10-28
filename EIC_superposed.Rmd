@@ -19,13 +19,15 @@ MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 ```{r, message=FALSE}
 study <- "standards_dilution" # specify "internal_standards" OR 
                               #         "standards_dilution"
-mixnum <- 11 # specify which MIX
-polarity <- "NEG" # specify "POS" or "NEG"
+mixnum <- 1 # specify which MIX
+polarity <- "POS" # specify "POS" or "NEG"
 
 library(xcms)
 library(reshape2)
 library(ggplot2)
 library(RColorBrewer)
+library(Rdisop)
+library(CompoundDb)
 
 # Set up parallel processing using 3 cores
 if (.Platform$OS.type == "unix") {
@@ -52,16 +54,19 @@ Get the information regarding the standards that are in the samples.
 ```{r}
 std_info <- read.table(paste0("data/", study, ".txt"),
                       sep = "\t", header = TRUE, as.is = TRUE)
-if(study == "internal_standards"){
-  colnames(std_info) <- c("name", "molecular_weight", "POS", "NEG", "RT")
-} else if(study == "standards_dilution"){
-  colnames(std_info) <- c("mix", "name", "molecular_weight", "POS", "NEG", "RT")
-}
 std_info$name <- c(substring(std_info$name, 1, 33))
 std_info <- std_info[!is.na(std_info[, grep(polarity, colnames(std_info))]),]
 if(study == "standards_dilution"){
   std_info <- subset(std_info, mix == mixnum)
 }
+std_info$mzneut = NA
+for(i in seq(nrow(std_info))){
+  if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
+    getMolecule(as.character(std_info$formula[i]))$exactmass}else{
+      std_info$mzneut[i] = paste(std_info$formula[i])}
+}
+write.csv(std_info, "x.csv", row.names = FALSE)
+std_info = read.csv("x.csv")
 std_info
 ```
 
@@ -76,13 +81,14 @@ if(study == "internal_standards"){
 }
 mycols = getPalette(length(myfiles))  
 data <- readMSData(paste0(MZML_PATH, myfiles), mode = "onDisk")
+
 for(i in 1:nrow(std_info)){
   
+  mzvalue <- unlist(mass2mz(std_info$mzneut[i], adduct = as.character(std_info[i, grep(polarity, colnames(std_info))])))
+  
   chr = chromatogram(data, 
-                mz = 
-                  cbind(std_info[i, grep(polarity, colnames(std_info))] - da, 
-                        std_info[i, grep(polarity, colnames(std_info))] + da),
-                   aggregationFun = "max")
+                     mz = c(mzvalue - da,  mzvalue + da),
+                     aggregationFun = "max")
   
   cmpname <- gsub("L-", "", std_info$name[i])
   cmpname <- tolower(gsub(" .*", "", cmpname))
