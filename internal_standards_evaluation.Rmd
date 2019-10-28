@@ -9,7 +9,7 @@ output:
 ---
 
 ```{r settings, echo = FALSE, results = "hide", message = FALSE}
-polarity <- "NEG" # specify "POS" or "NEG"
+polarity <- "POS" # specify "POS" or "NEG"
 
 #' Define the path where we can find the mzML files:
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
@@ -24,6 +24,10 @@ source("R/listpeaks.R")
 library(xcms)
 library(reshape2)
 library(ggplot2)
+library(Rdisop)
+library(CompoundDb)
+library(beeswarm)
+library(RColorBrewer)
 ```
 
 # Data import
@@ -39,66 +43,78 @@ myfiles <- myfiles[grep(polarity, myfiles)]# select files names of our polarity
 In the file `internal_standards.txt` there is the information regarding 
 the standards that are in the samples.
 ```{r}
-is_info <- read.table("data/internal_standards.txt",
+std_info <- read.table("data/internal_standards.txt",
                       sep = "\t", header = TRUE, as.is = TRUE)
-colnames(is_info) <- c("name", "molecular_weight", "POS", "NEG", "RT")
-is_info <- is_info[,1:5]
-is_info <- is_info[!is.na(is_info[, grep(polarity, colnames(is_info))]),]
-head(is_info)
+std_info <- std_info[,1:5]
+std_info <- std_info[!is.na(std_info[, grep(polarity, colnames(std_info))]),]
+std_info$mzneut = NA
+for(i in seq(nrow(std_info))){
+  if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
+    getMolecule(as.character(std_info$formula[i]))$exactmass}else{
+      std_info$mzneut[i] = paste(std_info$formula[i])}
+}
+write.csv(std_info, "x.csv", row.names = FALSE)
+std_info = read.csv("x.csv")
+head(std_info)
 ```
 
 # Peak detection
 Apply the `listpeaks()` function in order to detect the peaks of ISs:
 ```{r, warning=FALSE}
-mzvalues <- is_info[, grep(polarity, colnames(is_info))]
-rtvalues <- is_info$RT
+mzvalues <- c()
+for(i in seq(nrow(std_info))){
+  mzvalues <- c(mzvalues, 
+                unlist(mass2mz(std_info$mzneut[i], 
+                               adduct = 
+                                 as.character(
+                                   std_info[i, 
+                                            grep(polarity, colnames(std_info))]
+                                   ))))
+}
+rtvalues <- std_info$RT
+
 peaktb <- listpeaks(file = paste0(MZML_PATH, myfiles),
                     mz = mzvalues,
                     param = CentWaveParam(peakwidth = c(2, 10), 
                                           ppm = 30))
-peaktb$name <- is_info$name[peaktb$row]
+peaktb$name <- std_info$name[peaktb$row]
 
-rtvalues <- rtvalues[peaktb$row]
-peaktb <- peaktb[(peaktb$rtmin <= (rtvalues)) & (peaktb$rtmax >= (rtvalues)),]
+# calculate the difference between "rtmed" and the expected retention time:
+peaktb$rt_delta <- abs(std_info$RT[peaktb$row] - peaktb$rt)
+
+# subset the peak matrix to rows (peaks) for which this difference 
+# (the absolute value of the difference) is smaller than 60 seconds:
+peaktb <- subset(peaktb, rt_delta < 60)
+
+# among the subsetted peaks, choose the one with the highest intensity:
+pl <- split(peaktb, paste(peaktb$row, peaktb$column))
+pl <- lapply(pl, function(z){
+  z[which.max(z$into),]
+})
+peaktb <- do.call(rbind, pl)
 
 peaktb_wide <- dcast(peaktb, peaktb$name ~ peaktb$colum, value.var = "into")
 peaktb_wide <- setNames(data.frame(t(peaktb_wide[,-1])), peaktb_wide[,1])
-peaktb_wide[is.na(peaktb_wide)] <- 0
+peaktb_wide[is.na(peaktb_wide)] <- min(peaktb_wide, na.rm=T)/1000
 
 ```
   
 # Plots  
-## Absolute intensities  
+## Individual compounds  
 ```{r}
-myplots = list()
-for(i in seq(ncol(peaktb_wide))){
-  tb <- data.frame(sample=seq(length(myfiles)), intensity=peaktb_wide[,i])
-  myplots[[i]] <- 
-    ggplot(tb, aes(sample, intensity)) + 
-    geom_point() + geom_line() + theme_classic() + 
-    ggtitle(colnames(peaktb_wide)[i]) +
-    xlab("") + ylab("Intensity")
-}
-ggsave(paste0("internal_standard_evaluation_absolute_", polarity, ".pdf"), 
-       gridExtra::marrangeGrob(grobs = myplots, top="", 
-                               layout_matrix = 
-                                 rbind(c(1,2,3,4), c(5,6,7,8), c(9,10,11,12), 
-                                       c(13,14,15,16), c(17,18,19,20))), 
-       width=21, height=15)
-```
-  
-## Relative intensities  
-```{r}
+getPalette = colorRampPalette(brewer.pal(12, "Paired"))
+mycols = getPalette(nrow(std_info))  
+
 myplots = list()
 for(i in seq(ncol(peaktb_wide))){
   tb <- data.frame(sample = seq(length(myfiles)), 
                    intensity = peaktb_wide[,i] / 
                      mean(peaktb_wide[peaktb_wide[,i] != 0, i]))
   myplots[[i]] <- 
-    ggplot(tb, aes(sample, intensity)) + 
-    geom_point() + geom_line() + theme_classic() + 
+    ggplot(tb, aes(sample, log2(intensity))) + 
+    geom_point(color=mycols[i], cex=3) + geom_line() + theme_classic() + 
     ggtitle(colnames(peaktb_wide)[i]) +
-    xlab("") + ylab("Intensity")
+    xlab("") + ylab("Intensity") + ylim(-1,1)
 }
 ggsave(paste0("internal_standard_evaluation_relative_", polarity, ".pdf"), 
        gridExtra::marrangeGrob(grobs = myplots, top="", 
@@ -106,5 +122,18 @@ ggsave(paste0("internal_standard_evaluation_relative_", polarity, ".pdf"),
                                  rbind(c(1,2,3,4), c(5,6,7,8), c(9,10,11,12), 
                                        c(13,14,15,16), c(17,18,19,20))), 
        width=21, height=15)
+```
+
+## All together
+```{r}
+peaktb_rel <- apply(peaktb_wide, 2, function(x){x/(mean(x[x!=0]))})
+peaktb_rel <- melt(peaktb_rel, id.vars = row.names(peaktb_rel))
+
+boxplot(log2(peaktb_rel$value) ~ peaktb_rel$Var1, 
+        pch = 16, xlab = "sample", ylab= "log2(relative intensity)" , 
+        outline = FALSE, main=paste0("IS - ", polarity))
+beeswarm(log2(peaktb_rel$value) ~ peaktb_rel$Var1, 
+         pwcol = mycols[peaktb_rel$Var2], 
+         pch = 16, xlab = "", ylab= "", add = TRUE)
 ```
 
