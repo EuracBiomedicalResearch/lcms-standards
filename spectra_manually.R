@@ -1,5 +1,5 @@
-mycompound <- "Pyruvic"
-polarity <- "NEG" # specify "POS" or "NEG"
+mycompound <- "Glycerol"
+polarity <- "POS" # specify "POS" or "NEG"
 
 study <- "standards_dilution" # specify "internal_standards" OR 
                               # "standards_dilution"
@@ -41,12 +41,23 @@ std_info$name <- c(substring(std_info$name, 1, 33))
 if(study == "standards_dilution"){
   std_info <- subset(std_info, mix == mixnum)
 }
-
+std_info$mzneut = NA
+for(i in seq(nrow(std_info))){
+  if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
+    getMolecule(as.character(std_info$formula[i]))$exactmass}else{
+      std_info$mzneut[i] = paste(std_info$formula[i])}
+}
+write.csv(std_info, "x.csv", row.names = FALSE)
+std_info = read.csv("x.csv")
 
 mycompound <- std_info[grep(mycompound, std_info$name),]
-#mzvalue <- mycompound[, grep(polarity, colnames(mycompound))]
-mzvalue <- unlist(mass2mz(mycompound$mzneut, adduct=as.character(mycompound[, grep(polarity, colnames(mycompound))])))
-#mzvalue <- 894.84139
+mzvalue <- unlist(mass2mz(mycompound$mzneut, 
+                          adduct=
+                            as.character(
+                              mycompound[, 
+                                         grep(polarity, colnames(mycompound))])
+                          ))
+mzvalue <- 115.0366
 da = 0.01
 RTd = 10
 
@@ -103,4 +114,4 @@ for(j in seq(length(myfiles))){
   points(sps.df.clean$mz[unlist(which_within(mzvalue, sps.df.clean$mz))], 
          sps.df.clean$i[unlist(which_within(mzvalue, sps.df.clean$mz))],
          pch = 8, col = "red")
-}}
+}
