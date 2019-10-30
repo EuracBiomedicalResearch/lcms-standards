@@ -28,8 +28,6 @@ specific configurations. The aim is to provide approximate retention times
 
 ## R files
 
-The information about the original (mzML) files is available in the files:
-
 - [get_rt.Rmd](get_rt.Rmd): Markdown file for obtaining the RTs of the 
   maximum peak corresponding to each compound (considering its exact mass). 
   This serve as a starting point for define the RT of each compound.  

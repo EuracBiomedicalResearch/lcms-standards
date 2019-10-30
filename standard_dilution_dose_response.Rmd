@@ -1,0 +1,141 @@
+---
+title: "Dose-response"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+```{r settings, echo = FALSE, results = "hide", message = FALSE}
+mixnum <- 11      # specify which MIX
+polarity <- "NEG" # specify "POS" or "NEG"
+
+#' Define the path where we can find the mzML files:
+MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+#if (!file.exists(MZML_PATH))
+#    stop("Can not find the directory with the mzML files: ", MZML_PATH)
+```
+
+# Preliminaries
+```{r, message=FALSE}
+source("R/listpeaks.R")
+
+library(xcms)
+library(reshape2)
+library(ggplot2)
+library(RColorBrewer)
+library(Rdisop)
+library(CompoundDb)
+```
+
+# Data import
+In the file `standards_dilution_files.txt` there is the information regarding 
+the injection sequence.
+```{r}
+injections <- read.table("data/standards_dilution_files.txt", # import the file
+                         sep = "\t", header = TRUE, as.is = TRUE)
+myfiles <- injections$mzML # get file names
+myfiles <- myfiles[grep(polarity, myfiles)]# select files names of our polarity
+(myfiles <- myfiles[grep(paste0("MIX ", mixnum, "[A-Z]"), myfiles)])
+```
+
+In the file `standards_dilution.txt` there is the information regarding 
+the standards that are in the samples.
+```{r}
+std_info <- read.table("data/standards_dilution.txt",
+                      sep = "\t", header = TRUE, as.is = TRUE)
+std_info <- std_info[!is.na(std_info[, grep(polarity, colnames(std_info))]) &
+                       !(is.na(std_info$RT)) &
+                       std_info$mix == mixnum,]
+std_info$mzneut = NA
+for(i in seq(nrow(std_info))){
+  if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
+    getMolecule(as.character(std_info$formula[i]))$exactmass}else{
+      std_info$mzneut[i] = paste(std_info$formula[i])}
+}
+write.csv(std_info, "x.csv", row.names = FALSE)
+std_info = read.csv("x.csv")
+std_info
+```
+
+According to the information provided in the sheet `Dilution` of the file `Dynamic Range.xlxs` the concentrations of STDs in the samples are the following:
+```{r}
+ppm <- c(0.09765625, 0.09765625, 0.1953125, 0.1953125, 0.390625, 0.390625, 0.78125, 0.78125, 1.5625, 1.5625, 3.125, 3.125, 6.25, 6.25, 12.5, 12.5, 25, 25, 50, 50)
+```
+
+
+# Plots  
+## Peak detection
+Apply the `listpeaks()` function in order to detect the peaks of ISs:
+```{r, warning=FALSE}
+mzvalues <- c()
+for(i in seq(nrow(std_info))){
+  mzvalues <- c(mzvalues, 
+                unlist(mass2mz(std_info$mzneut[i], 
+                               adduct = 
+                                 as.character(
+                                   std_info[i, 
+                                            grep(polarity, colnames(std_info))]
+                                   ))))
+}
+rtvalues <- std_info$RT
+
+peaktb <- listpeaks(file = paste0(MZML_PATH, myfiles),
+                    mz = mzvalues,
+                    param = CentWaveParam(peakwidth = c(2, 10), 
+                                          ppm = 30))
+peaktb$name <- std_info$name[peaktb$row]
+
+# calculate the difference between "rtmed" and the expected retention time:
+peaktb$rt_delta <- abs(std_info$RT[peaktb$row] - peaktb$rt)
+
+# subset the peak matrix to rows (peaks) for which this difference 
+# (the absolute value of the difference) is smaller than 60 seconds:
+peaktb <- subset(peaktb, rt_delta < 60)
+
+# among the subsetted peaks, choose the one with the highest intensity:
+pl <- split(peaktb, paste(peaktb$row, peaktb$column))
+pl <- lapply(pl, function(z){
+  z[which.max(z$into),]
+})
+peaktb <- do.call(rbind, pl)
+
+peaktb_wide <- dcast(peaktb, peaktb$name ~ peaktb$colum, value.var = "into")
+peaktb_wide <- setNames(data.frame(t(peaktb_wide[,-1])), peaktb_wide[,1])
+peaktb_wide[is.na(peaktb_wide)] <- 0
+
+```
+
+```{r}
+getPalette = colorRampPalette(brewer.pal(9, "YlOrRd"))
+mycols = getPalette(length(myfiles))
+myplots = list()
+for(i in seq(ncol(peaktb_wide))){
+   tb <- data.frame(sample=seq(length(myfiles)), intensity=peaktb_wide[,i])
+   tb$ppm <- ppm
+   myplots[[i]] <- 
+     ggplot(tb, aes(ppm, intensity)) + 
+     geom_point(color = mycols) + theme_classic()  + 
+     geom_smooth(method = "lm") + 
+     ggtitle(colnames(peaktb_wide)[i]) + 
+     geom_text(x = 2, y = max(tb$intensity), label = expression('R'^2*'=')) + 
+     geom_text(x = 7, y =  max(tb$intensity), 
+               label = round(summary(lm(peaktb_wide[,i]~ppm))$r.squared, 3))
+}
+if(mixnum<10){
+  filename = 
+    paste0("standard_dilution_dose_response_0", mixnum, "_", polarity, ".pdf")
+} else if(mixnum>9){
+    filename = 
+    paste0("standard_dilution_dose_response_", mixnum, "_", polarity, ".pdf")
+  }
+
+ggsave(filename, 
+       gridExtra::marrangeGrob(grobs = myplots, top="", 
+                               layout_matrix = 
+                                 rbind(c(1,2,3), c(4,5,6), c(7,8,9), 
+                                       c(10,11,12), c(13,14,15))), 
+       width=21, height=15)
+```
