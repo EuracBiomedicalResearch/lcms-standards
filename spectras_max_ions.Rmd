@@ -13,7 +13,7 @@ output:
 polarity <- "POS" # specify "POS" or "NEG"
 study <- "standards_dilution" # specify "internal_standards" OR 
                               # "standards_dilution"
-mixnum <- 16
+mixnum <- 5
 ```
 
 # Preliminaries
@@ -60,7 +60,7 @@ RTd = 10
 
 ## Blanks
 ```{r}
-load(paste0("blanks_", polarity, ".RData"))
+load(paste0("z_blanks/blanks_", polarity, ".RData"))
 source("R/which_within.R")
 
 features.df = data.frame(features)
@@ -80,10 +80,14 @@ if(polarity == "NEG"){
     # Formic Acid:
     44.9820, (46.00547*2)-1.007276, 
     (44.9820 + seq(14)*67.98745),
-    (44.9820+(c(3,4)*67.98745)+57.95865)
+    (44.9820+(c(3,4)*67.98745)+57.95865),
+    
+    # ??
+    623.3915, (623.3915+seq(4)*67.98745)
   )
   exclusion <- c(exclusion, exclusion + 1.00335)}else if(
-    polarity == "POS"){ exclusion <- c()}
+    polarity == "POS"){ 
+    exclusion <- c(124.0868, 90.97639, 90.97639+(seq(13)*67.98745))}
 
 exclusion_list <- 
   c(exclusion, 
@@ -95,6 +99,7 @@ exclusion_list <-
 
 # Output
 ```{r}
+std_info <- std_info[order(std_info$RT),]
 for(i in seq(nrow(std_info))){
   mycompound <- std_info[i,]
   print(mycompound$name)

@@ -1,266 +1,243 @@
-mix	name	formula	RT	POS	NEG
-1	3-Phosphoglyceric Acid	C3H7O7P	200	NA	NA
-1	Acetylhistidine	C8H11N3O3	168	[M+H]+	[M-H]-
-1	Betaine	C5H11NO2	157	[M+H]+	NA
+mix	name	formula	POS	NEG	RT
+1	3-Phosphoglyceric Acid	C3H7O7P	NA	NA	200
+1	Acetylhistidine	C8H11N3O3	[M+H]+	[M-H]-	168
+1	Betaine	C5H11NO2	[M+H]+	NA	157
 1	C3 Carnitine	C10H19NO4	NA	NA	NA
-1	CDP	C9H15N3O11P2	168	[M+Na]+	[M-H]-
-1	Creatine	C4H9N3O2	167	[M+H]+	NA
-1	Dimethylglycine	C4H9NO2	172	NA	[M-H]-
-1	Glycerol 	C3H8O3	172	NA	NA
-1	L-Glutamic Acid	C5H9NO4	171	[M+H]+	[M-H]-
-1	Myo-Inositol	C6H12O6	189	[M+Na]+	[M-H+HCOOH]-
-1	propionic acid	CH3CH2CO2H	40	NA	NA
-1	Pyruvic Acid	C3H4O3	38	NA	[M-H]-
-1	Suberic Acid	C8H14O4	36	[M+Na]+	[M-H]-
-1	Uric acid	C5H4N4O3	166	NA	NA
-1	Xanthine	C5H4N4O2	135	[M+H]+	[M-H]-
-2	1-Methylxanthine	166.0490755	69	[M+H]+	[M-H]-
-2	3-Nitrotyrosine	226.0589714	149	[M+H]+	[M-H]-
-2	Ascorbic Acid	176.0321	119	NA	[M-H]-
-2	C4 Carnitine	231.1471	36	[M+H]+	NA
-2	cGMP	345.047424	201	[M+H]+	[2M-H]-
-2	Fructose	180.063385	154	[M+Na]+	[M-H]-
-2	Glycine	75.03202841	167	[M+H]+	[M-H+HCOONa]-
-2	Histidine	155.069473	187	[M+H]+	[M-H]-
-2	Hydroxyproline	131.058243	171	[M+H]+	[M-H]-
-2	Hypoxanthine	136.039001	117	[M+H]+	[M-H]-
-2	Lactic acid	90.0317	36	NA	[M-H]-
-2	L-Kynurenine	208.0847923	146	[M+H]+	[M-H]-
-2	Phosphocreatine 	211.035995	190	[M+H]+	[M-H]-
-2	UDP-glucuronate	580.0343	250	NA	[M-H]-
-2	Valine	117.078979	145	[M+H]+	[M-H]-
-3	5-Oxoproline 	129.042587	59	[M+H]+	[M-H]-
+1	CDP	C9H15N3O11P2	NA	[M-H]-	168
+1	Creatine	C4H9N3O2	[M+H]+	NA	167
+1	Dimethylglycine	C4H9NO2	NA	[M-H]-	172
+1	Glycerol 	C3H8O3	NA	NA	172
+1	L-Glutamic Acid	C5H9NO4	[M+H]+	[M-H]-	171
+1	Myo-Inositol	C6H12O6	[M+Na]+	[M-H+HCOOH]-	189
+1	propionic acid	CH3CH2CO2H	NA	NA	40
+1	Pyruvic Acid	C3H4O3	NA	[M-H]-	38
+1	Suberic Acid	C8H14O4	[M+Na]+	[M-H]-	36
+1	Uric acid	C5H4N4O3	NA	NA	166
+1	Xanthine	C5H4N4O2	[M+H]+	[M-H]-	135
+2	1-Methylxanthine	166.0490755	[M+H]+	[M-H]-	69
+2	3-Nitrotyrosine	226.0589714	[M+H]+	[M-H]-	149
+2	Ascorbic Acid	176.0321	NA	[M-H]-	119
+2	C4 Carnitine	231.1471	[M+H]+	NA	36
+2	cGMP	345.047424	[M+H]+	[2M-H]-	201
+2	Fructose	180.063385	[M+Na]+	[M-H]-	154
+2	Glycine	75.03202841	[M+H]+	[M-H+HCOONa]-	167
+2	Histidine	155.069473	[M+H]+	[M-H]-	187
+2	Hydroxyproline	131.058243	[M+H]+	[M-H]-	171
+2	Hypoxanthine	136.039001	[M+H]+	[M-H]-	117
+2	Lactic acid	90.0317	NA	[M-H]-	36
+2	L-Kynurenine	208.0847923	[M+H]+	[M-H]-	146
+2	Phosphocreatine 	211.035995	[M+H]+	[M-H]-	190
+2	UDP-glucuronate	580.0343	NA	[M-H]-	250
+2	Valine	117.078979	[M+H]+	[M-H]-	145
+3	5-Oxoproline 	129.042587	[M+H]+	[M-H]-	59
 3	Acetyl-CoA	809.1257731	NA	NA	NA
-3	Adenylosuccinic Acid	463.074036	207	[M+H]+	[M-H]-
-3	Alanine	89.047676	158	[M+H]+	[M-H+HCOONa]-
-3	Citrulline	175.095688	179	[M+H]+	[M-H]-
-3	Cytosine	111.0432618	140	[M+H]+	[M-H]-
-3	Glucose	180.063385	164	[M+Na]+	[M-H+HCOOH]-
-3	Glutathione Oxidized 	612.151978	208	[M+H]+	[M-H]-
-3	Glycolic acid	76.01604399	43	NA	[M-H]-
-3	Guanine	151.048996	151	[M+Na]+	[M-H+HCOOH]-
-3	Isoleucine	131.094635	139	[M+H]+	[M-H+HCOOH]-
+3	Adenylosuccinic Acid	463.074036	[M+H]+	[M-H]-	207
+3	Alanine	89.047676	[M+H]+	[M-H+HCOONa]-	158
+3	Citrulline	175.095688	[M+H]+	[M-H]-	179
+3	Cytosine	111.0432618	[M+H]+	[M-H]-	140
+3	Glucose	180.063385	[M+Na]+	[M-H+HCOOH]-	164
+3	Glutathione Oxidized 	612.151978	[M+H]+	[M-H]-	208
+3	Glycolic acid	76.01604399	NA	[M-H]-	43
+3	Guanine	151.048996	[M+Na]+	[M-H+HCOOH]-	151
+3	Isoleucine	131.094635	[M+H]+	[M-H+HCOOH]-	139
 3	Malonic acid	104.0615	NA	NA	NA
-3	Niacinamide	122.047997	42	[M+H]+	NA
-3	Palmitoylcarnitine	399.334991	33	[M+H]+	[M-H+HCOOH]-
-3	UDP	404.002197	300	NA	NA
-4	Acetylalanine	131.058243	36	[M+H]+	[M-H]-
-4	Allantoin	158.0439901	134	[M+H]+	[M-H]-
-4	AMP	347.06308	205	[M+H]+	[2M-H]-
-4	Gamma-Aminobutyric acid	103.0633285	115	[M+H]+	NA
-4	Glutamine	146.069138	176	[M+H]+	[M-H]-
-4	GMP	363.05798	215	[M+H]+	[M-H]-
-4	Leucine	131.094635	137	[M+H]+	[M-H]-
-4	Phenylethylamine	121.0891494	36	[M+H]+	NA
+3	Niacinamide	122.047997	[M+H]+	NA	42
+3	Palmitoylcarnitine	399.334991	[M+H]+	[M-H+HCOOH]-	33
+3	UDP	404.002197	NA	NA	300
+4	Acetylalanine	131.058243	[M+H]+	[M-H]-	36
+4	Allantoin	158.0439901	[M+H]+	[M-H]-	134
+4	AMP	347.06308	[M+H]+	[2M-H]-	205
+4	Gamma-Aminobutyric acid	103.0633285	[M+H]+	NA	115
+4	Glutamine	146.069138	[M+H]+	[M-H]-	176
+4	GMP	363.05798	[M+H]+	[M-H]-	215
+4	Leucine	131.094635	[M+H]+	[M-H]-	137
+4	Phenylethylamine	121.0891494	[M+H]+	NA	36
 4	Propylene glycol	76.0524295	NA	NA	NA
-4	Putrescine	88.10004839	166	[M+H-NH3]+	NA
-4	Pyridoxine	169.0739	74	[M+H]+	[M-H]-
-4	Riboflavin	376.1383	142	[M+H]+	[M-H]-
+4	Putrescine	88.10004839	[M+H-NH3]+	NA	166
+4	Pyridoxine	169.0739	[M+H]+	[M-H]-	74
+4	Riboflavin	376.1383	[M+H]+	[M-H]-	142
 4	Ribose 	180.063385	NA	NA	NA
-4	SAMe	399.1450636	192	[M+H]+	NA
-4	Sedoheptulose-7-phosphate	290.0403	218	[M+Na]+	[2M-H]-
-5	"1,3-Dimethyluric acid"	196.0596401	97	[M+H]+	[2M-2H+Na]-
-5	2-Ketobutyric acid	102.0316941	34	NA	[M-H]-
-5	5-MTA	297.089569	68	[M+H]+	[M-H]-
-5	CoA	767.115234	244	NA	NA
-5	Corticosterone	346.2144094	31	[M+H]+	NA
-5	dADP	411.0345001	238	[M+H]+	[M-H]-
-5	dCDP	387.0232667	235	[M+H]+	[M-H]-
-5	Glycerophospho-inositol	334.0665	225	[M+H]+	[M-H]-
-5	GTP	522.990662	239	NA	NA
-5	Mannose	180.063385	157	[M+Na]+	[M-H+HCOOH]-
-5	NADP	743.0755	238	[M+H]+	[M-H]-
-5	Nicotinic acid	123.031998	36	[M+H]+	[2M-2H+Na]-
-5	Orotic Acid	156.0171	161	[M+H]+	[M-H]-
-5	PABA	137.048004	34	[M+H]+	NA
-5	Threonine	119.058243	170	[M+H]+	[M-H]-
-6	3-Hydroxybutyric Acid	104.04734	35	[M+Na]+	[M-H]-
-6	Acetylglutamic acid	189.0637225	75	[M+H]+	[M-H]-
-6	Acetylglycine	117.0425931	48	[M+H]+	[M-H]-
-6	Arginine 	174.111679	185	[M+H]+	[M-H]-
-6	Asparagine	132.053497	182	[M+H]+	[M-H]-
-6	Choline	104.1075	41	[M+H]+	NA
-6	CMP	323.0519	208	[M+H]+	[M-H]-
-6	Cystine	240.0239	210	[M+H]+	[M-H]-
-6	Histamine	111.0796473	166	[M+H]+	NA
-6	Methioninesulfoxide	165.0459639	180	[M+H]+	[M-H]-
-6	Paracetamol	151.0633285	34	[M+H]+	[M-H]-
+4	SAMe	399.1450636	[M+H]+	NA	192
+4	Sedoheptulose-7-phosphate	290.0403	[M+Na]+	[2M-H]-	218
+5	"1,3-Dimethyluric acid"	196.0596401	[M+H]+	[2M-2H+Na]-	97
+5	2-Ketobutyric acid	102.0316941	NA	[M-H]-	34
+5	5-MTA	297.089569	[M+H]+	[M-H]-	68
+5	CoA	767.115234	NA	NA	244
+5	Corticosterone	346.2144094	[M+H]+	NA	31
+5	dADP	411.0345001	[M+H]+	[M-H]-	238
+5	dCDP	387.0232667	[M+H]+	[M-H]-	235
+5	Glycerophospho-inositol	334.0665	[M+H]+	[M-H]-	225
+5	GTP	522.990662	NA	NA	239
+5	Mannose	180.063385	[M+Na]+	[M-H+HCOOH]-	157
+5	NADP	743.0755	[M+H]+	[M-H]-	238
+5	Nicotinic acid	123.031998	[M+H]+	[2M-2H+Na]-	36
+5	Orotic Acid	156.0171	[M+H]+	[M-H]-	161
+5	PABA	137.048004	[M+H]+	NA	34
+5	Threonine	119.058243	[M+H]+	[M-H]-	170
+6	3-Hydroxybutyric Acid	104.04734	[M+Na]+	[M-H]-	35
+6	Acetylglutamic acid	189.0637225	[M+H]+	[M-H]-	75
+6	Acetylglycine	117.0425931	[M+H]+	[M-H]-	48
+6	Arginine 	174.111679	[M+H]+	[M-H]-	185
+6	Asparagine	132.053497	[M+H]+	[M-H]-	182
+6	Choline	104.1075	[M+H]+	NA	41
+6	CMP	323.0519	[M+H]+	[M-H]-	208
+6	Cystine	240.0239	[M+H]+	[M-H]-	210
+6	Histamine	111.0796473	[M+H]+	NA	166
+6	Methioninesulfoxide	165.0459639	[M+H]+	[M-H]-	180
+6	Paracetamol	151.0633285	[M+H]+	[M-H]-	34
 6	Sphingosine-1-phosphate	379.4718	NA	NA	NA
-6	Sucrose	342.1162	184	[M+Na]+	[M-H+HCOOH]-
-6	Tryptophan	204.089874	150	[M+H]+	[M-H]-
-6	UDP-acetylglucosamine	607.0816	238	[M+H]+	[M-H]-
-7	1-Methyluric acid	182.0439901	143	[M+H]+	[2M-H]-
-7	3-Methylhistidine	169.085129	185	[M+H]+	[M-H]-
-7	ADMA	202.142975	173	[M+H]+	[M-H]-
-7	Caffeine	194.0803756	33	[M+H]+	NA
-7	CDP-choline	488.1073	216	[M+H]+	[M-H+HCOOH]-
-7	Creatinine	113.0589119	95	[M+H]+	[M-H]-
-7	dAMP	331.068176	201	[M+H]+	[M-H]-
-7	Glutaric acid	132.0422587	36	NA	[M-H]-
-7	Glycero-phosphocholine	257.1028	188	[M+H]+	[M-H+HCOOH]-
-7	Methionine	149.051056	150	[M+H]+	[M-H]-
-7	Phenylpyruvic acid	164.0473441	33	NA	[2M-2H+Na]-
-7	Serine	105.042595	179	[M+H]+	[M-H]-
-7	Sphingosine	299.2824	37	[M+H-H2O]+	NA
-7	Taurine	125.014664	169	[M+H]+	[2M-H]-
-7	Threonic Acid 	136.0371734	115	NA	[M-H]-
-8	"5,6-Dihydro Thymine"	128.0585775	65	[M+H]+	NA
-8	Aspirin	180.0422587	31	NA	NA
-8	Biotin	244.0882	56	[M+H]+	[M-H]-
-8	C5 Carnitine	245.1627	36	[M+H]+	NA
-8	Cystathionine	222.0674276	206	[M+H]+	[M-H]-
-8	dGDP	427.0294147	241	NA	NA
-8	Glyceric Acid	106.027	66	NA	[M-H]-
-8	Inosine	268.08078	142	[M+Na]+	[M-H]-
-8	Mevalonic Acid	148.073563	37	NA	[M-H]-
-8	NADPH	745.0911021	239	NA	NA
-8	Norepinephrine	169.0738932	185	NA	NA
-8	Ornithine	132.0898776	190	[M+H]+	[M-H]-
-8	Succinic Acid	118.0266	37	NA	[M-H]-
-8	Tyrosine	181.073898	158	[M+H]+	[M-H]-
-8	Uracil	112.0273	58	[M+H]+	[M-H]-
-9	ADP-Ribose	559.0716735	236	[M+H]+	[M-H]-
-9	CDP-ethanolamine	446.0604	217	[M+H]+	[M-H]-
-9	CTP	482.9845118	243	NA	NA
-9	Diethyl malonate	160.0735589	27	[M+H]+	NA
-9	Eplerone	414.2042387	29	[M+H]+	NA
-9	Erythrose 4-phosphate	200.0085892	210	[M+Na]+	[M-H]-
-9	Glucose 1-Phosphate	260.029724	221	[M+Na]+	[2M-H]-
-9	Guanosine	283.091675	161	[M+H]+	[M-H]-
-9	IMP	348.047089	211	[M+H]+	[M-H]-
-9	L-Cysteine	121.0198	165	[M+H]+	[M-H]-
-9	N-Acetylserine	147.0531578	71	[M+H]+	[M-H]-
-9	NADH	665.1247717	232	[M+H]+	[M-H]-
-9	Pipecolic acid	129.0789786	153	[M+H]+	[M-H]-
-9	Proline	115.063332	157	[M+H]+	[M-H]-
-9	Thymidine	242.0902716	63	[M+H]+	[M-H]-
-10	Adenosine	267.096985	128	[M+H]+	[M-H+HCOOH]-
-10	Citric Acid	192.026993	178	[M+Na]+	[M-H]-
-10	Cytidine	243.0855	155	[M+H]+	[M-H+HCOOH]-
-10	Fumaric Acid	116.010956	35	NA	[M-H]-
-10	GDP	443.024323	253	[M+H]+	NA
-10	Glucosamine	179.0794	177	[M+H]+	[M-Cl]-
-10	L-Aspartic Acid	133.037506	178	[M+H]+	[M-H]-
-10	N-Acetylornithine	174.1004423	149	[M+H]+	[2M-2H+Na]-
-10	Phosphoenolpyruvic Acid	167.981995	192	[M+H]+	[2M-H]-
-10	Phosphorylethanolamine	141.0191	198	[M+H]+	[2M-H]-
-10	Ribulose 5-Phosphate	230.01915	207	[M+H]+	[2M-H]-
-10	SAH	384.121582	183	[M+H]+	[M-H]-
-10	Salicylic Acid	138.031998	31	NA	[2M-2H+Na]-
-10	Spermidine	145.1578976	187	[M+H]+	NA
-10	Thymine	126.042931	51	[M+H]+	[M-H]-
-11	2-Phosphoglyceric Acid	185.992935	202	[M+H]+	[2M-H]-
-11	3-Methylxanthine	166.0490755	78	[M+H]+	[M-H]-
-11	ADP	427.029419	244	[M+H]+	[M-H]-
-11	Alpha-ketoisovaleric acid	116.0473441	32	NA	[M-H]-
-11	dCTP	466.9895971	243	NA	NA
-11	Dihydroorotic Acid	158.032761	96	[M+H]+	[M-H]-
-11	Glutathione Reduced 	307.083801	208	NA	NA
-11	"L,L-Cyclo(leucylprolyl)"	210.1368278	33	[M+H]+	NA
-11	L-Carnitine 	161.105194	65	[M+H]+	NA
-11	Lysine 	146.10553	186	[M+H]+	[M-H]-
-11	Malic Acid	134.0215	82	NA	[M-H]-
-11	p-Tyramine	137.084064	50	[M+H]+	NA
-11	SDMA	202.1429758	171	[M+H]+	[M-H]-
-11	Tetrahydrobiopterin	241.1174894	171	NA	[M-H]-
-11	UDP-Glucose	566.054993	242	[M+Na]+	[M-H]-
-12	Argininosuccinic acid	290.1226343	199	[M+H]+	[M-H]-
-12	Carnosine	226.1065903	183	[M+H]+	[M-H]-
-12	dCMP	307.056946	202	[M+H]+	[2M-H]-
-12	dGMP	347.0630843	210	[M+H]+	[M-H]-
-12	Folic acid	441.139679	156	[M+H]+	[M-H]-
-12	galactitol	182.0790382	163	[M+Na]+	[M-H]-
-12	Glucose 6-Phosphate	260.029724	223	[2M+H]+	[2M-H]-
-12	Guanidoacetic acid	117.0538265	151	[M+H]+	[M-H]-
-12	Homocysteine	135.0353992	155	[M+H]+	[M-H]-
-12	Ketoleucine	130.062988	31	NA	[M-H]-
-12	Methotrexate	454.1713159	148	[M+H]+	[M-H]-
-12	N-Formyl-L-methionine	177.0459639	36	[M+H]+	[M-H]-
-12	Sebacic acid	202.1205091	35	[M+H]+	[M-H]-
-12	Thiamine	264.1045	130	[M+H]+	[M-H]-
-12	Tryptamine	160.1000484	37	[M+H-NH3]+	NA
-13	1-Methylhistidine	169.085129	179	[M+H]+	[M-H]-
-13	8-Oxo-2-Deoxyguanosine	283.0916686	158	[M+H]+	[M-H]-
-13	Acetylneuraminic Acid	309.106	172	[M+Na]+	[M-H]-
-13	Dopamine	153.0789786	120	[M+H]+	[M-H]-
+6	Sucrose	342.1162	[M+Na]+	[M-H+HCOOH]-	184
+6	Tryptophan	204.089874	[M+H]+	[M-H]-	150
+6	UDP-acetylglucosamine	607.0816	[M+H]+	[M-H]-	238
+7	1-Methyluric acid	182.0439901	[M+H]+	[2M-H]-	143
+7	3-Methylhistidine	169.085129	[M+H]+	[M-H]-	185
+7	ADMA	202.142975	[M+H]+	[M-H]-	173
+7	Caffeine	194.0803756	[M+H]+	NA	33
+7	CDP-choline	488.1073	[M+H]+	[M-H+HCOOH]-	216
+7	Creatinine	113.0589119	[M+H]+	[M-H]-	95
+7	dAMP	331.068176	[M+H]+	[M-H]-	201
+7	Glutaric acid	132.0422587	NA	[M-H]-	36
+7	Glycero-phosphocholine	257.1028	[M+H]+	[M-H+HCOOH]-	188
+7	Methionine	149.051056	[M+H]+	[M-H]-	150
+7	Phenylpyruvic acid	164.0473441	NA	[2M-2H+Na]-	33
+7	Serine	105.042595	[M+H]+	[M-H]-	179
+7	Sphingosine	299.2824	[M+H-H2O]+	NA	37
+7	Taurine	125.014664	[M+H]+	[2M-H]-	169
+7	Threonic Acid 	136.0371734	NA	[M-H]-	115
+8	"5,6-Dihydro Thymine"	128.0585775	[M+H]+	NA	65
+8	Aspirin	180.0422587	NA	NA	31
+8	Biotin	244.0882	[M+H]+	[M-H]-	56
+8	C5 Carnitine	245.1627	[M+H]+	NA	36
+8	Cystathionine	222.0674276	[M+H]+	[M-H]-	206
+8	dGDP	427.0294147	NA	NA	241
+8	Glyceric Acid	106.027	NA	[M-H]-	66
+8	Inosine	268.08078	[M+Na]+	[M-H]-	142
+8	Mevalonic Acid	148.073563	NA	[M-H]-	37
+8	NADPH	745.0911021	NA	NA	239
+8	Norepinephrine	169.0738932	NA	NA	185
+8	Ornithine	132.0898776	[M+H]+	[M-H]-	190
+8	Succinic Acid	118.0266	NA	[M-H]-	37
+8	Tyrosine	181.073898	[M+H]+	[M-H]-	158
+8	Uracil	112.0273	[M+H]+	[M-H]-	58
+9	ADP-Ribose	559.0716735	[M+H]+	[M-H]-	236
+9	CDP-ethanolamine	446.0604	[M+H]+	[M-H]-	217
+9	CTP	482.9845118	NA	NA	243
+9	Diethyl malonate	160.0735589	[M+H]+	NA	27
+9	Eplerone	414.2042387	[M+H]+	NA	29
+9	Erythrose 4-phosphate	200.0085892	[M+Na]+	[M-H]-	210
+9	Glucose 1-Phosphate	260.029724	[M+Na]+	[2M-H]-	221
+9	Guanosine	283.091675	[M+H]+	[M-H]-	161
+9	IMP	348.047089	[M+H]+	[M-H]-	211
+9	L-Cysteine	121.0198	[M+H]+	[M-H]-	165
+9	N-Acetylserine	147.0531578	[M+H]+	[M-H]-	71
+9	NADH	665.1247717	[M+H]+	[M-H]-	232
+9	Pipecolic acid	129.0789786	[M+H]+	[M-H]-	153
+9	Proline	115.063332	[M+H]+	[M-H]-	157
+9	Thymidine	242.0902716	[M+H]+	[M-H]-	63
+10	Adenosine	267.096985	[M+H]+	[M-H+HCOOH]-	128
+10	Citric Acid	192.026993	[M+Na]+	[M-H]-	178
+10	Cytidine	243.0855	[M+H]+	[M-H+HCOOH]-	155
+10	Fumaric Acid	116.010956	NA	[M-H]-	35
+10	GDP	443.024323	[M+H]+	NA	253
+10	Glucosamine	179.0794	[M+H]+	[M-Cl]-	177
+10	L-Aspartic Acid	133.037506	[M+H]+	[M-H]-	178
+10	N-Acetylornithine	174.1004423	[M+H]+	[2M-2H+Na]-	149
+10	Phosphoenolpyruvic Acid	167.981995	[M+H]+	[2M-H]-	192
+10	Phosphorylethanolamine	141.0191	[M+H]+	[2M-H]-	198
+10	Ribulose 5-Phosphate	230.01915	[M+H]+	[2M-H]-	207
+10	SAH	384.121582	[M+H]+	[M-H]-	183
+10	Salicylic Acid	138.031998	NA	[2M-2H+Na]-	31
+10	Spermidine	145.1578976	[M+H]+	NA	187
+10	Thymine	126.042931	[M+H]+	[M-H]-	51
+11	2-Phosphoglyceric Acid	185.992935	[M+H]+	[2M-H]-	202
+11	3-Methylxanthine	166.0490755	[M+H]+	[M-H]-	78
+11	ADP	427.029419	[M+H]+	[M-H]-	244
+11	Alpha-ketoisovaleric acid	116.0473441	NA	[M-H]-	32
+11	dCTP	466.9895971	NA	NA	243
+11	Dihydroorotic Acid	158.032761	[M+H]+	[M-H]-	96
+11	Glutathione Reduced 	307.083801	NA	NA	208
+11	"L,L-Cyclo(leucylprolyl)"	210.1368278	[M+H]+	NA	33
+11	L-Carnitine 	161.105194	[M+H]+	NA	65
+11	Lysine 	146.10553	[M+H]+	[M-H]-	186
+11	Malic Acid	134.0215	NA	[M-H]-	82
+11	p-Tyramine	137.084064	[M+H]+	NA	50
+11	SDMA	202.1429758	[M+H]+	[M-H]-	171
+11	Tetrahydrobiopterin	241.1174894	NA	[M-H]-	171
+11	UDP-Glucose	566.054993	[M+Na]+	[M-H]-	242
+12	Argininosuccinic acid	290.1226343	[M+H]+	[M-H]-	199
+12	Carnosine	226.1065903	[M+H]+	[M-H]-	183
+12	dCMP	307.056946	[M+H]+	[2M-H]-	202
+12	dGMP	347.0630843	[M+H]+	[M-H]-	210
+12	Folic acid	441.139679	[M+H]+	[M-H]-	156
+12	galactitol	182.0790382	[M+Na]+	[M-H]-	163
+12	Glucose 6-Phosphate	260.029724	[2M+H]+	[2M-H]-	223
+12	Guanidoacetic acid	117.0538265	[M+H]+	[M-H]-	151
+12	Homocysteine	135.0353992	[M+H]+	[M-H]-	155
+12	Ketoleucine	130.062988	NA	[M-H]-	31
+12	Methotrexate	454.1713159	[M+H]+	[M-H]-	148
+12	N-Formyl-L-methionine	177.0459639	[M+H]+	[M-H]-	36
+12	Sebacic acid	202.1205091	[M+H]+	[M-H]-	35
+12	Thiamine	264.1045	[M+H]+	[M-H]-	130
+12	Tryptamine	160.1000484	[M+H-NH3]+	NA	37
+13	1-Methylhistidine	169.085129	[M+H]+	[M-H]-	179
+13	8-Oxo-2-Deoxyguanosine	283.0916686	[M+H]+	[M-H]-	158
+13	Acetylneuraminic Acid	309.106	[M+Na]+	[M-H]-	172
+13	Dopamine	153.0789786	[M+H]+	[M-H]-	120
 13	dUTP	468.1417	NA	NA	NA
-13	"Fructose-1,6-Diphosphate"	339.996063	258	[M+H]+	[M-H]-
-13	Ibuprofen	206.1306798	29	NA	[M-H]-
-13	Indoleacetic acid	175.0633285	32	[M+H]+	[M-H]-
-13	N-Acetyl-beta-alanine	131.0582432	43	[M+H]+	[M-H]-
-13	Pantothenic Acid	219.1107	34	[M+H]+	[M-H]-
-13	Phenylacetic acid	136.0524295	31	NA	[M-H]-
-13	Phosphorylcholine	183.066	194	[M+H]+	[M-H+HCOOH]-
-13	Sorbitol	182.0790382	159	[M+Na]+	[M-H]-
-13	Spermine	202.2157469	202	[M+H]+	NA
-13	Uridine	244.069534	116	[M+H]+	[M-H+HCOOH]-
-14	"1,5-anhydro D-glucitol"	164.0684735	46	NA	[M-H]-
-14	2-Ketoglutaric acid	146.0215233	60	NA	[M-H]-
-14	Acetylcarnitine	203.115753	37	[M+H]+	NA
-14	ADP-Glucose	589.082214	235	[M+H-Hexose-H2O]+	[M-H]-
-14	dGTP	506.9957452	235	NA	NA
-14	Glyceraldehyde 2-phosphate	169.9980245	210	[M+H]+	[M-H]-
-14	Glycerol-3-Phosphate	172.0137	208	[M+H]+	[M-H]-
-14	Indolelactic acid	205.0738932	35	[M+H]+	[M-H]-
-14	Isocitric Acid	192.0270026	141	NA	[M-H]-
-14	Levodopa	197.0688078	166	[M+H]+	[M-H]-
-14	NAD	663.1091	222	[M+H]+	[M-H]-
-14	Pyridoxic Acid	183.053162	80	[M+H]+	[M-H]-
-14	Serotonin	176.094955	100	[M+H-NH3]+	NA
-14	Ureidopropionic acid	132.0534921	81	[M+H]+	[M-H]-
-14	Xylulose 5-Phosphate	230.01915	211	[M+H]+	[M-H]-
-15	2-Methylcitric acid	206.0426527	165	[M+Na]+	[M-H]-
-15	alpha-Aminoadipic acid	161.0688078	165	[M+H]+	[M-H]-
-15	FAD	785.157104	237	[M+H]+	[M-H]-
-15	Glucosamine-6-Phosphate	259.0457	219	[M+H]+	[2M-H]-
-15	Glucuronic Acid	194.042648	167	NA	[M-H]-
-15	Isovalerylglycine	159.0895433	36	[M+H]+	[M-H]-
-15	N-alpha-Acetyl-L-arginine	216.1222404	143	[M+H]+	[M-H]-
-15	Phenylalanine	165.078979	143	[M+H]+	[M-H]-
-15	Phosphoserine	185.0089235	223	[M+H]+	[M-H]-
-15	p-Hydroxyphenylacetic acid	152.0473441	36	NA	[M-H]-
-16	"1,7-Dimethyluric acid"	196.0596401	115	[M+H]+	[M-H]-
-16	6-Phosphogluconic Acid	276.024628	300	NA	NA
-16	Acetyl-Glucosamine	221.0899	153	[M+Na]+	[M-H+HCOOH]-
-16	Acetylmethionine	191.061615	36	[M+H]+	[M-H]-
-16	Dihydroxyacetone phosphate	169.9980245	208	[M+H]+	[M-H]-
-16	homovanillic acid	182.0579088	35	NA	[M-H]-
-16	Quinolinic acid	167.0218577	175	[M+H]+	[M-H]-
-17	"1-Methylxanthine-2,4,5,6-13C4, 1,3,9-15N3"	173.053599	NA	[M+H]+	[M-H]-
-17	Carnitine (D3)	164.124	59	[M+H]+	[M-H]-
-17	Creatinine (N-Methhyl_D3)	116.0777	81	[M+H]+	[M-H]-
-17	"Glucose (6,6-D2)"	182.0759	167	[M+H]+	[M-H]-
-17	"Succinic acid-2,2,3,3-d4"	122.0517	49	[M+H]+	[M-H]-
-18	"2,3-Diphosphoglyceric acid"	266.9592695	NA	[M+H]+	[M-H]-
-18	2-Hydroxybutyric acid	104.1045	NA	[M+H]+	[M-H]-
-18	Fructose 6-Phosphate	260.0297	NA	[M+H]+	[M-H]-
-18	Octanoic-d15 acid	159.209181	NA	[M+H]+	[M-H]-
-18	Succinyl-CoA	867.1312524	NA	[M+H]+	[M-H]-
-19	Adenine	135.054001	NA	[M+H]+	[M-H]-
-19	ATP	506.9957	NA	[M+H]+	[M-H]-
-19	cAMP	329.052521	NA	[M+H]+	[M-H]-
-19	dUMP	308.0409519	NA	[M+H]+	[M-H]-
-19	Maleic acid	116.0109586	NA	[M+H]+	[M-H]-
-19	Methylmalonic acid	118.0266087	NA	[M+H]+	[M-H]-
-19	UMP	324.035858	NA	[M+H]+	[M-H]-
-20	"3,5,6-Trichloro-2-pyrinidol"	196.920197	NA	[M+H]+	[M-H]-
-20	"3,5,6-Trichloro-2-pyrinidol (4,5,6-13C3, 99%)"		NA	[M+H]+	[M-H]-
-20	"3,5-Dichloro-2-hydroxypyridine"		NA	[M+H]+	[M-H]-
-20	3-Chloro-5-(trifluoromethyl)-2-pyrindol		NA	[M+H]+	[M-H]-
-20	Chlorpyrifos D10 (diethyl D10)		NA	[M+H]+	[M-H]-
-20	Chlorpyrifos-methyl D6 (dimethyl D6)		NA	[M+H]+	[M-H]-
-99	3-Hydroxy-DL-kynurenine	224.0797069	NA	[M+H]+	[M-H]-
-99	7-Methylxanthine	166.0490755	NA	[M+H]+	[M-H]-
-99	Acetylaspartic acid	175.0480724	NA	[M+H]+	[M-H]-
-99	alpha-Lactose 	342.1162	NA	[M+H]+	[M-H]-
-99	dATP	491.0008305	NA	[M+H]+	[M-H]-
-99	Epinephrine	183.089539	159	[M+H]+	[M-H]-
-99	Gluconic Acid	196.0583	NA	[M+H]+	[M-H]-
-99	Indoxyl sulfate	213.0095784	NA	[M+H]+	[M-H]-
-99	Nicotine	162.1156985	NA	[M+H]+	[M-H]-
-99	Oxalacetic acid	132.0058732	NA	[M+H]+	[M-H]-
-99	Phosphoribosyl pyrophosphate	389.9518147	NA	[M+H]+	[M-H]-
-99	Ribose 5-Phosphate	230.01915	NA	[M+H]+	[M-H]-
-99	Succinylacetone	158.0579088	NA	[M+H]+	[M-H]-
-99	UTP	483.9685274	NA	[M+H]+	[M-H]-
-99	Xanthosine	284.075684	NA	[M+H]+	[M-H]-
+13	"Fructose-1,6-Diphosphate"	339.996063	[M+H]+	[M-H]-	258
+13	Ibuprofen	206.1306798	NA	[M-H]-	29
+13	Indoleacetic acid	175.0633285	[M+H]+	[M-H]-	32
+13	N-Acetyl-beta-alanine	131.0582432	[M+H]+	[M-H]-	43
+13	Pantothenic Acid	219.1107	[M+H]+	[M-H]-	34
+13	Phenylacetic acid	136.0524295	NA	[M-H]-	31
+13	Phosphorylcholine	183.066	[M+H]+	[M-H+HCOOH]-	194
+13	Sorbitol	182.0790382	[M+Na]+	[M-H]-	159
+13	Spermine	202.2157469	[M+H]+	NA	202
+13	Uridine	244.069534	[M+H]+	[M-H+HCOOH]-	116
+14	"1,5-anhydro D-glucitol"	164.0684735	NA	[M-H]-	46
+14	2-Ketoglutaric acid	146.0215233	NA	[M-H]-	60
+14	Acetylcarnitine	203.115753	[M+H]+	NA	37
+14	ADP-Glucose	589.082214	[M+H-Hexose-H2O]+	[M-H]-	235
+14	dGTP	506.9957452	NA	NA	235
+14	Glyceraldehyde 2-phosphate	169.9980245	[M+H]+	[M-H]-	210
+14	Glycerol-3-Phosphate	172.0137	[M+H]+	[M-H]-	208
+14	Indolelactic acid	205.0738932	[M+H]+	[M-H]-	35
+14	Isocitric Acid	192.0270026	NA	[M-H]-	141
+14	Levodopa	197.0688078	[M+H]+	[M-H]-	166
+14	NAD	663.1091	[M+H]+	[M-H]-	222
+14	Pyridoxic Acid	183.053162	[M+H]+	[M-H]-	80
+14	Serotonin	176.094955	[M+H-NH3]+	NA	100
+14	Ureidopropionic acid	132.0534921	[M+H]+	[M-H]-	81
+14	Xylulose 5-Phosphate	230.01915	[M+H]+	[M-H]-	211
+15	2-Methylcitric acid	206.0426527	[M+Na]+	[M-H]-	165
+15	alpha-Aminoadipic acid	161.0688078	[M+H]+	[M-H]-	165
+15	FAD	785.157104	[M+H]+	[M-H]-	237
+15	Glucosamine-6-Phosphate	259.0457	[M+H]+	[2M-H]-	219
+15	Glucuronic Acid	194.042648	NA	[M-H]-	167
+15	Isovalerylglycine	159.0895433	[M+H]+	[M-H]-	36
+15	N-alpha-Acetyl-L-arginine	216.1222404	[M+H]+	[M-H]-	143
+15	Phenylalanine	165.078979	[M+H]+	[M-H]-	143
+15	Phosphoserine	185.0089235	[M+H]+	[M-H]-	223
+15	p-Hydroxyphenylacetic acid	152.0473441	NA	[M-H]-	36
+16	"1,7-Dimethyluric acid"	196.0596401	[M+H]+	[M-H]-	115
+16	6-Phosphogluconic Acid	276.024628	NA	NA	300
+16	Acetyl-Glucosamine	221.0899	[M+Na]+	[M-H+HCOOH]-	153
+16	Acetylmethionine	191.061615	[M+H]+	[M-H]-	36
+16	Dihydroxyacetone phosphate	169.9980245	[M+H]+	[M-H]-	208
+16	homovanillic acid	182.0579088	NA	[M-H]-	35
+16	Quinolinic acid	167.0218577	[M+H]+	[M-H]-	175
+17	3-Hydroxy-DL-kynurenine	224.0797069	[M+H]+	[M-H]-	154
+17	7-Methylxanthine	166.0490755	[M+H]+	[M-H]-	88
+17	Acetylaspartic acid	175.0480724	[M+H]+	[M-H]-	90
+17	alpha-Lactose	342.1162	[M+H]+	[M-H]-	192
+17	dATP	491.0008305	[M+H]+	[M-H]-	33
+17	Epinephrine	183.089539	[M+H]+	[M-H]-	123
+17	Gluconic Acid	196.0583	[M+H]+	[M-H]-	164
+17	Indoxyl sulfate	213.0095784	[M+H]+	[M-H]-	65
+17	Nicotine	162.1156985	[M+H]+	[M-H]-	40
+17	Oxalacetic acid	132.0058732	[M+H]+	[M-H]-	NA
+17	Phosphoribosyl pyrophosphate	389.9518147	[M+H]+	[M-H]-	NA
+17	Ribose 5-Phosphate	230.01915	[M+H]+	[M-H]-	215
+17	Succinylacetone	158.0579088	[M+H]+	[M-H]-	32
+17	UTP	483.9685274	[M+H]+	[M-H]-	NA
+17	Xanthosine	284.075684	[M+H]+	[M-H]-	151

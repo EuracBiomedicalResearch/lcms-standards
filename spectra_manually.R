@@ -1,11 +1,15 @@
-mycompound <- "Isoleucine"
+mycompound <- "Pyruvic"
 polarity <- "NEG" # specify "POS" or "NEG"
 
 study <- "standards_dilution" # specify "internal_standards" OR 
                               # "standards_dilution"
-mixnum <- 3
+mixnum <- 1
 
 source("R/which_within.R")
+library(xcms)
+library(magrittr)
+library(CompoundDb)
+library(Rdisop)
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 
 # Get the information regarding the injection sequence:
@@ -25,11 +29,14 @@ if(study == "internal_standards"){
 # Get the information regarding the standards that are in the samples:
 std_info <- read.table(paste0("data/", study, ".txt"),
                        sep = "\t", header = TRUE, as.is = TRUE)
-if(study == "internal_standards"){
-  colnames(std_info) <- c("name", "molecular_weight", "POS", "NEG", "RT")
-} else if(study == "standards_dilution"){
-  colnames(std_info) <- c("mix", "name", "molecular_weight", "POS", "NEG", "RT")
+std_info$mzneut = NA
+for(i in seq(nrow(std_info))){
+  if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
+    getMolecule(as.character(std_info$formula[i]))$exactmass}else{
+      std_info$mzneut[i] = paste(std_info$formula[i])}
 }
+write.csv(std_info, "x.csv", row.names = FALSE)
+std_info = read.csv("x.csv")
 std_info$name <- c(substring(std_info$name, 1, 33))
 if(study == "standards_dilution"){
   std_info <- subset(std_info, mix == mixnum)
@@ -37,9 +44,15 @@ if(study == "standards_dilution"){
 
 
 mycompound <- std_info[grep(mycompound, std_info$name),]
-mzvalue <- mycompound[, grep(polarity, colnames(mycompound))]
+#mzvalue <- mycompound[, grep(polarity, colnames(mycompound))]
+mzvalue <- unlist(mass2mz(mycompound$mzneut, adduct=as.character(mycompound[, grep(polarity, colnames(mycompound))])))
+#mzvalue <- 894.84139
 da = 0.01
 RTd = 10
+
+exclusion_list <- read.table("data/exclusion_mz.txt",
+                        sep = "\t", header = TRUE, as.is = TRUE)
+exclusion_list <- exclusion_list[, grep(polarity, colnames(exclusion_list))]
 
 for(j in seq(length(myfiles))){
   # Import data:
@@ -80,7 +93,7 @@ for(j in seq(length(myfiles))){
                       round(sps[[2]]@rt,3))
   }
   
-  sps.df.clean <- sps.df[-unlist(which_within(exclusion_list, sps.df$mz)),]
+  sps.df.clean <- sps.df[-unlist(which_within(exclusion_list, sps.df$mz, mzd = 0.02)),]
   plot(sps.df.clean$mz, sps.df.clean$i, type="h", xlab="mz", ylab="intensity", 
        main=paste0(mytitle, " - RT: ", round(sps[[2]]@rt,3)))
   text(sps.df.clean$mz[order(sps.df.clean$i, decreasing = TRUE)[1:5]], 
@@ -90,4 +103,4 @@ for(j in seq(length(myfiles))){
   points(sps.df.clean$mz[unlist(which_within(mzvalue, sps.df.clean$mz))], 
          sps.df.clean$i[unlist(which_within(mzvalue, sps.df.clean$mz))],
          pch = 8, col = "red")
-}
+}}

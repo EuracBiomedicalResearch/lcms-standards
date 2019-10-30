@@ -8,15 +8,8 @@ library(xcms)
 library(reshape2)
 library(ggplot2)
 library(RColorBrewer)
-
-# Set up parallel processing using 3 cores
-if (.Platform$OS.type == "unix") {
-  register(bpstart(MulticoreParam(2)))
-} else {
-  register(bpstart(SnowParam(2)))
-}
-
-
+library(Rdisop)
+library(CompoundDb)
 
 # the information regarding the injection sequence:
 injections <- read.table(paste0("data/", study, "_files.txt"), #import the file
@@ -32,16 +25,18 @@ myfiles_neg <- myfiles[grep("NEG", myfiles)]
 # Get the information regarding the standards that are in the samples:
 std_info <- read.table(paste0("data/", study, ".txt"),
                        sep = "\t", header = TRUE, as.is = TRUE)
-if(study == "internal_standards"){
-  colnames(std_info) <- c("name", "molecular_weight", "POS", "NEG", "RT")
-} else if(study == "standards_dilution"){
-  colnames(std_info) <- c("mix", "name", "molecular_weight", "POS", "NEG", "RT")
-}
 std_info$name <- c(substring(std_info$name, 1, 33))
 if(study == "standards_dilution"){
   std_info <- subset(std_info, mix == mixnum)
 }
-
+std_info$mzneut = NA
+for(i in seq(nrow(std_info))){
+  if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
+    getMolecule(as.character(std_info$formula[i]))$exactmass}else{
+      std_info$mzneut[i] = paste(std_info$formula[i])}
+}
+write.csv(std_info, "x.csv", row.names = FALSE)
+std_info = read.csv("x.csv")
 
 
 # EIC:
@@ -56,26 +51,28 @@ data_pos <- readMSData(paste0(MZML_PATH, myfiles_pos), mode = "onDisk")
 data_neg <- readMSData(paste0(MZML_PATH, myfiles_neg), mode = "onDisk")
 
 
-mycompound <- "Creatinine"
+mycompound <- "Xanthosine"
 mycompound <- std_info[grep(mycompound, std_info$name),]
 mycompound
 
-chr_pos = chromatogram(data_pos, 
-                       mz = cbind(mycompound$POS - da, mycompound$POS + da),
+mzpos <- unlist(mass2mz(mycompound$mzneut, 
+                        adduct = as.character(mycompound$POS)))
+mzneg <- unlist(mass2mz(mycompound$mzneut, 
+                        adduct = as.character(mycompound$NEG)))
+
+chr_pos = chromatogram(data_pos, mz = c(mzpos - da, mzpos + da),
                        aggregationFun = "max")
 chr_neg = chromatogram(data_neg, 
-                       mz = cbind(mycompound$NEG - da, mycompound$NEG + da),
+                       mz = c(mzneg - da, mzneg + da),
                        aggregationFun = "max")
 mycompound$RT
-RTd = 100
-newRT = 81
+RTd = 200
+newRT = 151
 par(mfrow=c(1,2))
 plot(chr_pos, col=mycols, ylab="",
      xlim=c(newRT - RTd, newRT + RTd))
-#abline(v=c(newRT-0.5, newRT+0.5))
 abline(v=newRT, lty=2)
 plot(chr_neg, col=mycols, ylab="",
      xlim=c(newRT - RTd, newRT + RTd))
 abline(v=newRT, lty=2)
-#abline(v=c(newRT-0.5, newRT+0.5))
 abline(v=newRT, lty=2)
