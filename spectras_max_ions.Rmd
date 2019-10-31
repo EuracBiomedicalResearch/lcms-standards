@@ -13,7 +13,7 @@ output:
 polarity <- "POS" # specify "POS" or "NEG"
 study <- "standards_dilution" # specify "internal_standards" OR 
                               # "standards_dilution"
-mixnum <- 5
+mixnum <- 17
 ```
 
 # Preliminaries
@@ -21,6 +21,8 @@ mixnum <- 5
 source("R/which_within.R")
 library(xcms)
 library(magrittr)
+library(Rdisop)
+library(CompoundDb)
 
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 ```
@@ -43,15 +45,18 @@ if(study == "internal_standards"){
 # Get the information regarding the standards that are in the samples:
 std_info <- read.table(paste0("data/", study, ".txt"),
                        sep = "\t", header = TRUE, as.is = TRUE)
-if(study == "internal_standards"){
-  colnames(std_info) <- c("name", "molecular_weight", "POS", "NEG", "RT")
-} else if(study == "standards_dilution"){
-  colnames(std_info) <- c("mix", "name", "molecular_weight", "POS", "NEG", "RT")
-}
 std_info$name <- substring(std_info$name, 1, 33)
 if(study == "standards_dilution"){
   std_info <- subset(std_info, mix == mixnum)
 }
+std_info$mzneut = NA
+for(i in seq(nrow(std_info))){
+  if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
+    getMolecule(as.character(std_info$formula[i]))$exactmass}else{
+      std_info$mzneut[i] = paste(std_info$formula[i])}
+}
+write.csv(std_info, "x.csv", row.names = FALSE)
+std_info = read.csv("x.csv")
 std_info <- std_info[!is.na(std_info[, grep(polarity, colnames(std_info))]),]
 
 da = 0.01
@@ -60,41 +65,9 @@ RTd = 10
 
 ## Blanks
 ```{r}
-load(paste0("z_blanks/blanks_", polarity, ".RData"))
-source("R/which_within.R")
-
-features.df = data.frame(features)
-
-# Select the features with unique mz values:
-features.filtered <- features.df[
-  which(lengths(which_within(features$mzmed, features$mzmed))==1),]
-
-# Get the featuers with duplicated mz values:
-mywhichwithin <- unique(which_within(features$mzmed, features$mzmed)[
-  which(lengths(which_within(features$mzmed, features$mzmed))>1)])
-features.filtered <- rbind(features.filtered, 
-                           features.df[unlist(lapply(mywhichwithin, `[[`, 1)),])
-
-if(polarity == "NEG"){
-  exclusion <- c(
-    # Formic Acid:
-    44.9820, (46.00547*2)-1.007276, 
-    (44.9820 + seq(14)*67.98745),
-    (44.9820+(c(3,4)*67.98745)+57.95865),
-    
-    # ??
-    623.3915, (623.3915+seq(4)*67.98745)
-  )
-  exclusion <- c(exclusion, exclusion + 1.00335)}else if(
-    polarity == "POS"){ 
-    exclusion <- c(124.0868, 90.97639, 90.97639+(seq(13)*67.98745))}
-
-exclusion_list <- 
-  c(exclusion, 
-    features.filtered$mzmed[!features.filtered$mzmed %in% 
-                              features.filtered$mzmed[
-                                unlist(which_within(exclusion, 
-                                                    features.filtered$mzmed))]])
+exclusion_list <- read.table("data/exclusion_mz.txt",
+                             sep = "\t", header = TRUE, as.is = TRUE)
+exclusion_list <- exclusion_list[, grep(polarity, colnames(exclusion_list))]
 ```
 
 # Output
@@ -104,7 +77,12 @@ for(i in seq(nrow(std_info))){
   mycompound <- std_info[i,]
   print(mycompound$name)
   if(!is.na(mycompound$RT)){
-  mzvalue <- mycompound[, grep(polarity, colnames(mycompound))]
+  mzvalue <- unlist(mass2mz(mycompound$mzneut, 
+                          adduct=
+                            as.character(
+                              mycompound[, 
+                                         grep(polarity, colnames(mycompound))])
+))
   
   # Import data:
     raw_data <- readMSData(paste0(MZML_PATH, myfiles), mode = "onDisk")

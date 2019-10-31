@@ -1,15 +1,15 @@
-mycompound <- "Glycerol"
 polarity <- "POS" # specify "POS" or "NEG"
 
 study <- "standards_dilution" # specify "internal_standards" OR 
                               # "standards_dilution"
-mixnum <- 1
+mixnum <- 17
 
 source("R/which_within.R")
 library(xcms)
 library(magrittr)
 library(CompoundDb)
 library(Rdisop)
+
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 
 # Get the information regarding the injection sequence:
@@ -24,6 +24,13 @@ if(study == "internal_standards"){
                 myfiles[grep(paste0("MIX ", mixnum, "B"), myfiles)]))
 }
 
+
+da = 0.01
+RTd = 10
+
+exclusion_list <- read.table("data/exclusion_mz.txt",
+                             sep = "\t", header = TRUE, as.is = TRUE)
+exclusion_list <- exclusion_list[, grep(polarity, colnames(exclusion_list))]
 
 
 # Get the information regarding the standards that are in the samples:
@@ -50,20 +57,15 @@ for(i in seq(nrow(std_info))){
 write.csv(std_info, "x.csv", row.names = FALSE)
 std_info = read.csv("x.csv")
 
+mycompound <- "Epinephrine"
 mycompound <- std_info[grep(mycompound, std_info$name),]
 mzvalue <- unlist(mass2mz(mycompound$mzneut, 
                           adduct=
                             as.character(
                               mycompound[, 
                                          grep(polarity, colnames(mycompound))])
-                          ))
-mzvalue <- 115.0366
-da = 0.01
-RTd = 10
-
-exclusion_list <- read.table("data/exclusion_mz.txt",
-                        sep = "\t", header = TRUE, as.is = TRUE)
-exclusion_list <- exclusion_list[, grep(polarity, colnames(exclusion_list))]
+))
+rtvalue <- mycompound$RT
 
 for(j in seq(length(myfiles))){
   # Import data:
@@ -78,11 +80,13 @@ for(j in seq(length(myfiles))){
   #    chr@.Data[[1]]@intensity)] + RTd))
   
   # Get the spectrum:
+  if(abs(chr@.Data[[1]]@rtime[which.max(chr@.Data[[1]]@intensity)] - rtvalue) 
+     < 30){
+    rtvalue <- chr@.Data[[1]]@rtime[which.max(chr@.Data[[1]]@intensity)]
+  }
   sps <- raw_data %>%
-    filterRt(rt = c(chr@.Data[[1]]@rtime[which.max(
-      chr@.Data[[1]]@intensity)] - 0.5,
-      chr@.Data[[1]]@rtime[which.max(
-        chr@.Data[[1]]@intensity)] + 0.5)) %>%
+    filterRt(rt = c(rtvalue - 0.5,
+                    rtvalue + 0.5)) %>%
     spectra
   sps.df <- as.data.frame(sps[[2]])
   
@@ -114,4 +118,18 @@ for(j in seq(length(myfiles))){
   points(sps.df.clean$mz[unlist(which_within(mzvalue, sps.df.clean$mz))], 
          sps.df.clean$i[unlist(which_within(mzvalue, sps.df.clean$mz))],
          pch = 8, col = "red")
+  if(polarity=="POS" & mycompound$POS!="[M+H]+"){
+    mzmol <- unlist(mass2mz(mycompound$mzneut, adduct = "[M+H]+"))
+    points(sps.df.clean$mz[unlist(which_within(mzmol, sps.df.clean$mz))], 
+           sps.df.clean$i[unlist(which_within(mzmol, sps.df.clean$mz))],
+           pch = 8, col = "blue")
+  }else if(polarity=="NEG" & mycompound$NEG!="[M-H]-"){
+    mzmol <- unlist(mass2mz(mycompound$mzneut, adduct = "[M-H]-"))
+    points(sps.df.clean$mz[unlist(which_within(mzmol, sps.df.clean$mz))], 
+           sps.df.clean$i[unlist(which_within(mzmol, sps.df.clean$mz))],
+           pch = 8, col = "blue")
+  }
+  points(sps.df.clean$mz[unlist(which_within(0, sps.df.clean$mz))], 
+         sps.df.clean$i[unlist(which_within(0, sps.df.clean$mz))],
+         pch = 8, col = "green")
 }

@@ -30,17 +30,29 @@ specific configurations. The aim is to provide approximate retention times
 
 - [get_rt.Rmd](get_rt.Rmd): Markdown file for obtaining the RTs of the 
   maximum peak corresponding to each compound (considering its exact mass). 
-  This serve as a starting point for define the RT of each compound.  
+  This serve as a starting point for define the RT of each compound. 
+  At the begining we have to specify the following parameters:  
   - `study`: specify which of the 2 studies we want to focus 
   (i.e., "internal_standards" or "standards_dilution").
   - `mixnum`: in case we specified `study <- "standards_dilution"`, 
   specify to which MIX we want to focus.
   - `polarity`: specify in which polarity ("POS" or "NEG") we want to focus.
-- [EIC_superposed.Rmd](EIC_superposed.Rmd): 
+- [EIC_superposed.Rmd](EIC_superposed.Rmd): Markdown file for printing 
+  the EIC of one compound using all samples. The plots are saved 
+  in the folder `plots`.
 - [EIC_manually.R](EIC_manually.R): R file for plot the EIC for a 
   specific compound in both ionization modes.
-- [spectras_max_ions.Rmd](spectras_max_ions.Rmd): 
-- [spectra_manually.R](spectra_manually.R): 
+- [spectras_max_ions.Rmd](spectras_max_ions.Rmd): Markdown for printing 
+  the "cleaned" spectras of all compounds in a sample (i.e., after excluding 
+  the mz values specified in the file `exclusion_mz.txt`)
+- [spectra_manually.R](spectra_manually.R): R file for plot the spectra 
+  for a specific compound.
 - [internal_standards_evaluation.Rmd](internal_standards_evaluation.Rmd): 
+  Markdown file that plot a graph with 1 boxplot / injection and all its  
+  measures, and that generates a pdf file with the trends of each compound 
+  along the samples. 
 - [standard_dilution_dose_response.Rmd](standard_dilution_dose_response.Rmd): 
-- [exclusion_mz.R](exclusion_mz.R): 
+  Markdown file that generates a pdf file showing the linearity of 
+  each compound.
+- [exclusion_mz.R](exclusion_mz.R): R code for generate the 
+  table `exclusion_mz.txt`.
