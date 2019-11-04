@@ -1,0 +1,142 @@
+---
+title: "Spectras: maximum ion"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+# Parameters
+
+```{r}
+polarity <- "POS" # specify "POS" or "NEG"
+study <- "standards_dilution" # specify "internal_standards" OR 
+                              # "standards_dilution"
+mixnum <- 17
+
+MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+```
+
+
+# Preliminaries
+
+```{r, message=FALSE}
+source("R/which_within.R")
+library(xcms)
+library(magrittr)
+library(Rdisop)
+library(CompoundDb)
+```
+
+
+# Data import
+
+Get the information regarding the injection sequence: 
+
+```{r}
+injections <- read.table(paste0("data/", study, "_files.txt"),
+                         sep = "\t", header = TRUE, as.is = TRUE)
+myfiles <- injections$mzML # get file names
+myfiles <- myfiles[grep(polarity, myfiles)]
+if(study == "internal_standards"){
+  myfiles <- myfiles[grep(12, myfiles)]
+} else if(study == "standards_dilution"){
+  (myfiles <- myfiles[grep(paste0("MIX ", mixnum, "A_", polarity, "_b"), myfiles)])
+}
+```
+
+Get the information regarding the standards that are in the samples:
+
+```{r}
+std_info <- read.table(paste0("data/", study, ".txt"),
+                       sep = "\t", header = TRUE, as.is = TRUE)
+std_info$name <- substring(std_info$name, 1, 33)
+if(study == "standards_dilution"){
+  std_info <- subset(std_info, mix == mixnum)
+}
+std_info$mzneut = NA
+for(i in seq(nrow(std_info))){
+  if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
+    getMolecule(as.character(std_info$formula[i]))$exactmass}else{
+      std_info$mzneut[i] = as.numeric(std_info$formula[i])}
+}
+std_info <- std_info[!is.na(std_info[, grep(polarity, colnames(std_info))]),]
+
+da = 0.01
+RTd = 10
+```
+
+
+## Blanks
+
+```{r}
+exclusion_list <- read.table("data/exclusion_mz.txt",
+                             sep = "\t", header = TRUE, as.is = TRUE)
+exclusion_list <- exclusion_list[, grep(polarity, colnames(exclusion_list))]
+```
+
+
+# Output
+
+```{r}
+std_info <- std_info[order(std_info$RT),]
+for(i in seq(nrow(std_info))){
+  mycompound <- std_info[i,]
+  print(mycompound$name)
+  if(!is.na(mycompound$RT)){
+  mzvalue <- unlist(mass2mz(mycompound$mzneut, 
+                          adduct=
+                            as.character(
+                              mycompound[, 
+                                         grep(polarity, colnames(mycompound))])
+))
+  
+  # Import data:
+    raw_data <- readMSData(paste0(MZML_PATH, myfiles), mode = "onDisk")
+    
+    # Get EIC:
+    chr <- chromatogram(raw_data, aggregationFun = "max",
+                        mz = c(mzvalue - da, mzvalue + da))
+    
+    # Get the spectrum:
+    if( abs(mycompound$RT - 
+            chr@.Data[[1]]@rtime[which.max(chr@.Data[[1]]@intensity)]) < RTd){
+      sps <- raw_data %>%
+        filterRt(rt = c(chr@.Data[[1]]@rtime[which.max(
+          chr@.Data[[1]]@intensity)] - 0.5,
+          chr@.Data[[1]]@rtime[which.max(
+            chr@.Data[[1]]@intensity)] + 0.5)) %>%
+        spectra
+      sps.df <- as.data.frame(sps[[2]])
+      sps.df.clean <- sps.df[-unlist(which_within(exclusion_list, 
+                                                  sps.df$mz, mzd = 0.02)),]
+      
+      print(round(abs(mzvalue - sps.df.clean$mz[which.max(sps.df.clean$i)]),4))
+      
+      if(study == "internal_standards"){
+        mytitle <- paste0(gsub(".mzML", "", substring(myfiles, 26)), " - RT: ", 
+                   round(sps[[2]]@rt,3))
+      }else if(study == "standards_dilution"){
+        mytitle <- paste0(gsub(".mzML", "", substring(myfiles, 14)), " - RT: ", 
+                   round(sps[[2]]@rt,3))
+      }
+      
+      plot(sps.df.clean$mz, sps.df.clean$i, type="h", xlab="mz", ylab="intensity", 
+       main=mytitle)
+  text(sps.df.clean$mz[order(sps.df.clean$i, decreasing = TRUE)[1:5]], 
+       sps.df.clean$i[order(sps.df.clean$i, decreasing = TRUE)[1:5]], 
+       round(sps.df.clean$mz[order(sps.df.clean$i, decreasing = TRUE)[1:5]], 4), 
+       cex=0.7)
+  points(sps.df.clean$mz[unlist(which_within(mzvalue, sps.df.clean$mz))], 
+         sps.df.clean$i[unlist(which_within(mzvalue, sps.df.clean$mz))],
+         pch = 8, col = "red")
+  
+    }
+      
+  }
+print("######################################################################")
+  }
+```
+
