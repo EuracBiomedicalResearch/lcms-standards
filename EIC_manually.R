@@ -1,6 +1,6 @@
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 
-study <- "standards_dilution" # specify "internal_standards" OR 
+study <- "internal_standards" # specify "internal_standards" OR 
                               # "standards_dilution"
 mixnum <- 6 # specify which MIX
 
@@ -31,12 +31,11 @@ if(study == "standards_dilution"){
 }
 std_info$mzneut = NA
 for(i in seq(nrow(std_info))){
-  if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
-    getMolecule(as.character(std_info$formula[i]))$exactmass}else{
-      std_info$mzneut[i] = paste(std_info$formula[i])}
+  if(grepl("C", std_info$formula[i])){
+    std_info$mzneut[i] = 
+      getMolecule(as.character(std_info$formula[i]))$exactmass}else{
+      std_info$mzneut[i] = as.numeric(std_info$formula[i])}
 }
-write.csv(std_info, "x.csv", row.names = FALSE)
-std_info = read.csv("x.csv")
 
 
 # EIC:
@@ -51,7 +50,7 @@ data_pos <- readMSData(paste0(MZML_PATH, myfiles_pos), mode = "onDisk")
 data_neg <- readMSData(paste0(MZML_PATH, myfiles_neg), mode = "onDisk")
 
 
-mycompound <- "Sphingosine"
+mycompound <- "Sucrose"
 mycompound <- std_info[grep(mycompound, std_info$name),]
 mycompound
 
@@ -66,8 +65,8 @@ chr_neg = chromatogram(data_neg,
                        mz = c(mzneg - da, mzneg + da),
                        aggregationFun = "max")
 mycompound$RT
-RTd = 200
-newRT = 241
+RTd = 20
+newRT = 184
 par(mfrow=c(1,2))
 plot(chr_pos, col=mycols, ylab="",
      xlim=c(newRT - RTd, newRT + RTd))

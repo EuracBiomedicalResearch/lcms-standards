@@ -8,20 +8,21 @@ output:
     toc_float: true
 ---
 
-```{r settings, echo = FALSE, results = "hide", message = FALSE}
+# Parameters
+
+```{r}
+study <- "internal_standards" # specify "internal_standards" OR 
+                              #         "standards_dilution"
+mixnum <- 1 # specify which MIX
+polarity <- "NEG" # specify "POS" or "NEG"
+
 #' Define the path where we can find the mzML files:
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
-#if (!file.exists(MZML_PATH))
-#    stop("Can not find the directory with the mzML files: ", MZML_PATH)
 ```
 
 # Preliminaries
-```{r, message=FALSE}
-study <- "standards_dilution" # specify "internal_standards" OR 
-                              #         "standards_dilution"
-mixnum <- 1 # specify which MIX
-polarity <- "POS" # specify "POS" or "NEG"
 
+```{r, message=FALSE}
 library(xcms)
 library(reshape2)
 library(ggplot2)
@@ -29,17 +30,14 @@ library(RColorBrewer)
 library(Rdisop)
 library(CompoundDb)
 
-# Set up parallel processing using 3 cores
-if (.Platform$OS.type == "unix") {
-    register(bpstart(MulticoreParam(2)))
-} else {
-    register(bpstart(SnowParam(2)))
-}
+dir.create("images/EIC_superposed", recursive = TRUE, showWarnings = FALSE)
 ```
 
 # Data import
+
 In the file `XXXX_files.txt` there is the information regarding 
 the injection sequence.
+
 ```{r}
 injections <- read.table(paste0("data/", study, "_files.txt"), #import the file
                          sep = "\t", header = TRUE, as.is = TRUE)
@@ -51,6 +49,7 @@ if(study == "standards_dilution"){
 ```
 
 Get the information regarding the standards that are in the samples.
+
 ```{r}
 std_info <- read.table(paste0("data/", study, ".txt"),
                       sep = "\t", header = TRUE, as.is = TRUE)
@@ -63,14 +62,13 @@ std_info$mzneut = NA
 for(i in seq(nrow(std_info))){
   if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
     getMolecule(as.character(std_info$formula[i]))$exactmass}else{
-      std_info$mzneut[i] = paste(std_info$formula[i])}
+      std_info$mzneut[i] = as.numeric(std_info$formula[i])}
 }
-write.csv(std_info, "x.csv", row.names = FALSE)
-std_info = read.csv("x.csv")
 std_info
 ```
 
 # EICs
+
 ```{r}
 da = 0.01
 RTd = 5
@@ -94,14 +92,14 @@ for(i in 1:nrow(std_info)){
   cmpname <- tolower(gsub(" .*", "", cmpname))
   
   if(study == "internal_standards"){ 
-    filename <- paste0("plots/IS_", cmpname, "_", 
+    filename <- paste0("images/EIC_superposed/IS_", cmpname, "_", 
                        polarity, ".png")} else if(
                          study == "standards_dilution"){
                          if(mixnum < 10){
-    filename <- paste0("plots/MIX_0", mixnum, "_", cmpname, "_", 
+    filename <- paste0("images/EIC_superposed/MIX_0", mixnum, "_", cmpname, "_", 
                        polarity, ".png") 
                          } else{
-    filename <- paste0("plots/MIX_", mixnum, "_", cmpname, "_", 
+    filename <- paste0("images/EIC_superposed/MIX_", mixnum, "_", cmpname, "_", 
                        polarity, ".png") 
                          }
                        }

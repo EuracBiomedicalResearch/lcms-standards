@@ -8,7 +8,9 @@ output:
     toc_float: true
 ---
 
-```{r settings, echo = FALSE, results = "hide", message = FALSE}
+# Parameters
+
+```{r}
 study <- "standards_dilution" # specify "internal_standards" OR 
                               #         "standards_dilution"
 mixnum <- 17 # specify which MIX
@@ -17,11 +19,10 @@ da <- 0.01
 
 #' Define the path where we can find the mzML files:
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
-#if (!file.exists(MZML_PATH))
-#    stop("Can not find the directory with the mzML files: ", MZML_PATH)
 ```
 
 # Preliminaries 
+
 ```{r, message=FALSE}
 library(xcms)
 library(magrittr)
@@ -30,8 +31,10 @@ library(Rdisop)
 ```
 
 # Data import
+
 In the file `XXXX_files.txt` there is the information regarding 
 the injection sequence.
+
 ```{r}
 injections <- read.table(paste0("data/", study, "_files.txt"), #import the file
                          sep = "\t", header = TRUE, as.is = TRUE)
@@ -44,6 +47,7 @@ myfiles
 ```
 
 Import the information regarding the standards that are in the samples.  
+
 ```{r}
 std_info <- read.table(paste0("data/", study, ".txt"),
                       sep = "\t", header = TRUE, as.is = TRUE)
@@ -55,10 +59,8 @@ std_info$mzneut = NA
 for(i in seq(nrow(std_info))){
   if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
     getMolecule(as.character(std_info$formula[i]))$exactmass}else{
-      std_info$mzneut[i] = paste(std_info$formula[i])}
+      std_info$mzneut[i] = as.numeric(std_info$formula[i])}
 }
-write.csv(std_info, "x.csv", row.names = FALSE)
-std_info = read.csv("x.csv")
 std_info
 std_info <- std_info[!is.na(std_info[, grep(polarity, colnames(std_info))]),]
 mzvalues <- c()
@@ -74,6 +76,7 @@ for(i in seq(nrow(std_info))){
 ```
 
 # Inspect data
+
 Steps:  
   
 * Import the file `j`.  
@@ -149,6 +152,7 @@ for(j in seq(length(myfiles))){
 
 # Output
 ## RT
+
 ```{r}
 t(myrt)
 cbind(colnames(myrt), 
@@ -161,6 +165,7 @@ cbind(colnames(myrt),
 ```
 
 ## mz
+
 ```{r}
 (mymz.t <- data.frame(t(mymz)))
 cbind(colnames(mymz), 
@@ -171,6 +176,7 @@ round(abs((((mymz.t) - mzvalues)) * 1e3)) # error in mDa
 ```
 
 ## Intensity
+
 ```{r}
 t(round(myint))
 cbind(colnames(myint), 
@@ -181,6 +187,7 @@ if(study == "internal_standards"){
 ```
 
 ## All
+
 ```{r}
 cbind(t(round(myrt)), mymz.t, t(round(myint)))
 ```
