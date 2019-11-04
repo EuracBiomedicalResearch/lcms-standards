@@ -8,17 +8,19 @@ output:
     toc_float: true
 ---
 
-```{r settings, echo = FALSE, results = "hide", message = FALSE}
-mixnum <- 11      # specify which MIX
+# Parameters
+
+```{r}
+mixnum <- 17      # specify which MIX
 polarity <- "NEG" # specify "POS" or "NEG"
 
 #' Define the path where we can find the mzML files:
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
-#if (!file.exists(MZML_PATH))
-#    stop("Can not find the directory with the mzML files: ", MZML_PATH)
 ```
 
+
 # Preliminaries
+
 ```{r, message=FALSE}
 source("R/listpeaks.R")
 
@@ -30,9 +32,12 @@ library(Rdisop)
 library(CompoundDb)
 ```
 
+
 # Data import
+
 In the file `standards_dilution_files.txt` there is the information regarding 
 the injection sequence.
+
 ```{r}
 injections <- read.table("data/standards_dilution_files.txt", # import the file
                          sep = "\t", header = TRUE, as.is = TRUE)
@@ -43,6 +48,7 @@ myfiles <- myfiles[grep(polarity, myfiles)]# select files names of our polarity
 
 In the file `standards_dilution.txt` there is the information regarding 
 the standards that are in the samples.
+
 ```{r}
 std_info <- read.table("data/standards_dilution.txt",
                       sep = "\t", header = TRUE, as.is = TRUE)
@@ -53,14 +59,13 @@ std_info$mzneut = NA
 for(i in seq(nrow(std_info))){
   if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
     getMolecule(as.character(std_info$formula[i]))$exactmass}else{
-      std_info$mzneut[i] = paste(std_info$formula[i])}
+      std_info$mzneut[i] = as.numeric(std_info$formula[i])}
 }
-write.csv(std_info, "x.csv", row.names = FALSE)
-std_info = read.csv("x.csv")
 std_info
 ```
 
 According to the information provided in the sheet `Dilution` of the file `Dynamic Range.xlxs` the concentrations of STDs in the samples are the following:
+
 ```{r}
 ppm <- c(0.09765625, 0.09765625, 0.1953125, 0.1953125, 0.390625, 0.390625, 0.78125, 0.78125, 1.5625, 1.5625, 3.125, 3.125, 6.25, 6.25, 12.5, 12.5, 25, 25, 50, 50)
 ```
@@ -68,7 +73,9 @@ ppm <- c(0.09765625, 0.09765625, 0.1953125, 0.1953125, 0.390625, 0.390625, 0.781
 
 # Plots  
 ## Peak detection
+
 Apply the `listpeaks()` function in order to detect the peaks of ISs:
+
 ```{r, warning=FALSE}
 mzvalues <- c()
 for(i in seq(nrow(std_info))){
@@ -105,9 +112,9 @@ peaktb <- do.call(rbind, pl)
 peaktb_wide <- dcast(peaktb, peaktb$name ~ peaktb$colum, value.var = "into")
 peaktb_wide <- setNames(data.frame(t(peaktb_wide[,-1])), peaktb_wide[,1])
 peaktb_wide[is.na(peaktb_wide)] <- 0
-
 ```
 
+## Output
 ```{r}
 getPalette = colorRampPalette(brewer.pal(9, "YlOrRd"))
 mycols = getPalette(length(myfiles))

@@ -8,16 +8,18 @@ output:
     toc_float: true
 ---
 
-```{r settings, echo = FALSE, results = "hide", message = FALSE}
+# Parameters
+
+```{r}
 polarity <- "POS" # specify "POS" or "NEG"
 
 #' Define the path where we can find the mzML files:
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
-#if (!file.exists(MZML_PATH))
-#    stop("Can not find the directory with the mzML files: ", MZML_PATH)
 ```
 
+
 # Preliminaries
+
 ```{r, message=FALSE}
 source("R/listpeaks.R")
 
@@ -30,9 +32,12 @@ library(beeswarm)
 library(RColorBrewer)
 ```
 
+
 # Data import
+
 In the file `internal_standards_files.txt` there is the information regarding 
 the injection sequence.
+
 ```{r}
 injections <- read.table("data/internal_standards_files.txt", # import the file
                          sep = "\t", header = TRUE, as.is = TRUE)
@@ -42,6 +47,7 @@ myfiles <- myfiles[grep(polarity, myfiles)]# select files names of our polarity
 
 In the file `internal_standards.txt` there is the information regarding 
 the standards that are in the samples.
+
 ```{r}
 std_info <- read.table("data/internal_standards.txt",
                       sep = "\t", header = TRUE, as.is = TRUE)
@@ -51,15 +57,16 @@ std_info$mzneut = NA
 for(i in seq(nrow(std_info))){
   if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
     getMolecule(as.character(std_info$formula[i]))$exactmass}else{
-      std_info$mzneut[i] = paste(std_info$formula[i])}
+      std_info$mzneut[i] = as.numeric(std_info$formula[i])}
 }
-write.csv(std_info, "x.csv", row.names = FALSE)
-std_info = read.csv("x.csv")
 head(std_info)
 ```
 
+
 # Peak detection
+
 Apply the `listpeaks()` function in order to detect the peaks of ISs:
+
 ```{r, warning=FALSE}
 mzvalues <- c()
 for(i in seq(nrow(std_info))){
@@ -96,11 +103,12 @@ peaktb <- do.call(rbind, pl)
 peaktb_wide <- dcast(peaktb, peaktb$name ~ peaktb$colum, value.var = "into")
 peaktb_wide <- setNames(data.frame(t(peaktb_wide[,-1])), peaktb_wide[,1])
 peaktb_wide[is.na(peaktb_wide)] <- min(peaktb_wide, na.rm=T)/1000
-
 ```
+  
   
 # Plots  
 ## Individual compounds  
+
 ```{r}
 getPalette = colorRampPalette(brewer.pal(12, "Paired"))
 mycols = getPalette(nrow(std_info))  
@@ -124,7 +132,9 @@ ggsave(paste0("internal_standard_evaluation_relative_", polarity, ".pdf"),
        width=21, height=15)
 ```
 
+
 ## All together
+
 ```{r}
 peaktb_rel <- apply(peaktb_wide, 2, function(x){x/(mean(x[x!=0]))})
 peaktb_rel <- melt(peaktb_rel, id.vars = row.names(peaktb_rel))

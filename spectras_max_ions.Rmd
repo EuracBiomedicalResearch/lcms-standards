@@ -9,27 +9,33 @@ output:
 ---
 
 # Parameters
+
 ```{r}
 polarity <- "POS" # specify "POS" or "NEG"
 study <- "standards_dilution" # specify "internal_standards" OR 
                               # "standards_dilution"
 mixnum <- 17
+
+MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 ```
 
+
 # Preliminaries
+
 ```{r, message=FALSE}
 source("R/which_within.R")
 library(xcms)
 library(magrittr)
 library(Rdisop)
 library(CompoundDb)
-
-MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 ```
 
+
 # Data import
+
+Get the information regarding the injection sequence: 
+
 ```{r}
-# Get the information regarding the injection sequence:
 injections <- read.table(paste0("data/", study, "_files.txt"),
                          sep = "\t", header = TRUE, as.is = TRUE)
 myfiles <- injections$mzML # get file names
@@ -39,10 +45,11 @@ if(study == "internal_standards"){
 } else if(study == "standards_dilution"){
   (myfiles <- myfiles[grep(paste0("MIX ", mixnum, "A_", polarity, "_b"), myfiles)])
 }
+```
 
+Get the information regarding the standards that are in the samples:
 
-
-# Get the information regarding the standards that are in the samples:
+```{r}
 std_info <- read.table(paste0("data/", study, ".txt"),
                        sep = "\t", header = TRUE, as.is = TRUE)
 std_info$name <- substring(std_info$name, 1, 33)
@@ -53,24 +60,26 @@ std_info$mzneut = NA
 for(i in seq(nrow(std_info))){
   if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
     getMolecule(as.character(std_info$formula[i]))$exactmass}else{
-      std_info$mzneut[i] = paste(std_info$formula[i])}
+      std_info$mzneut[i] = as.numeric(std_info$formula[i])}
 }
-write.csv(std_info, "x.csv", row.names = FALSE)
-std_info = read.csv("x.csv")
 std_info <- std_info[!is.na(std_info[, grep(polarity, colnames(std_info))]),]
 
 da = 0.01
 RTd = 10
 ```
 
+
 ## Blanks
+
 ```{r}
 exclusion_list <- read.table("data/exclusion_mz.txt",
                              sep = "\t", header = TRUE, as.is = TRUE)
 exclusion_list <- exclusion_list[, grep(polarity, colnames(exclusion_list))]
 ```
 
+
 # Output
+
 ```{r}
 std_info <- std_info[order(std_info$RT),]
 for(i in seq(nrow(std_info))){
@@ -129,7 +138,5 @@ for(i in seq(nrow(std_info))){
   }
 print("######################################################################")
   }
-
-
 ```
 
