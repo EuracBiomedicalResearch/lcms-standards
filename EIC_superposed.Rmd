@@ -13,8 +13,8 @@ output:
 ```{r}
 study <- "internal_standards" # specify "internal_standards" OR 
                               #         "standards_dilution"
-mixnum <- 1 # specify which MIX
-polarity <- "NEG" # specify "POS" or "NEG"
+mixnum <- 2 # specify which MIX
+polarity <- "POS" # specify "POS" or "NEG"
 
 #' Define the path where we can find the mzML files:
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
@@ -103,6 +103,8 @@ for(i in 1:nrow(std_info)){
                        polarity, ".png") 
                          }
                        }
+  # filename <- paste(gsub(".png", "", filename), "RTd25.png", sep="_")
+  
   png(file = filename, units = "px", width = 3000, height = 1600, res = 300)
   
   par(mfrow=c(1,2))
