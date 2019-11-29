@@ -2,7 +2,7 @@ polarity <- "POS" # specify "POS" or "NEG"
 
 study <- "standards_dilution" # specify "internal_standards" OR 
                               # "standards_dilution"
-mixnum <- 17
+mixnum <- 14
 
 source("R/which_within.R")
 library(xcms)
@@ -53,7 +53,7 @@ for(i in seq(nrow(std_info))){
       std_info$mzneut[i] = as.numeric(std_info$formula[i])}
 }
 
-mycompound <- "Epinephrine"
+mycompound <- "NAD"
 mycompound <- std_info[grep(mycompound, std_info$name),]
 mzvalue <- unlist(mass2mz(mycompound$mzneut, 
                           adduct=
@@ -86,15 +86,15 @@ for(j in seq(length(myfiles))){
     spectra
   sps.df <- as.data.frame(sps[[2]])
   
-  #plot(sps.df$mz, sps.df$i, type="h", xlab="mz", ylab="intensity", 
-  #     main=paste0(gsub(".mzML", "", substring(myfiles[j], 26)), " - RT: ", round(sps[[2]]@rt,3)))
-  #text(sps.df$mz[order(sps.df$i, decreasing = TRUE)[1:5]], 
-  #   sps.df$i[order(sps.df$i, decreasing = TRUE)[1:5]], 
-  #   round(sps.df$mz[order(sps.df$i, decreasing = TRUE)[1:5]], 4), 
-  #   cex=0.7)
-  #points(sps.df$mz[unlist(which_within(mzvalue, sps.df$mz))], 
-  #       sps.df$i[unlist(which_within(mzvalue, sps.df$mz))],
-  #       pch = 8, col = "red")
+  plot(sps.df$mz, sps.df$i, type="h", xlab="mz", ylab="intensity", 
+       main=paste0(gsub(".mzML", "", substring(myfiles[j], 26)), " - RT: ", round(sps[[2]]@rt,3)))
+  text(sps.df$mz[order(sps.df$i, decreasing = TRUE)[1:5]], 
+     sps.df$i[order(sps.df$i, decreasing = TRUE)[1:5]], 
+     round(sps.df$mz[order(sps.df$i, decreasing = TRUE)[1:5]], 4), 
+     cex=0.7)
+  points(sps.df$mz[unlist(which_within(mzvalue, sps.df$mz))], 
+         sps.df$i[unlist(which_within(mzvalue, sps.df$mz))],
+         pch = 8, col = "red")
   
   if(study == "internal_standards"){
     mytitle <- paste0(gsub(".mzML", "", substring(myfiles[j], 26)), " - RT: ", 

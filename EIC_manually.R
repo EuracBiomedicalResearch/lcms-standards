@@ -1,8 +1,8 @@
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 
-study <- "internal_standards" # specify "internal_standards" OR 
+study <- "standards_dilution" # specify "internal_standards" OR 
                               # "standards_dilution"
-mixnum <- 6 # specify which MIX
+mixnum <- 13 # specify which MIX
 
 library(xcms)
 library(reshape2)
@@ -50,7 +50,7 @@ data_pos <- readMSData(paste0(MZML_PATH, myfiles_pos), mode = "onDisk")
 data_neg <- readMSData(paste0(MZML_PATH, myfiles_neg), mode = "onDisk")
 
 
-mycompound <- "Sucrose"
+mycompound <- "dUTP"
 mycompound <- std_info[grep(mycompound, std_info$name),]
 mycompound
 
@@ -65,8 +65,8 @@ chr_neg = chromatogram(data_neg,
                        mz = c(mzneg - da, mzneg + da),
                        aggregationFun = "max")
 mycompound$RT
-RTd = 20
-newRT = 184
+RTd = 200
+newRT = 200
 par(mfrow=c(1,2))
 plot(chr_pos, col=mycols, ylab="",
      xlim=c(newRT - RTd, newRT + RTd))

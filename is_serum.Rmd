@@ -1,0 +1,138 @@
+---
+title: "Internal Standards: Matrix effect in RT"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+In this document I'm going to check the matrix effect in retention times (RT) of internal standards (IS).  
+The data used is from the experiment done on 18-Nov-2019 by Vinicius Veri. Sample names are stored in the file [`is_serum_files.txt`](data/is_serum_files.txt) and experiment description in the file [`2019_11_18_IS_Experiment Summary.docx`](data/experiment_description/2019_11_18_IS_Experiment Summary.docx).    
+
+# Experiment description
+Three replicates of the following samples were injected in the same order as they are named in the list below:  
+  
+- **`Low_IS`**: IS solution used for the untargeted protocol.     
+- **`High_IS`**: IS solution x10 more concentrated.  
+- **`QC`**: QC samples (serum) without IS.  
+- **`QC_Low_IS`**: QC samples (serum) with IS concentrations of untargeted protocol.  
+- **`QC_High_IS`**: QC samples (serum) with IS x10 more concentrated.  
+
+# Preliminaries
+## Parameters
+```{r, message=FALSE, warning=FALSE}
+polarity <- "NEG" # specify "POS" or "NEG"
+da <- 0.01
+MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+dir.create("images/is_serum", recursive = TRUE, showWarnings = FALSE)
+
+library(xcms)
+cwp <- CentWaveParam(
+  peakwidth = c(2, 20), 
+  ppm = 30, 
+  snthresh = 4,
+  integrate = 2)
+```
+
+## Libraries
+```{r}
+library(Rdisop)
+library(CompoundDb)
+library(RColorBrewer)
+```
+
+# Data import
+## Standards
+```{r}
+std_info <- read.table("data/internal_standards.txt",
+                      sep = "\t", header = TRUE, as.is = TRUE)
+std_info <- std_info[!is.na(std_info[, grep(polarity, 
+                                            colnames(std_info))]),]
+for(i in seq(nrow(std_info))){
+  if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
+    getMolecule(as.character(std_info$formula[i]))$exactmass}else{
+      std_info$mzneut[i] = as.numeric(std_info$formula[i])}
+}
+```
+
+## Experiment
+```{r}
+injections <- read.table("data/is_serum_files.txt", 
+                         sep = "\t", header = TRUE, as.is = TRUE)
+injections <- injections[injections$polarity == polarity, ]
+myfiles <- paste(injections$folder, injections$mzML, sep = "/") 
+```
+
+## Colouring factors
+```{r}
+injections$class <- factor(injections$class, 
+                           levels = c("LowIS", "HighIS", 
+                                      "QC", "QC_LowIS", "QC_HighIS"))
+col_class <- brewer.pal(6, "Paired")
+col_class <- col_class[-4]
+names(col_class) <- levels(injections$class)
+```
+
+# Output
+```{r}
+data_raw <- readMSData(paste0(MZML_PATH, myfiles), 
+                   pdata = new("NAnnotatedDataFrame", injections),
+                   mode = "onDisk")
+
+for(i in seq(nrow(std_info))){
+  mzvalue <- 
+    unlist(mass2mz(std_info$mzneut[i], 
+                   adduct = as.character(
+                     std_info[i, grep(polarity, colnames(std_info))])))
+  
+  chr = chromatogram(data_raw, 
+                     mz = c(mzvalue - da,  mzvalue + da),
+                     aggregationFun = "max")
+  
+  cmpname <- tolower(gsub(" .*", "", std_info$name[i]))
+  cmpname <- gsub("l-", "", cmpname)
+  
+  filename <- paste0("images/is_serum/", cmpname, "_", polarity, ".png")
+  
+  png(file = filename, #units = "px", width = 3000, height = 1600, res = 300
+        width = 1000, height = 500)
+  par(mfrow = c(1, 2))
+  
+  plot(chr, main = cmpname,
+      col = col_class[chr$class],
+       bg = "white")
+  legend("topright", legend = names(col_class), 
+         pch = 16, col = gsub("60", "", col_class))
+  abline(v = std_info$RT[i], lty = 2)
+  
+  chr2 <- findChromPeaks(chr, param = cwp)
+  delta_rt <- abs(chromPeaks(chr2)[, "rt"] - std_info$RT[i])
+  pks <- data.frame(chromPeaks(chr2)[delta_rt < 60, , drop=FALSE])
+  if (nrow(pks)) {
+    pks2 <- pks[0, ]
+    for(j in seq(length(levels(factor(pks$column))))){
+      pks3 <- pks[pks$column == j, ]
+      pks2 <- rbind(pks2, pks3[which.max(pks3$maxo),])
+    }
+    pks2 <- pks2[pks2$column < 7 | pks2$column > 9, ]
+    rtmin <- min(pks2$rtmin)
+    rtmax <- max(pks2$rtmax)
+    ylim <- c(0, max(pks$maxo, na.rm = TRUE))
+    } else {
+      rtmin <- std_info$RT[i] - 10
+      rtmax <- std_info$RT[i] + 10
+      ylim <- c(0, max(sapply(chr, intensity), na.rm = TRUE))
+    }
+  
+  plot(chr, 
+       col = col_class[chr$class],
+       bg = "white",
+       xlim = c(rtmin, rtmax))
+  abline(v = std_info$RT[i], lty = 2)
+  
+  dev.off()
+}
+```
+
