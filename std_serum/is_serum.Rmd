@@ -46,7 +46,8 @@ library(RColorBrewer)
 # Data import
 ## Standards
 ```{r}
-std_info <- read.table("data/internal_standards.txt",
+std_info <- read.table(paste0(gsub("std_serum", "", getwd()), 
+                              "data/internal_standards.txt"),
                       sep = "\t", header = TRUE, as.is = TRUE)
 std_info <- std_info[!is.na(std_info[, grep(polarity, 
                                             colnames(std_info))]),]
@@ -59,7 +60,8 @@ for(i in seq(nrow(std_info))){
 
 ## Experiment
 ```{r}
-injections <- read.table("data/is_serum_files.txt", 
+injections <- read.table(paste0(gsub("std_serum", "", getwd()), 
+                                "data/is_serum_files.txt"), 
                          sep = "\t", header = TRUE, as.is = TRUE)
 injections <- injections[injections$polarity == polarity, ]
 myfiles <- paste(injections$folder, injections$mzML, sep = "/") 
@@ -96,8 +98,7 @@ for(i in seq(nrow(std_info))){
   
   filename <- paste0("images/is_serum/", cmpname, "_", polarity, ".png")
   
-  png(file = filename, #units = "px", width = 3000, height = 1600, res = 300
-        width = 1000, height = 500)
+  png(file = filename, width = 1000, height = 500)
   par(mfrow = c(1, 2))
   
   plot(chr, main = cmpname,
