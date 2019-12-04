@@ -9,7 +9,8 @@ output:
 ---
 
 In this document I'm going to check the matrix effect in retention times (RT) of internal standards (IS).  
-The data used is from the experiment done on 18-Nov-2019 by Vinicius Veri. Sample names are stored in the file [`is_serum_files.txt`](data/is_serum_files.txt) and experiment description in the file [`2019_11_18_IS_Experiment Summary.docx`](data/experiment_description/2019_11_18_IS_Experiment Summary.docx).    
+The data used is from the experiment done on 18-Nov-2019 by Vinicius Veri. Sample names are stored in the file [`is_serum_files.txt`](data/is_serum_files.txt) and experiment description in the file
+[`2019_11_18_IS_Experiment Summary.docx`](data/experiment_description/2019_11_18_IS_Experiment Summary.docx).    
 
 # Experiment description
 Three replicates of the following samples were injected in the same order as they are named in the list below:  
