@@ -1,0 +1,126 @@
+---
+title: "Merge overlapping chromatographic peaks"
+subtitle: "Internal Standards: Matrix effect - XCMS"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+```{r include = FALSE}
+knitr::opts_chunk$set(echo=TRUE)
+
+startpoint <- Sys.time()
+```
+
+As we already saw (in [XCMS_evaluation file](XCMS_evaluation.Rmd)) that with the typical workflow [XCMS_processing file](XCMS_processing.Rmd) some of the peaks are not well extracted in the corresponding features, here we are going to apply the new XCMS function `refineChromPeaks` and  its method `MergeNeighboringPeaksParam`. For that the steps that we'll apply now are peak detection -> peak postprocessing -> correspondance. We'll also play with higher values in the parameter "bw" (e.g., 3).
+
+# Preliminaries
+I define the specific parameters for the current study, I load all required libraries, and I set up the parallel processing.
+
+## Parameters
+```{r, echo=TRUE}
+polarity <- "POS" # specify "POS" or "NEG"
+study <- "IS"     # specify "IS" or "QC"
+rt_cut <- 340
+MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+```
+
+## Libraries
+```{r, message=FALSE, warning=FALSE}
+library(doParallel)
+library(xcms)
+```
+
+## Parallel processing
+```{r}
+ncores <- detectCores()-1
+registerDoParallel(ncores)
+register(DoparParam(), default = TRUE)
+```
+
+
+# Study samples
+Below I'm going to import the document with the file names and later I'll restrict them to the current polarity.  
+ 
+```{r}
+injections <- read.table(paste0(gsub("std_serum", "", getwd()), 
+                                "data/is_serum_files.txt"), 
+                 sep = "\t", as.is = TRUE, header = TRUE)
+
+injections <- injections[injections$polarity == polarity, ]
+if (study == "IS") {
+  injections <- injections[injections$class == "LowIS" | 
+                           injections$class == "HighIS", ]
+} else if (study == "QC"){
+  injections <- injections[injections$class != "LowIS" & 
+                           injections$class != "HighIS", ]
+}
+
+myfiles <- paste(injections$folder, injections$mzML, sep = "/") 
+```
+
+# Workflow
+## readMSData
+```{r}
+raw_data <- readMSData(files = paste0(MZML_PATH, myfiles), 
+                       pdata = new("NAnnotatedDataFrame", injections),
+                       mode = "onDisk")
+raw_data <- filterRt(raw_data, rt = c(0, rt_cut))
+```
+
+## Peak detection
+```{r}
+cwp <- CentWaveParam(
+  peakwidth = c(2, 20), 
+  ppm = 30, 
+  snthresh = 4,
+  integrate = 2)
+
+xdata <- findChromPeaks(raw_data, param = cwp)
+```
+
+## Peak post-processing
+```{r}
+mnp <- MergeNeighboringPeaksParam(
+  expandRt = 2, 
+  expandMz = 0.001, 
+  ppm = 10,
+  minProp = 0.75)
+
+xdata <- refineChromPeaks(xdata,
+                          param = MergeNeighboringPeaksParam(), 
+                          msLevel = 1L,
+                          BPPARAM = bpparam())
+```
+
+## Correspondance
+```{r, message=FALSE}
+pdp1 <- PeakDensityParam(
+  sampleGroups = xdata$class, # rep(1, nrow(data)),
+  minFraction = 0.9, # default = 0.5
+  bw = 1.5,
+  binSize = 0.007)
+
+xdata <- groupChromPeaks(xdata, param = pdp1)
+```
+
+## Data export
+```{r}
+ls()
+save(
+  list = c("raw_data", "xdata", 
+           "cwp", "mnp", "pdp1", # "pdp2", "pgp", "fcp",
+           "MZML_PATH", "myfiles"), 
+  file = paste0("XCMS_postprocessing_", polarity, "_", study, ".Rdata"))
+```
+
+
+# Session information
+```{r}
+Sys.time()-startpoint
+
+devtools::session_info()
+```
