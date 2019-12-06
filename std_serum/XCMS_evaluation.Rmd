@@ -23,9 +23,12 @@ I define the specific parameters for the current study, I load all required libr
 ```{r, echo=TRUE}
 polarity <- "POS" # specify "POS" or "NEG"
 study <- "IS"     # specify "IS" or "QC"
+proc <- "postproces" # specify "default" or "postprocessing"
 mz.d <- 0.01
 rt.d <- 10
 dir.create(paste0("images/", study, "/", polarity, "/default"), 
+                  recursive = TRUE, showWarnings = FALSE)
+dir.create(paste0("images/", study, "/", polarity, "/postproces"), 
                   recursive = TRUE, showWarnings = FALSE)
 ```
 
@@ -47,7 +50,12 @@ register(DoparParam(), default = TRUE)
 
 ## Data import
 ```{r}
-load(paste0("XCMS_", polarity, "_", study, ".Rdata"))
+if (proc == "default"){
+  load(paste0("XCMS_", polarity, "_", study, ".Rdata"))
+} else if (proc == "postproces"){
+  load(paste0("XCMS_postprocessing_", polarity, "_", study, ".Rdata"))
+}
+
 ```
 
 ## Colouring factors
@@ -77,26 +85,26 @@ std_info <- read.table(
 ### Quality
 ```{r}
 std_info$quality <- c(NA,      # succinic
-                      "LP",    # creatinine
-                      "2P",    # glucose
+                      "LP",    # creatinine   
+                      "2F_2P", # glucose      
                       "LP",    # carnitine
-                      "2F_2P", # alanine        QC = OK
+                      "2F_2P", # alanine
                       "OK",    # arginine
-                      "2F_2P", # aspartic       QC = LP
+                      "2F",    # aspartic
                       "OK",    # cysteine
-                      "OK_2P", # glutamic       QC = OK
-                      "OK",    # glycine        QC = MS
-                      "OK_2P", # histidine
+                      "OK",    # glutamic
+                      "2F",    # glycine      
+                      "OK",    # histidine
                       NA,      # isoleucine
                       "LP",    # leucine
-                      "OK_2P", # lysine
-                      "2F_2P", # methionine
-                      "2F_2P", # phenylalanine
-                      "2F_2P", # proline
-                      "OK_2P", # serine
-                      "OK_2P", # threonine
+                      "OK",    # lysine
+                      "2F",    # methionine    
+                      "2F",    # phenylalanine
+                      "2F",    # proline
+                      "OK",    # serine        
+                      "2P",    # threonine
                       "2F",    # tyrosine
-                      "2F_2P"  # valine
+                      "2F"     # valine
                       )
 ```
 
@@ -141,7 +149,7 @@ for(i in seq(nrow(std_info))){ # for each IS do the following:
   }
   ft_chr <- featureChromatograms(xdata, features = ft)
   
-  filename <- paste0("images/", study, "/", polarity, "/default/",
+  filename <- paste0("images/", study, "/", polarity, "/", proc, "/",
                      std_info$quality[i], "_", cmpname, "_FT.png")
   png(file = filename, width = 1000, height = 500)
   par(mfrow = c(1,2))
@@ -162,11 +170,16 @@ for(i in seq(nrow(std_info))){ # for each IS do the following:
   dev.off()
   
   # CORRESPONDANCE
-  filename <- paste0("images/", study, "/", polarity, "/default/",
+  if(proc == "default"){
+    pdp = pdp2
+  } else if(proc == "postproces"){
+    pdp = pdp1
+  }
+  filename <- paste0("images/", study, "/", polarity, "/", proc, "/",
                      std_info$quality[i], "_", cmpname, "_GR.png")
   png(file = filename, width = 1000, height = 500)
   plotChromPeakDensity(
-    chr, pdp2, 
+    chr, pdp, 
     peakCol = col_class[xdata$class[chromPeaks(chr)[, "column"]]],
     peakBg = paste0(col_class[
       xdata$class[chromPeaks(chr)[, "column"]]], "10"))
@@ -195,11 +208,11 @@ for(i in seq(nrow(std_info))){ # for each IS do the following:
   chr2 <- chromatogram(xdata, mz = c((mz.i - mz.d), (mz.i + mz.d)),
                        rt = c((rt.i - rt.d), (rt.i + rt.d)),
                       aggregationFun = "max")
-  filename <- paste0("images/", study, "/", polarity, "/default/",
+  filename <- paste0("images/", study, "/", polarity, "/", proc, "/",
                      std_info$quality[i], "_", cmpname, "_GR_zoom.png")
   png(file = filename, width = 1000, height = 500)
   plotChromPeakDensity(
-    chr2, pdp2, 
+    chr2, pdp, 
     peakCol = col_class[xdata$class[chromPeaks(chr2)[, "column"]]],
     peakBg = paste0(col_class[
       xdata$class[chromPeaks(chr2)[, "column"]]], "10"))

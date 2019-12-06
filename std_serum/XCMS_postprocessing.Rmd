@@ -75,8 +75,11 @@ raw_data <- filterRt(raw_data, rt = c(0, rt_cut))
 ```{r}
 cwp <- CentWaveParam(
   peakwidth = c(2, 20), 
-  ppm = 30, 
-  snthresh = 4,
+  ppm = 50, 
+  snthresh = 5,
+  mzdiff = 0.001,
+  prefilter = c(4, 300),
+  noise = 100,
   integrate = 2)
 
 xdata <- findChromPeaks(raw_data, param = cwp)
@@ -91,7 +94,7 @@ mnp <- MergeNeighboringPeaksParam(
   minProp = 0.75)
 
 xdata <- refineChromPeaks(xdata,
-                          param = MergeNeighboringPeaksParam(), 
+                          param = mnp, 
                           msLevel = 1L,
                           BPPARAM = bpparam())
 ```

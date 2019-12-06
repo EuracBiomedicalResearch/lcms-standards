@@ -97,8 +97,11 @@ raw_data <- filterRt(raw_data, rt = c(0, rt_cut))
 ```{r}
 cwp <- CentWaveParam(
   peakwidth = c(2, 20), 
-  ppm = 30, 
-  snthresh = 4,
+  ppm = 50, 
+  snthresh = 5,
+  mzdiff = 0.001,
+  prefilter = c(4, 300),
+  noise = 100,
   integrate = 2)
 
 xdata <- findChromPeaks(raw_data, param = cwp)
@@ -108,21 +111,21 @@ xdata <- findChromPeaks(raw_data, param = cwp)
 ```{r, message=FALSE}
 pdp1 <- PeakDensityParam(
   sampleGroups = xdata$class, # rep(1, nrow(data)),
-  minFraction = 0.9, # default = 0.5
-  bw = 1.5,
-  binSize = 0.007)
+  minFraction = 0.9, # default = 0.75
+  bw = 3,
+  binSize = 0.02)
 
 pdp2 <- PeakDensityParam(
   sampleGroups = xdata$class, # rep(1, nrow(data)),
-  minFraction = 0.9, # default = 0.5
+  minFraction = 0.9, # default = 0.3
   bw = 2,
-  binSize = 0.007)
+  binSize = 0.02)
 
 pgp <- PeakGroupsParam(
-  span = 0.4 #,
+  span = 0.3 #,
   #subset = which(xdata$type_QC == "QC"),  
   #subsetAdjust = "average",
-  #minFraction = 0.9 default = 0.85
+  #minFraction = 0.9 
 ) 
 
 xdata <- groupChromPeaks(xdata, param = pdp1)
