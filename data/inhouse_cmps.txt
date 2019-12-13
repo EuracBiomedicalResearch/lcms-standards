@@ -1,0 +1,19 @@
+cmp_ID	formula	RT	comments
+X0001	192.155324	29	seen in: 2019_11: IS_High vs IS_Low
+X0002	216.09976	29	seen in: 2019_11: IS_High vs IS_Low
+X0003	138.059624	100	seen in: 2019_11: IS_High vs IS_Low
+X0004	536.3877173	27	seen in: 2019_11: IS_High vs IS_Low
+X0005	181.153124	117	seen in: 2019_11: IS_High vs IS_Low
+X0006	134.088324	136	seen in: 2019_11: IS_High vs IS_Low
+X0007	73.090324	32	seen in: 2019_11: IS_High vs IS_Low
+X0008	129.151724	27	seen in: 2019_11: IS_High vs IS_Low
+X0009	171.949024	194	seen in: 2019_11: IS_High vs IS_Low
+X0010	174.9563	192	seen in: 2019_11: IS_High vs IS_Low
+X0011	152.127224	40	seen in: 2019_11: IS_High vs IS_Low
+X0012	648.299504	29	seen in: 2019_11: IS_High vs IS_Low
+X0013	171.059924	179	seen in: 2019_11: IS_High vs IS_Low
+X0014	189.121624	39	seen in: 2019_11: IS_High vs IS_Low
+X0015	518.187824	31	seen in: 2019_11: IS_High vs IS_Low
+X0016	392.290824	25	seen in: 2019_11: IS_High vs IS_Low
+X0017	169.080424	43	seen in: 2019_11: IS_High vs IS_Low
+X0018	198.135724	156	seen in: 2019_11: IS_High vs IS_Low
