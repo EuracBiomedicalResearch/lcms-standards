@@ -40,8 +40,8 @@ load(paste0("filter_group_", study, "_", polarity, ".Rdata"))
 
 # Output
 ## Peak shapes
-```{r}
-for(i in 1#seq(nrow(tb.ann))
+```{r, eval = TRUE}
+for(i in seq(nrow(tb.ann))
 ){
   feat.i <- feat_filter[feat_filter$cmp == tb.ann$C[i], ]
   if(nrow(feat.i) > 1){
@@ -107,7 +107,7 @@ for(i in 1#seq(nrow(tb.ann))
 
 ## Peak along chromatogram
 ```{r}
-for(i in 1 #seq(nrow(tb.ann))
+for(i in seq(nrow(tb.ann))
 ){
   feat.i <- feat_filter[feat_filter$cmp == tb.ann$C[i], ]
   ft.i <- rownames(feat.i)[which.max(feat.i$int)]
@@ -133,9 +133,9 @@ for(i in 1 #seq(nrow(tb.ann))
   png(file = filename, width = 1500, height = 500)
   par(mfrow = c(1,3), mar = c(0.5,0,2,0.5))
   k = 1
-  plot(chrs[[k]], 
-       main = yaxt = "none", xaxt = "none",
-       xdata$sample[order(data_imp[, ft.i], decreasing=TRUE)[1:3][k]])
+  plot(chrs[[k]], yaxt = "none", xaxt = "none",
+       main = 
+         xdata$sample[order(data_imp[, ft.i], decreasing=TRUE)[1:3][k]])
   k = 2
   plot(chrs[[k]], yaxt = "none", xaxt = "none", 
        main = 

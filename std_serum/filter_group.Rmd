@@ -23,7 +23,7 @@ study <- "IS"     # specify "IS" or "QC"
 mz.d <- 0.01
 rt.d <- 10
 myseed <- 589
-filter.int <- 100000
+filter.int <- 50000
 cor.thr.i <- 0.7 # correlation intensity
 cor.thr.s <- 0.9 # correlation peak shape
 ```
@@ -50,7 +50,7 @@ source("https://raw.githubusercontent.com/EuracBiomedicalResearch/lcms-standards
 
 ## Data import
 ```{r}
-load(paste0("XCMS_proccessing_", study, "_", polarity, ".Rdata"))
+load(paste0("XCMS_processing_", study, "_", polarity, ".Rdata"))
 
 # Data extraction
 feat <- data.frame(featureDefinitions(xdata))
@@ -148,19 +148,23 @@ for(i in 4:ncol(ih_ion)){
       ions.loop = data.frame(matrix(ncol=5,nrow=2))
       colnames(ions.loop) = c("ID", "rt", "mode", "mz", "assignation")
       ions.loop$ID = colnames(ih_ion)[i]
-      ions.loop$rt = ih_cmp$RT[which(ih_cmp$cmp_ID == colnames(ih_ion)[i])]
+      ions.loop$rt = 
+        ih_cmp$RT[which(ih_cmp$cmp_ID == colnames(ih_ion)[i])]
       ions.loop$mode <- polarity
       
       if(ih_ion$type[j] == "dimer"){
-        ions.loop$mz = (ih_cmp[ih_cmp$cmp_ID == colnames(ih_ion)[i], "mzneut"])*2 + ion + ih_ion$delta[j]
+        ions.loop$mz = (ih_cmp[ih_cmp$cmp_ID == colnames(ih_ion)[i], 
+                               "mzneut"])*2 + ion + ih_ion$delta[j]
         ions.loop$assignation = gsub("\\*", "+", ih_ion$ion_id[j])
         # close statment "if ion "j" is a dimer"
       } else if(ih_ion$type[j] == "trimer"){
-        ions.loop$mz = (ih_cmp[ih_cmp$cmp_ID == colnames(ih_ion)[i], "mzneut"])*3 + ion + ih_ion$delta[j]
+        ions.loop$mz = (ih_cmp[ih_cmp$cmp_ID == colnames(ih_ion)[i], 
+                               "mzneut"])*3 + ion + ih_ion$delta[j]
         ions.loop$assignation = gsub("\\*", "+", ih_ion$ion_id[j])
         # close statment "if ion "j" is a trimer"
       } else {
-        ions.loop$mz = (ih_cmp[ih_cmp$cmp_ID == colnames(ih_ion)[i], "mz"]) + ih_ion$delta[j]
+        ions.loop$mz = (ih_cmp[ih_cmp$cmp_ID == colnames(ih_ion)[i], 
+                               "mz"]) + ih_ion$delta[j]
         ions.loop$assignation = gsub("\\*", "+", ih_ion$ion_id[j])
         ions.loop = ions.loop[1,]
       } # clsoe setatment "if ion "j" is NOT  dimer / trimer"
@@ -326,6 +330,8 @@ if(feat.i$cmp[unlist(which_within(mz.i, feat.i$mzmed))] !=
 
 idx <- which(rownames(feat_filter) %in% rownames(feat.i))
 feat_filter$cmp[idx] <- feat.i$cmp
+
+length(levels(factor(feat_filter$cmp)))
 ```
 
 # Annotation
@@ -395,6 +401,17 @@ for(i in seq(length(levels(factor(feat_filter$cmp))))){
     
     
     # Adducts ----------------------------------------------------------
+    ##### NH4
+    tmp3 <- data.frame(tmp2[ ,
+                             which(tmp2[3,] > (17.02654 - mz.d) & 
+                                     tmp2[3,] < (17.02654 + mz.d))])
+    for(j in seq(ncol(tmp3))){
+      tmp$adduct[tmp$mzmed == tmp3[1,j]] <- paste("a_NH4", j, sep = "-")
+      tmp$adduct[tmp$mzmed == tmp3[2,j]] <- paste("a_NH4", j, sep = "-")
+    }
+    idx <- which(rownames(feat_filter) %in% rownames(tmp))
+    feat_filter$adduct[idx] <- tmp$adduct
+    
     ##### Na
     tmp3 <- data.frame(tmp2[ ,
                              which(tmp2[3,] > (21.98198 - mz.d) & 
@@ -402,6 +419,17 @@ for(i in seq(length(levels(factor(feat_filter$cmp))))){
     for(j in seq(ncol(tmp3))){
       tmp$adduct[tmp$mzmed == tmp3[1,j]] <- paste("a_Na", j, sep = "-")
       tmp$adduct[tmp$mzmed == tmp3[2,j]] <- paste("a_Na", j, sep = "-")
+    }
+    idx <- which(rownames(feat_filter) %in% rownames(tmp))
+    feat_filter$adduct[idx] <- tmp$adduct
+    
+    ##### NH4
+    tmp3 <- data.frame(tmp2[ ,
+                             which(tmp2[3,] > (37.95589 - mz.d) & 
+                                     tmp2[3,] < (37.95589 + mz.d))])
+    for(j in seq(ncol(tmp3))){
+      tmp$adduct[tmp$mzmed == tmp3[1,j]] <- paste("a_K", j, sep = "-")
+      tmp$adduct[tmp$mzmed == tmp3[2,j]] <- paste("a_K", j, sep = "-")
     }
     idx <- which(rownames(feat_filter) %in% rownames(tmp))
     feat_filter$adduct[idx] <- tmp$adduct
@@ -448,12 +476,16 @@ for(i in seq(nrow(std_info))){
     for(j in seq(length(def))){
       names(def)[[j]] <- j
     }
+    def <- def[lapply(def,length)>0]
     ghi <- unlist(def)
     names(ghi) <- names(def)
     
     # check matching with abundance
     # calculate the proportion between mz.i & molecular ion (ft)
     ft <- rownames(tmp)[!is.na(tmp$annotation)]
+    if(length(ft)>1){
+      ft <- ft[which.max(tmp$int[rownames(tmp) %in% ft])]
+    }
     
     if(length(def)>1){
       def <- 
@@ -517,7 +549,7 @@ save(list = c(
   "raw_data", "xdata", "MZML_PATH", "myfiles",
   "cwp", "mnp", "pdp1", "pdp2", "pgp", "fcp",
   
-  "data_imp", "data_NONimp",
+  "data_imp", "data_NONimp", "feat",
   
   # Annotations
   "feat_filter", "tb.ann"),

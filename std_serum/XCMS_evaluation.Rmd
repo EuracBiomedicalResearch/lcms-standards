@@ -55,7 +55,7 @@ register(DoparParam(), default = TRUE)
 
 ## Data import
 ```{r}
-load(paste0("XCMS_proccessing_", study, "_", polarity, ".Rdata"))
+load(paste0("XCMS_processing_", study, "_", polarity, ".Rdata"))
 ```
 
 ## Colouring factors

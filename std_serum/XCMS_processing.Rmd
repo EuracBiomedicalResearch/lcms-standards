@@ -139,13 +139,13 @@ pdp1 <- PeakDensityParam(
   sampleGroups = xdata$class, 
   minFraction = 0.9, 
   bw = 3,
-  binSize = 0.02)
+  binSize = 0.01)
 
 pdp2 <- PeakDensityParam(
   sampleGroups = xdata$class, 
   minFraction = 0.9, 
   bw = 20,
-  binSize = 0.02)
+  binSize = 0.01)
 
 if (study == "IS") {
   pgp <- PeakGroupsParam(
@@ -189,7 +189,7 @@ ls()
 save(list = c("raw_data", "xdata", 
               "cwp", "mnp", "pdp1", "pdp2", "pgp", "fcp",
               "MZML_PATH", "myfiles"), 
-     file = paste0("XCMS_proccessing_", study, "_", polarity, ".Rdata"))
+     file = paste0("XCMS_processing_", study, "_", polarity, ".Rdata"))
 ```
 
 # Summary
@@ -207,6 +207,7 @@ this dataset:
   - minFraction = 0.9 (sample groups are made up 
   of replicates from the same sample)  
   - bw (II) = 20 (for some IS I got 2 features [10, except for Creatinine {20})  
+  - binSize = 0.01 (for Ala sample #1 we got "ghost peaks" interfering in the final intensity value)  
   
 # Session information
 ```{r}
