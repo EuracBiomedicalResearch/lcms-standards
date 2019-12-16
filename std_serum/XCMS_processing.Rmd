@@ -29,7 +29,7 @@ In this document I'm going to do the XCMS processing. This output will be
 taken for the upcoming document in order to plot each feature 
 (from each IS) separately and have the enough information to check the 
 processed data.  
-  
+
 # Preliminaries
 I define the specific parameters for the current study, I load all 
 required libraries, and I set up the parallel processing.
@@ -60,21 +60,21 @@ register(DoparParam(), default = TRUE)
 # Study samples
 Below I'm going to import the document with the file names and later I'll 
 restrict them to the current polarity.  
- 
+
 ```{r}
 injections <- read.table(paste0(gsub("std_serum", "", getwd()), 
                                 "data/is_serum_files.txt"), 
-                 sep = "\t", as.is = TRUE, header = TRUE)
+                         sep = "\t", as.is = TRUE, header = TRUE)
 
 injections <- injections[injections$polarity == polarity, ]
 if (study == "IS") {
-  injections <- injections[#injections$class == "Blank_Inj" |
-                             #injections$class == "Blank_Ext" |
+  injections <- injections[injections$class == "Blank_Inj" |
+                             injections$class == "Blank_Ext" |
                              injections$class == "LowIS" | 
                              injections$class == "HighIS", ]
 } else if (study == "QC"){
   injections <- injections[injections$class == "QC" | 
-                           injections$class == "QC_LowIS" |
+                             injections$class == "QC_LowIS" |
                              injections$class == "QC_HighIS", ]
 }
 
@@ -89,8 +89,8 @@ injections$class <- factor(injections$class)
 if(length(levels(injections$class)) < 3){
   col_class <- brewer.pal(3, "Set1")
   col_class <- col_class[1:length(levels(injections$class))]}else{
-  col_class <- brewer.pal(length(levels(injections$class)), "Set1")
-}
+    col_class <- brewer.pal(length(levels(injections$class)), "Set1")
+  }
 names(col_class) <- levels(injections$class)
 plot(NULL ,xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
 legend("topleft", legend = names(col_class),
@@ -113,7 +113,7 @@ raw_data <- filterRt(raw_data, rt = c(0, rt_cut))
 cwp <- CentWaveParam(
   peakwidth = c(2, 20), 
   ppm = 50, 
-  snthresh = 100,
+  snthresh = 10,
   mzdiff = 0.001,
   prefilter = c(4, 5000),
   noise = 100,
@@ -139,13 +139,13 @@ pdp1 <- PeakDensityParam(
   sampleGroups = xdata$class, 
   minFraction = 0.9, 
   bw = 3,
-  binSize = 0.01)
+  binSize = 0.005)
 
 pdp2 <- PeakDensityParam(
   sampleGroups = xdata$class, 
   minFraction = 0.9, 
   bw = 20,
-  binSize = 0.01)
+  binSize = 0.005)
 
 if (study == "IS") {
   pgp <- PeakGroupsParam(
@@ -153,14 +153,14 @@ if (study == "IS") {
     subset = which(xdata$class == "LowIS"),  
     subsetAdjust = "average",
     minFraction = 0.9 
-    ) 
+  ) 
 } else if (study == "QC"){
   pgp <- PeakGroupsParam(
     span = 0.3,
     subset = which(xdata$class == "QC_LowIS"),  
     subsetAdjust = "average",
     minFraction = 0.9 
-    ) 
+  ) 
 }
 
 xdata <- groupChromPeaks(xdata, param = pdp1)
@@ -195,20 +195,20 @@ save(list = c("raw_data", "xdata",
 # Summary
 Following I mention the changes in XCMS parameters that I've applied for 
 this dataset:  
-  
+
 - Peak detection (for most IS there are several "ghost peaks"):  
-  - snthresh = 100  
+  - snthresh = 10  
   - prefilter = (4, 5000)  
-  
+
 - Peak post-processing:  
   - expandRt = 8 (splitted peaks: Carnitine [4] & Creatinine [8])
-     
+
 - Peak grouping (correspondance):   
-  - minFraction = 0.9 (sample groups are made up 
-  of replicates from the same sample)  
-  - bw (II) = 20 (for some IS I got 2 features [10, except for Creatinine {20})  
-  - binSize = 0.01 (for Ala sample #1 we got "ghost peaks" interfering in the final intensity value)  
-  
+  - minFraction = 0.9 (sample groups are made up of replicates from the same sample)    
+  - bw (II) = 20 (for some IS I got 2 features [10, except for Creatinine {20})    
+  - binSize = 0.005 (for Ala sample #1 we got "ghost peaks" interfering in the final intensity value)  
+
+
 # Session information
 ```{r}
 Sys.time()-startpoint

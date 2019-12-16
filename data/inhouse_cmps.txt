@@ -1,30 +1,46 @@
-cmp_ID	formula	RT	comments
-X0001	192.155324	29	seen in: 2019_11: IS_High vs IS_Low
-X0002	216.09976	29	seen in: 2019_11: IS_High vs IS_Low
-X0003	138.059624	100	seen in: 2019_11: IS_High vs IS_Low
-X0004	514.405953	27	seen in: 2019_11: IS_High vs IS_Low
-X0005	181.153124	117	seen in: 2019_11: IS_High vs IS_Low
-X0006	134.088324	136	seen in: 2019_11: IS_High vs IS_Low
-X0007	73.090324	32	seen in: 2019_11: IS_High vs IS_Low
-X0008	129.151724	27	seen in: 2019_11: IS_High vs IS_Low
-X0009	171.949024	194	seen in: 2019_11: IS_High vs IS_Low
-X0010	173.949024	192	seen in: 2019_11: IS_High vs IS_Low
-X0011	152.127224	40	seen in: 2019_11: IS_High vs IS_Low
-X0012	648.299504	29	seen in: 2019_11: IS_High vs IS_Low
-X0013	171.059924	179	seen in: 2019_11: IS_High vs IS_Low
-X0014	189.121624	39	seen in: 2019_11: IS_High vs IS_Low
-X0015	518.187824	31	seen in: 2019_11: IS_High vs IS_Low
-X0016	392.290824	25	seen in: 2019_11: IS_High vs IS_Low
-X0017	169.080424	43	seen in: 2019_11: IS_High vs IS_Low
-X0018	198.135724	156	seen in: 2019_11: IS_High vs IS_Low
-X0019	613.246284	141	seen in: 2019_11: IS_High vs IS_Low
-X0020	238.081944	30	seen in: 2019_11: IS_High vs IS_Low
-X0021	167.082634	146	seen in: 2019_11: IS_High vs IS_Low
-X0022	332.143484	127	seen in: 2019_11: IS_High vs IS_Low
-X0023	135.056224	67	seen in: 2019_11: IS_High vs IS_Low
-X0024	124.978894	203	seen in: 2019_11: IS_High vs IS_Low
-X0025	344.145064	35	seen in: 2019_11: IS_High vs IS_Low
-X0026	101.120684	29	seen in: 2019_11: IS_High vs IS_Low
-X0027	89.500484	193	seen in: 2019_11: IS_High vs IS_Low
-X0028	734.287724	31	seen in: 2019_11: IS_High vs IS_Low
-X0029	137.041314	151	seen in: 2019_11: IS_High vs IS_Low
+cmp_ID	formula	RT	seen_in	comments
+X0001	192.155324	29	2019_11: IS_High vs IS_Low	background
+X0002	216.09976	29	2019_11: IS_High vs IS_Low	background
+X0003	138.059624	100	2019_11: IS_High vs IS_Low	background
+X0004	514.405953	27	2019_11: IS_High vs IS_Low	background
+X0005	181.153124	117	2019_11: IS_High vs IS_Low	background
+X0006	134.088324	136	2019_11: IS_High vs IS_Low	background
+X0007	73.090324	32	2019_11: IS_High vs IS_Low	background
+X0008	129.151724	27	2019_11: IS_High vs IS_Low	background
+X0009	171.949024	194	2019_11: IS_High vs IS_Low	background
+X0010	173.949024	192	2019_11: IS_High vs IS_Low	background
+X0011	152.127224	40	2019_11: IS_High vs IS_Low	background
+X0012	648.299504	29	2019_11: IS_High vs IS_Low	background
+X0013	171.059924	179	2019_11: IS_High vs IS_Low	background
+X0014	189.121624	39	2019_11: IS_High vs IS_Low	background
+X0015	518.187824	31	2019_11: IS_High vs IS_Low	background
+X0016	392.290824	25	2019_11: IS_High vs IS_Low	background
+X0017	169.080424	43	2019_11: IS_High vs IS_Low	background
+X0018	198.135724	156	2019_11: IS_High vs IS_Low	background
+X0019	613.246284	141	2019_11: IS_High vs IS_Low	background
+X0020	238.081944	30	2019_11: IS_High vs IS_Low	background
+X0021	167.082634	146	2019_11: IS_High vs IS_Low	background
+X0022	332.143484	127	2019_11: IS_High vs IS_Low	background
+X0023	135.056224	67	2019_11: IS_High vs IS_Low	background
+X0024	124.978894	203	2019_11: IS_High vs IS_Low	background
+X0025	344.145064	35	2019_11: IS_High vs IS_Low	background
+X0026	101.120684	29	2019_11: IS_High vs IS_Low	background
+X0027	89.500484	193	2019_11: IS_High vs IS_Low	background
+X0028	734.287724	31	2019_11: IS_High vs IS_Low	background
+X0029	137.041314	151	2019_11: IS_High vs IS_Low	"L-Methionine (13C5, 99%; 15N, 99%): [M+H-H2O]+"
+X0030	165.1311537	54	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
+X0031	339.2524856	135	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
+X0032	700.4863132	137	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
+X0033	170.9858706	294	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
+X0034	68.03870482	44	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
+X0035	181.977824	309	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
+X0036	166.110424	33	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
+X0037	474.3187593	59	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
+X0038	165.1271972	65	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
+X0039	69.04150223	68	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
+X0040	202.0798399	70	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
+X0041	152.0947781	37	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
+X0042	452.3354218	135	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
+X0043	134.0883	125	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
+X0044	389.1620663	73	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
+X0045	135.0935554	34	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background

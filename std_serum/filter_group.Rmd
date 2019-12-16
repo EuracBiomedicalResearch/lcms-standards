@@ -40,9 +40,6 @@ library(CompoundDb)
 stat.cv <- function(x){
   (sd(x, na.rm = TRUE) / mean(x, na.rm = TRUE))*100
 }
-stat.cor <- function(x){
-  cor(log2(x), log2(tmp[,ft]), use = "complete.obs")
-}
 
 source("https://raw.githubusercontent.com/EuracBiomedicalResearch/lcms-standards/master/R/which_within.R")
 ```
@@ -109,6 +106,10 @@ ih_ion <- read.table(
   gsub("std_serum", "data/inhouse_ions.txt", getwd()),
   sep = "\t", header = TRUE, as.is = TRUE)
 
+ih_feat <- read.table(
+  gsub("std_serum", "data/inhouse_feat.txt", getwd()),
+  sep = "\t", header = TRUE, as.is = TRUE)
+
 
 ih_cmp$mzneut = NA
 ih_cmp$mz <- NA
@@ -173,23 +174,48 @@ for(i in 4:ncol(ih_ion)){
   } # close loop ion "j"
 } # close loop in-house compound "i"
 
+ions.long <- rbind(ions.long, ih_feat)
 ```
 
 
 # Filtering
 ```{r}
 dim(data_NONimp)
+```
 
-# Restrict to high intensity features
+## Blanks
+Features occurring in solvents and blanks: Keep features that were at least 2-fold higher in QCs or biological samples than in solvents.  
+
+```{r}
+xdata$blank <- 0
+xdata$blank[xdata$class == "Blank_Inj"] <- 1
+data_NONimp_0 <- data_NONimp
+data_NONimp_0[is.na(data_NONimp_0)] <- 0
+tmp <- data.frame(t(aggregate(data_NONimp_0, list(xdata$blank), mean)))
+colnames(tmp) <- c("samples", "blank")
+tmp <- tmp[-1,]
+tmp$FC <- tmp$samples / tmp$blank
+data_NONimp_filter <- data_NONimp[, colnames(data_NONimp) %in% 
+                                    rownames(tmp)[tmp$FC > 2]]
+dim(data_NONimp_filter)
+
+```
+
+## Intensity
+Restrict to high intensity features
+```{r}
 feat$int <- apply(data_NONimp, 2, function(x){
   median(x, na.rm = TRUE)
 })
 data_NONimp_filter <- 
-  data_NONimp[, colnames(data_NONimp) %in% 
+  data_NONimp_filter[, colnames(data_NONimp_filter) %in% 
                 rownames(feat)[which(feat$int > filter.int)]]
 dim(data_NONimp_filter)
+```
 
-# Keep features where between-group variation > within-group variation
+## Variation
+Keep features where between-group variation > within-group variation
+```{r}
 tmp <- apply(data_NONimp[xdata$class == "LowIS",], 2, stat.cv)
 feat$cv_low <- tmp
 tmp <- apply(data_NONimp[xdata$class == "HighIS",], 2, stat.cv)
@@ -246,7 +272,8 @@ for(z in seq(nrow(feat_filter))){ # go feature by feature ("z")
     feat.i <- feat.i[order(rownames(feat.i)), ]
     
     # get features co-eluting with feature "z"
-    if(length(unlist(which_within(165.13130, mz.i)))==1){ 
+    if(length(unlist(which_within(165.13130, mz.i)))==1 &
+       feat.i$rtmin[rownames(feat.i)==ft]<90){ 
       # carnitine D3 (IS)
       feat.i <- feat.i[(feat.i$rtmin > 45) & (feat.i$rtmax < 80), ]
     } else if (length(unlist(which_within(154.0742434, mz.i)))==1) { 
@@ -263,8 +290,17 @@ for(z in seq(nrow(feat_filter))){ # go feature by feature ("z")
     # correlate intensities
     if(nrow(feat.i) > 1){
       tmp <- data_NONimp[, colnames(data_NONimp) %in% rownames(feat.i)]
-      tmp <- apply(tmp, 2, stat.cor)
-      feat.i$cor_int <- tmp
+      cor.i <- c()
+      for(i in seq(ncol(tmp))){
+        tmp2 <- cbind(tmp[, ft], tmp[,i])
+        if(sum(complete.cases(tmp2))>1){
+          cor.i <- c(cor.i, cor(log2(tmp2[,1]), log2(tmp2[,2]), 
+                              use = "complete.obs"))
+        } else {
+            cor.i <- c(cor.i, 0)
+          }
+      }
+      feat.i$cor_int <- cor.i
       feat.i <- feat.i[feat.i$cor_int > cor.thr.i,]
       
       # correlate peak shapes
@@ -298,6 +334,7 @@ for(z in seq(nrow(feat_filter))){ # go feature by feature ("z")
       feat_filter$cor_ps[idx] <- feat.i$cor_ps[i]
     }
   } # close if "is.na(cmp[z])"
+  save.image("tmp.RData")
 } # close feat "z"
 
 length(levels(factor(feat_filter$cmp)))
@@ -311,12 +348,14 @@ mz.i <- 165.1313000
 feat.i <- feat_filter[(feat_filter$rtmed > (rt.i - rt.d)) & 
                         (feat_filter$rtmed < (rt.i + rt.d)), ]
 # dimer: 329.2553236
-if(feat.i$cmp[unlist(which_within(mz.i, feat.i$mzmed))] != 
-   feat.i$cmp[unlist(which_within(329.2553236, feat.i$mzmed))]){
-  feat.i$cmp[which(
-    feat.i$cmp == 
-      feat.i$cmp[unlist(which_within(329.2553236, feat.i$mzmed))])] <- 
-    feat.i$cmp[unlist(which_within(mz.i, feat.i$mzmed))]
+if(length(feat.i$cmp[unlist(which_within(329.2553236, feat.i$mzmed))])>0){
+  if(feat.i$cmp[unlist(which_within(mz.i, feat.i$mzmed))] != 
+     feat.i$cmp[unlist(which_within(329.2553236, feat.i$mzmed))]){
+    feat.i$cmp[which(
+      feat.i$cmp == 
+        feat.i$cmp[unlist(which_within(329.2553236, feat.i$mzmed))])] <- 
+      feat.i$cmp[unlist(which_within(mz.i, feat.i$mzmed))]
+  }
 }
 
 # Na adduct: 187.1132447
@@ -371,7 +410,8 @@ for(i in seq(length(levels(factor(feat_filter$cmp))))){
     for(j in seq(ncol(tmp3))){
       mi <- c(mi, 
               mean(data_NONimp[,rownames(tmp)[tmp$mzmed==tmp3[2,j]]] /
-                     data_NONimp[,rownames(tmp)[tmp$mzmed==tmp3[1,j]]]))
+                     data_NONimp[,rownames(tmp)[tmp$mzmed==tmp3[1,j]]]),
+              na.rm = TRUE)
     }
     tmp3 <- data.frame(tmp3[, which(mi < 0.5)])
     
@@ -438,20 +478,38 @@ for(i in seq(length(levels(factor(feat_filter$cmp))))){
 }
 ```
 
+## In-house compounds
+```{r}
+for(i in seq(nrow(ions.long))){
+  ion.i <- feat_filter[unlist(which_within(ions.long$mz[i], feat_filter$mzmed)),]
+  ion.i <- ion.i[unlist(which_within(ions.long$rt[i], ion.i$rtmed, mzd = 10)),]
+  idx <- which(rownames(feat_filter) == rownames(ion.i))
+  feat_filter$compound[idx] <- ions.long$ID[i]
+  feat_filter$annotation[idx] <- ions.long$assignation[i]
+}
+```
+
+
 ## IS
 First of all I'm going to annotate the main ion for each IS.
 ```{r}
 for(i in seq(nrow(std_info))){
   mz.i <- std_info$mz[i]
+  rt.i <- std_info$RT[i]
   if(length(unlist(which_within(mz.i, feat_filter$mzmed))) == 1){
     idx <- unlist(which_within(mz.i, feat_filter$mzmed))
-    
     feat_filter$compound[idx] <- std_info$name[i]
     feat_filter$annotation[idx] <- "[M+H]+"
+    idx <- which(feat_filter$cmp == feat_filter$cmp[idx])
+    feat_filter$compound[idx] <- std_info$name[i]
   } else if(length(unlist(which_within(mz.i, feat_filter$mzmed))) > 1) {
-    print(
-      paste(i, ": There is >1 feature with mz of", 
-            std_info$name[i], "!"))
+    idx <- unlist(which_within(mz.i, feat_filter$mzmed))
+    feat.i <- feat_filter[idx,]
+    idx <- idx[unlist(which_within(rt.i, feat.i$rtmed, mzd = 10))]
+      feat_filter$compound[idx] <- std_info$name[i]
+    feat_filter$annotation[idx] <- "[M+H]+"
+    idx <- which(feat_filter$cmp == feat_filter$cmp[idx])
+    feat_filter$compound[idx] <- std_info$name[i]
     } else {
       print(
         paste(i, ": There is NOT any feature with mz of", 
@@ -477,47 +535,64 @@ for(i in seq(nrow(std_info))){
       names(def)[[j]] <- j
     }
     def <- def[lapply(def,length)>0]
-    ghi <- unlist(def)
-    names(ghi) <- names(def)
+    if(length(def)>0){
+      ghi <- unlist(def)
+      names(ghi) <- names(def)
     
-    # check matching with abundance
-    # calculate the proportion between mz.i & molecular ion (ft)
-    ft <- rownames(tmp)[!is.na(tmp$annotation)]
-    if(length(ft)>1){
-      ft <- ft[which.max(tmp$int[rownames(tmp) %in% ft])]
-    }
+      # check matching with abundance
+      # calculate the proportion between mz.i & molecular ion (ft)
+      ft <- rownames(tmp)[!is.na(tmp$annotation)]
+      if(length(ft)>1){
+        ft <- ft[which.max(tmp$int[rownames(tmp) %in% ft])]
+      }
+      
+      if(length(def)>1){
+        def <- # experimental abundances
+          colMeans(data_NONimp[, rownames(tmp)[ghi]] / 
+                     data_NONimp[,ft], na.rm = TRUE)*100
+      } else if(length(def) == 1){
+        def <- 
+          mean(data_NONimp[, rownames(tmp)[ghi]]/data_NONimp[,ft], na.rm = TRUE)*100
+      }
+      deft <- # theorical abundances
+        abc$abundance[as.numeric(names(ghi))]
     
-    if(length(def)>1){
-      def <- 
-        colMeans(data_NONimp[, rownames(tmp)[ghi]] / 
-                   data_NONimp[,ft])*100 # experimental abundances
-    } else if(length(def) == 1){
-      def <- 
-        mean(data_NONimp[, rownames(tmp)[ghi]]/data_NONimp[,ft])*100
-    }
-    deft <- abc$abundance[as.numeric(names(ghi))] # theorical abundances
+      # the diferences in the proportional abundances is < 5?
+      tmp$annotation[ghi][which(abs(def-deft) < 5)] <- 
+        abc$annotation[as.numeric(names(ghi))][which(abs(def-deft) < 5)]
     
-    # the diferences in the proportional abundances is < 5?
-    tmp$annotation[ghi][which(abs(def-deft) < 5)] <- 
-      abc$annotation[as.numeric(names(ghi))][which(abs(def-deft) < 5)]
+      tmp$annotation[ghi][which(is.na(deft))] <- 
+        abc$annotation[as.numeric(names(ghi))][which(is.na(deft))]
     
-    tmp$annotation[ghi][which(is.na(deft))] <- 
-      abc$annotation[as.numeric(names(ghi))][which(is.na(deft))]
-    
-    idx <- which(rownames(feat_filter) %in% rownames(tmp))
-    feat_filter$annotation[idx] <- tmp$annotation
-  }
+      idx <- which(rownames(feat_filter) %in% rownames(tmp))
+      feat_filter$annotation[idx] <- tmp$annotation
+  }}
 }
 ```
 
-## In-house compounds
+Assegurar que tots els ions que tenen el mateix nom, estiguin en el mateix group
 ```{r}
-for(i in seq(nrow(ions.long))){
-  ion.i <- feat_filter[unlist(which_within(ions.long$mz[i], feat_filter$mzmed)),]
-  ion.i <- ion.i[unlist(which_within(ions.long$rt[i], ion.i$rtmed, mzd = 10)),]
-  idx <- which(rownames(feat_filter) == rownames(ion.i))
-  feat_filter$compound[idx] <- ions.long$ID[i]
-  feat_filter$annotation[idx] <- ions.long$assignation[i]
+c <- levels(factor(feat_filter$compound))
+for(i in seq(length(c))){
+  tmp <- feat_filter[!is.na(feat_filter$compound), ]
+  tmp <- tmp[tmp$compound == c[i], ]
+  if(length(levels(factor(tmp$cmp))) > 1){
+    idx <- which(rownames(feat_filter) %in% rownames(tmp))
+    feat_filter$cmp[idx] <- levels(factor(tmp$cmp))[1]
+  }
+  
+}
+```
+
+Llistar els grups que tenen diferents compostos:
+```{r}
+c <- levels(factor(feat_filter$cmp))
+for(i in seq(length(c))){
+  tmp <- feat_filter[!is.na(feat_filter$cmp), ]
+  tmp <- tmp[tmp$cmp == c[i], ]
+  if(length(levels(factor(tmp$compound))) > 1){
+    print(paste(i, levels(factor(tmp$cmp)), levels(factor(tmp$compound))))
+  }
 }
 ```
 
@@ -525,9 +600,9 @@ for(i in seq(nrow(ions.long))){
 # Table
 ```{r}
 tb.ann <- 
-  data.frame(matrix(ncol = 4, 
+  data.frame(matrix(ncol = 5, 
                     nrow = length(levels(factor(feat_filter$cmp)))))
-colnames(tb.ann) <- c("C", "Compound", "RT", "Annotations")
+colnames(tb.ann) <- c("C", "Compound", "RT", "Annotations", "Comments")
 c <- levels(factor(feat_filter$cmp))
 for(i in seq(nrow(tb.ann))){
   tb.ann$C[i] <- c[i]
@@ -538,6 +613,10 @@ for(i in seq(nrow(tb.ann))){
   tb.ann$RT[i] <- round(mean(tmp$rtmed))
   tb.ann$Annotations[i] <- paste(round(tmp$mzmed, 4), tmp$annotation, 
                                  collapse = "; ")
+  if(length(which(ih_cmp$cmp_ID==tb.ann$Compound[i]))>0){
+    tb.ann$Comments[i] <- 
+      ih_cmp$comments[which(ih_cmp$cmp_ID==tb.ann$Compound[i])]
+  }
 }
 ```
 
