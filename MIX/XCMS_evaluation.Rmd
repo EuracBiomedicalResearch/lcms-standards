@@ -1,0 +1,250 @@
+---
+title: "Evaluation XCMS"
+subtitle: "Standards Library: MIX"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+```{r include = FALSE}
+knitr::opts_chunk$set(echo=TRUE)
+
+startpoint <- Sys.time()
+```
+
+In this document I'm going to check the quality of the data obtained 
+after processing raw files with XCMS. Different things to 
+look for are to check if there is only 1 detected peak per compound 
+(peak detection step), as well as, 1 feature per compound 
+(correspondance step). 
+
+# Preliminaries
+I define the specific parameters for the current study, I load all 
+required libraries, and I set up the parallel processing.
+
+## Parameters
+```{r, echo=TRUE}
+polarity <- "POS" # specify "POS" or "NEG"
+mix <- 1         # specify MIX number
+mz.d <- 0.01
+rt.d <- 10
+if(mix < 10){
+  dir.create(paste0("images/MIX0", mix, "/", polarity, "/XCMS_eval"), 
+                  recursive = TRUE, showWarnings = FALSE)
+} else {
+  dir.create(paste0("images/MIX", mix, "/", polarity, "/XCMS_eval"), 
+                  recursive = TRUE, showWarnings = FALSE)
+}
+```
+
+## Libraries
+```{r, message=FALSE, warning=FALSE}
+library(doParallel)
+library(xcms)
+library(RColorBrewer)
+library(Rdisop)
+library(CompoundDb)
+```
+
+## Parallel processing
+```{r}
+ncores <- detectCores()-1
+registerDoParallel(ncores)
+register(DoparParam(), default = TRUE)
+```
+
+## Data import
+```{r}
+if(mix < 10){
+  load(paste0("XCMS_processing_MIX0", mix, "_", polarity, ".Rdata"))
+} else {
+  load(paste0("XCMS_processing_MIX", mix, "_", polarity, ".Rdata"))
+}
+```
+
+## Colouring factors
+Also, I define colors to be used for the various experimental groups 
+throughout the experiment.
+```{r}
+getPalette <- colorRampPalette(brewer.pal(9, "YlOrRd"))
+col_class <- c("grey", 
+               rev(getPalette(length(which(xdata$class != "Blank")))))
+names(col_class) <- levels(factor(xdata$sample_group))
+plot(NULL ,xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
+legend("top", legend = names(col_class), bty='n', 
+       col = col_class, pch = 16, pt.cex = 1.5, cex = 0.9, ncol = 3)
+mtext("Class", at=0.2, cex=2)
+```
+
+## Standards library
+### Import
+```{r}
+std_info <- read.table(
+    "https://raw.githubusercontent.com/EuracBiomedicalResearch/lcms-standards/master/data/standards_dilution.txt",
+    sep = "\t", header = TRUE, as.is = TRUE)
+std_info <- std_info[std_info$mix == mix, ]
+```
+
+### Quality
+```{r, eval=FALSE}
+std_info$quality <- c(NA,      # succinic
+                      "2P",    # creatinine   
+                      "2P",    # glucose      
+                      "OK",    # carnitine
+                      "2P",    # alanine
+                      "2P",    # arginine
+                      "OK",    # aspartic
+                      "OK",    # cysteine
+                      "2P",    # glutamic
+                      "2P",    # glycine      
+                      "OK",    # histidine
+                      NA,      # isoleucine
+                      "2P",    # leucine
+                      "OK",    # lysine
+                      "OK",    # methionine    
+                      "OK",    # phenylalanine
+                      "OK",    # proline
+                      "OK",    # serine        
+                      "OK",    # threonine
+                      "2P",    # tyrosine
+                      "OK"     # valine
+                      )
+```
+
+### Additional formating
+```{r}
+std_info <- std_info[!is.na(std_info[, grep(polarity, 
+                                            colnames(std_info))]),]
+rownames(std_info) <- seq(nrow(std_info))
+
+std_info$mzneut = NA
+std_info$mz <- NA
+for(i in seq(nrow(std_info))){
+  if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
+    getMolecule(as.character(std_info$formula[i]))$exactmass}else{
+      std_info$mzneut[i] = as.numeric(std_info$formula[i])}
+  std_info$mz[i] <- unlist(
+        mass2mz(std_info$mzneut[i],
+                adduct = as.character(
+                    std_info[i, grep(polarity, colnames(std_info))])))
+}
+```
+
+# Workflow
+```{r}
+dim(featureValues(xdata))
+
+for(i in seq(nrow(std_info))){ # for each STD do the following:
+  
+  mz.i <- std_info$mz[i]
+  rt.i <- std_info$RT[i]
+  cmpname <- tolower(gsub(" .*", "", std_info$name[i]))
+  cmpname <- gsub("l-", "", cmpname)
+  
+  # PEAK DETECTION
+  chr <- chromatogram(xdata, mz = c((mz.i - mz.d), (mz.i + mz.d)),
+                      aggregationFun = "max")
+  if(nrow(featureDefinitions(chr)) == 1){
+    ft <- rownames(featureDefinitions(chr))
+  } else if (nrow(featureDefinitions(chr)) > 1){
+    ft <- rownames(featureDefinitions(chr))[
+      which.max(rowMeans(featureValues(chr, value = "into"), 
+                         na.rm = TRUE))]
+  }
+  if(exists("ft")){
+    ft_chr <- featureChromatograms(xdata, features = ft)
+  
+  filename <-
+    paste0("images/", 
+           levels(xdata$class)[levels(xdata$class) != "Blank"], 
+           "/", polarity, "/XCMS_eval/", cmpname, "_FT.png")
+  png(file = filename, width = 1000, height = 500)
+  par(mfrow = c(1,2))
+  plot(ft_chr, col = "#00000040", 
+     peakCol = col_class[xdata$sample_group[chromPeaks(ft_chr)[, "column"]]],
+     peakBg = 
+       paste0(col_class[xdata$sample_group[chromPeaks(ft_chr)[, "column"]]],
+              "10"))
+  plot(ft_chr, col = "#00000040", 
+       peakCol = col_class[xdata$sample_group[chromPeaks(ft_chr)[, "column"]]],
+       peakBg = paste0(col_class[
+         xdata$sample_group[chromPeaks(ft_chr)[, "column"]]], "10"))
+  xcms:::.add_chromatogram_peaks(
+    ft_chr, chromPeaks(ft_chr),
+    col = col_class[xdata$sample_group[chromPeaks(ft_chr)[, "column"]]],
+    bg = NA,
+    type = "rectangle")
+  dev.off()
+  } else {
+    print(paste(std_info$name, "NOT detected"))
+  }
+  
+  # CORRESPONDANCE
+  filename <-
+    paste0("images/", 
+           levels(xdata$class)[levels(xdata$class) != "Blank"], 
+           "/", polarity, "/XCMS_eval/", cmpname, "_GR.png")
+  png(file = filename, width = 1000, height = 500)
+  if(exists("ft")) {
+    plotChromPeakDensity(
+    chr, pdp2, 
+    peakCol = col_class[xdata$sample_group[chromPeaks(chr)[, "column"]]],
+    peakBg = paste0(col_class[
+      xdata$sample_group[chromPeaks(chr)[, "column"]]], "10"))
+  } else {
+    plot(chr, col = col_class[xdata$sample_group])
+  }
+  dev.off()
+  
+  chr2 <- chromatogram(raw_data, mz = c((mz.i - mz.d), (mz.i + mz.d)),
+                      aggregationFun = "max")
+  filename <-
+    paste0("images/", 
+           levels(xdata$class)[levels(xdata$class) != "Blank"], 
+           "/", polarity, "/XCMS_eval/", cmpname, "_GR_zoom.png")
+  png(file = filename, width = 1000, height = 500)
+  if(nrow(chromPeaks(findChromPeaks(chr2, param = cwp))) > 0){
+    chr2 <- findChromPeaks(chr2, param = cwp)
+  delta_rt <- abs(chromPeaks(chr2)[, "rt"] - rt.i)
+  pks <- data.frame(chromPeaks(chr2)[delta_rt < 60, , drop=FALSE])
+  if (nrow(pks)) {
+    pks2 <- pks[0, ]
+    for(j in seq(length(levels(factor(pks$column))))){
+      pks3 <- pks[pks$column == j, ]
+      pks2 <- rbind(pks2, pks3[which.max(pks3$maxo),])
+    }
+    #pks2 <- pks2[pks2$column > 3, ]
+    rtmin <- min(pks2$rtmin) - 5
+    rtmax <- max(pks2$rtmax) + 5
+    ylim <- c(0, max(pks$maxo, na.rm = TRUE))
+    } else {
+      rtmin <- std_info$RT[i] - 5
+      rtmax <- std_info$RT[i] + 5
+      ylim <- c(0, max(sapply(chr, intensity), na.rm = TRUE))
+    }
+  chr2 <- chromatogram(xdata, mz = c((mz.i - mz.d), (mz.i + mz.d)),
+                       rt = c((rt.i - rt.d), (rt.i + rt.d)),
+                      aggregationFun = "max")
+  plotChromPeakDensity(
+    chr2, pdp2, 
+    peakCol = col_class[xdata$sample_group[chromPeaks(chr2)[, "column"]]],
+    peakBg = paste0(col_class[
+      xdata$sample_group[chromPeaks(chr2)[, "column"]]], "10"))
+  } else {
+    plot(chr, col = col_class[xdata$sample_group], xlim = rt.i + 30 * c(-1,2))
+  }
+  dev.off()
+  rm(ft)
+}
+```
+
+# Session information
+```{r}
+Sys.time()-startpoint
+
+devtools::session_info()
+```
+

@@ -1,6 +1,6 @@
 ---
 title: "Feature filtering + grouping"
-subtitle: "Internal Standards: Matrix effect"
+subtitle: "Standards Library: MIX"
 author: "Mar Garcia-Aloy"
 output: 
   BiocStyle::html_document:
@@ -19,15 +19,20 @@ startpoint <- Sys.time()
 ## Parameters
 ```{r}
 polarity <- "POS" # specify "POS" or "NEG"
-study <- "IS"     # specify "IS" or "QC"
+mix <- 7          # specify MIX number
 mz.d <- 0.01
 rt.d <- 10
 myseed <- 589
 filter.int <- 50000
 cor.thr.i <- 0.7 # correlation intensity
 cor.thr.s <- 0.9 # correlation peak shape
-#dir.create(paste0("images/", study, "/", polarity, "/exclusion"), 
-#           recursive = TRUE, showWarnings = FALSE)
+#if(mix < 10){
+#  dir.create(paste0("images/MIX0", mix, "/", polarity, "/exclusion"), 
+#                  recursive = TRUE, showWarnings = FALSE)
+#} else {
+#  dir.create(paste0("images/MIX", mix, "/", polarity, "/exclusion"), 
+#                  recursive = TRUE, showWarnings = FALSE)
+#}
 ```
 
 ## Libraries
@@ -47,7 +52,11 @@ source("https://raw.githubusercontent.com/EuracBiomedicalResearch/lcms-standards
 
 ## Data import
 ```{r}
-load(paste0("XCMS_processing_", study, "_", polarity, ".Rdata"))
+if(mix < 10){
+  load(paste0("XCMS_processing_MIX0", mix, "_", polarity, ".Rdata"))
+} else {
+  load(paste0("XCMS_processing_MIX", mix, "_", polarity, ".Rdata"))
+}
 
 # Data extraction
 feat <- data.frame(featureDefinitions(xdata))
@@ -69,7 +78,7 @@ data_imp <- data.frame(t(imputeRowMinRand(data, method = "from_to")))
 if(polarity == "NEG"){ ion = -1.007276 
 } else if(polarity == "POS"){ ion = 1.007276 }
 
-ih_exclusion <- read.table(gsub("std_serum", "data/inhouse_exclusion.txt", getwd()),
+ih_exclusion <- read.table(gsub("MIX", "data/inhouse_exclusion.txt", getwd()),
                            sep = "\t", header = TRUE, as.is = TRUE)
 ih_exclusion$mzneut = NA
 ih_exclusion$mz <- NA
@@ -84,7 +93,6 @@ for(i in seq(nrow(ih_exclusion))){
   
   ih_exclusion$mz[i] <- ih_exclusion$mzneut[i] + ion
 }
-
 ```
 
 
@@ -112,8 +120,9 @@ for(i in seq(length(idx))){
   ft_chr <- featureChromatograms(xdata, features = ft.i)
   
   cmpname <- paste0("X", round(mz.i, 4), "_", round(rt.i))
-  filename <- paste0("images/", study, "/", polarity, "/exclusion/", 
-                     cmpname, "_FT.png")
+  filename <- paste0("images/", 
+                     levels(xdata$class)[levels(xdata$class) != "Blank"], 
+                     "/", polarity, "/exclusion/", cmpname, "_FT.png")
   png(file = filename, width = 1000, height = 500)
   par(mfrow = c(1,2))
   plot(chrs)
@@ -132,7 +141,7 @@ Features occurring in solvents and blanks: Keep features that were at least 2-fo
 
 ```{r}
 xdata$blank <- 0
-xdata$blank[xdata$class == "Blank_Inj"] <- 1
+xdata$blank[xdata$class == "Blank"] <- 1
 data_NONimp_0 <- data_NONimp
 data_NONimp_0[is.na(data_NONimp_0)] <- 0
 tmp <- data.frame(t(aggregate(data_NONimp_0, list(xdata$blank), mean)))
@@ -140,7 +149,7 @@ colnames(tmp) <- c("samples", "blank")
 tmp <- tmp[-1,]
 tmp$FC <- tmp$samples / tmp$blank
 data_NONimp_filter <- 
-  data_NONimp_filter[, colnames(data_NONimp_filter) %in% 
+  data_NONimp[, colnames(data_NONimp) %in% 
                        rownames(tmp)[tmp$FC > 2]]
 dim(data_NONimp_filter)
 ```
@@ -160,12 +169,11 @@ dim(data_NONimp_filter)
 ## Variation
 Keep features where between-group variation > within-group variation
 ```{r}
-tmp <- apply(data_NONimp[xdata$class == "LowIS",], 2, stat.cv)
-feat$cv_low <- tmp
-tmp <- apply(data_NONimp[xdata$class == "HighIS",], 2, stat.cv)
-feat$cv_high <- tmp
-for(i in seq(nrow(feat))){
-  feat$cv_intra[i] <- max(feat$cv_low[i], feat$cv_high[i], na.rm = TRUE)
+tmp <- aggregate(data_NONimp, by = list(gsub("_.*", "", xdata$sample_group)), stat.cv)
+tmp <- setNames(data.frame(t(tmp[,-1])), tmp[,1])
+feat$cv_intra <- NA
+for(i in seq(nrow(tmp))){
+  feat$cv_intra[i] <- max(tmp[i,], na.rm = TRUE)
 }
 tmp <- apply(data_NONimp, 2, stat.cv)
 feat$cv_all <- tmp
@@ -280,7 +288,7 @@ for(z in seq(nrow(feat_filter))){ # go feature by feature ("z")
   } # close if "is.na(cmp[z])"
   save.image("tmp.RData")
 } # close feat "z"
-
+rm(idx)
 length(levels(factor(feat_filter$cmp)))
 ```
 
@@ -303,14 +311,15 @@ if(length(feat.i$cmp[unlist(which_within(329.2553236, feat.i$mzmed))])>0){
 }
 
 # Na adduct: 187.1132447
-if(feat.i$cmp[unlist(which_within(mz.i, feat.i$mzmed))] != 
+if(length(unlist(which_within(mz.i, feat.i$mzmed))) > 0){
+  if(feat.i$cmp[unlist(which_within(mz.i, feat.i$mzmed))] != 
    feat.i$cmp[unlist(which_within(187.1132447, feat.i$mzmed))]){
   feat.i$cmp[which(
     feat.i$cmp == 
       feat.i$cmp[unlist(which_within(187.1132447, feat.i$mzmed))])] <- 
     feat.i$cmp[unlist(which_within(mz.i, feat.i$mzmed))]
 }
-
+}
 idx <- which(rownames(feat_filter) %in% rownames(feat.i))
 feat_filter$cmp[idx] <- feat.i$cmp
 
@@ -330,7 +339,9 @@ save(list = c(
   
   # Annotations
   "feat_filter"),
-  file = paste0("filter_group_", study, "_", polarity, ".Rdata"))
+  file = paste0("filter_group_",  
+                levels(xdata$class)[levels(xdata$class) != "Blank"], 
+                "_", polarity, ".Rdata"))
 ```
 
 

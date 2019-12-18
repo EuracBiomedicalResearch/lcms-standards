@@ -1,0 +1,191 @@
+---
+title: "XCMS processing"
+subtitle: "Standards Library: MIX"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+
+```{r include = FALSE}
+knitr::opts_chunk$set(echo=TRUE)
+
+startpoint <- Sys.time()
+```
+
+
+Te current aim is to annotate the ions associated with the in-house 
+standards. In this document I'm going to do the XCMS processing.   
+
+# Preliminaries
+I define the specific parameters for the current study, I load all 
+required libraries, and I set up the parallel processing.
+
+## Parameters
+```{r, echo=TRUE}
+polarity <- "POS" # specify "POS" or "NEG"
+mix <- 7          # specify MIX number
+rt_cut <- 340
+MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+```
+
+## Libraries
+```{r, message=FALSE, warning=FALSE}
+library(doParallel)
+library(xcms)
+library(RColorBrewer)
+```
+
+## Parallel processing
+```{r}
+ncores <- detectCores()-1
+registerDoParallel(ncores)
+register(DoparParam(), default = TRUE)
+```
+
+
+# Study samples
+Below I'm going to import the document with the file names and later I'll 
+restrict them to the current polarity.  
+
+```{r}
+injections <- read.table(paste0(gsub("MIX", "", getwd()), 
+                                "data/standards_dilution_files.txt"), 
+                         sep = "\t", as.is = TRUE, header = TRUE)
+
+injections <- injections[injections$polarity == polarity, ]
+if(mix < 10){
+  injections <- injections[injections$sample_group == "Blank" | 
+                             injections$mix == paste0("MIX0", mix), ]
+} else {
+  injections <- injections[injections$sample_group == "Blank" | 
+                             injections$mix == paste0("MIX", mix), ]
+}
+myfiles <- paste(injections$folder, injections$mzML, sep = "/") 
+```
+
+## Colouring factors
+Also, I define colors to be used for the various experimental groups 
+throughout the experiment.
+```{r}
+injections$class <- "Blank"
+if(mix < 10){
+  injections$class[injections$sample_group != "Blank"] <- paste0("MIX0", mix)
+} else {
+  injections$class[injections$sample_group != "Blank"] <- paste0("MIX", mix)
+}
+injections$class <- factor(injections$class)
+if(length(levels(injections$class)) < 3){
+  col_class <- brewer.pal(3, "Set1")
+  col_class <- col_class[-2]
+  } else {
+    col_class <- brewer.pal(length(levels(injections$class)), "Set1")
+  }
+names(col_class) <- levels(injections$class)
+plot(NULL ,xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
+legend("topleft", legend = names(col_class),
+       col = col_class, pch = 16, pt.cex=3, cex=1.5, bty='n')
+mtext("Class", at=0.2, cex=2)
+```
+
+
+# Workflow
+## readMSData
+```{r}
+raw_data <- readMSData(files = paste0(MZML_PATH, myfiles), 
+                       pdata = new("NAnnotatedDataFrame", injections),
+                       mode = "onDisk")
+raw_data <- filterRt(raw_data, rt = c(0, rt_cut))
+```
+
+## Peak detection & post-processing
+```{r}
+cwp <- CentWaveParam(
+  peakwidth = c(2, 20), 
+  ppm = 50, 
+  snthresh = 5,
+  mzdiff = 0.001,
+  prefilter = c(4, 5000),
+  noise = 100,
+  integrate = 2)
+
+mnp <- MergeNeighboringPeaksParam(
+  expandRt = 2, 
+  expandMz = 0.001, 
+  ppm = 10,
+  minProp = 0.66)
+
+xdata <- findChromPeaks(raw_data, param = cwp)
+
+xdata <- refineChromPeaks(xdata,
+                          param = mnp, 
+                          msLevel = 1L,
+                          BPPARAM = bpparam())
+```
+
+## Aligment and Correspondance
+```{r}
+pdp1 <- PeakDensityParam(
+  sampleGroups = xdata$class, 
+  minFraction = 0.75, 
+  bw = 3,
+  binSize = 0.01)
+
+pdp2 <- PeakDensityParam(
+  sampleGroups = xdata$class, 
+  minFraction = 0.3, 
+  bw = 2,
+  binSize = 0.01)
+
+pgp <- PeakGroupsParam(
+  span = 0.3,
+  subset = 
+    which(xdata$class == 
+            levels(injections$class)[levels(injections$class) != 
+                                       "Blank"]),  
+  subsetAdjust = "average",
+  minFraction = 0.9) 
+
+xdata <- groupChromPeaks(xdata, param = pdp1)
+xdata <- adjustRtime(xdata, param = pgp)
+plotAdjustedRtime(xdata,  col = col_class[xdata$class],
+                  peakGroupsCol = "grey", peakGroupsPch = 1)
+legend("topleft",
+       legend=names(col_class), col = col_class,
+       lty = 1, ncol = 1)
+xdata <- groupChromPeaks(xdata, param = pdp2)
+```
+
+## Peak filling
+```{r}
+fcp <- FillChromPeaksParam(
+  ppm = 20, 
+  fixedRt = median(chromPeaks(xdata)[, "rtmax"] -
+                     chromPeaks(xdata)[, "rtmin"]) / 2)
+
+xdata <- fillChromPeaks(xdata, param = fcp)
+```
+
+## Data export
+```{r}
+ls()
+save(list = c("raw_data", "xdata", 
+              "cwp", "mnp", "pdp1", "pdp2", "pgp", "fcp",
+              "MZML_PATH", "myfiles"), 
+     file = 
+       paste0("XCMS_processing_",
+              levels(injections$class)[levels(injections$class) != 
+                                         "Blank"], "_", polarity, 
+              ".Rdata"))
+```
+
+
+# Session information
+```{r}
+Sys.time()-startpoint
+
+devtools::session_info()
+```

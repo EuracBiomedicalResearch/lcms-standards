@@ -1,2 +1,0 @@
-cmp_ID	formula	seen_in
-Y0001	181.9777	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext

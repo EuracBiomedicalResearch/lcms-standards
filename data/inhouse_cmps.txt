@@ -1,90 +1,146 @@
 cmp_ID	formula	RT	seen_in	comments
-X0001	192.155324	29	2019_11: IS_High vs IS_Low	background
-X0002	216.09976	29	2019_11: IS_High vs IS_Low	background
-X0003	138.059624	100	2019_11: IS_High vs IS_Low	background
-X0004	514.405953	27	2019_11: IS_High vs IS_Low	background
-X0005	181.153124	117	2019_11: IS_High vs IS_Low	background
-X0006	134.088324	136	2019_11: IS_High vs IS_Low	background
-X0007	73.090324	32	2019_11: IS_High vs IS_Low	background
-X0008	129.151724	27	2019_11: IS_High vs IS_Low	background
-X0009	171.949024	194	2019_11: IS_High vs IS_Low	background
-X0010	173.949024	192	2019_11: IS_High vs IS_Low	background
-X0011	152.127224	40	2019_11: IS_High vs IS_Low	background
-X0012	648.299504	29	2019_11: IS_High vs IS_Low	background
-X0013	171.059924	179	2019_11: IS_High vs IS_Low	background
-X0014	189.121624	39	2019_11: IS_High vs IS_Low	background
-X0015	518.187824	31	2019_11: IS_High vs IS_Low	background
-X0016	392.290824	25	2019_11: IS_High vs IS_Low	background
-X0017	169.080424	43	2019_11: IS_High vs IS_Low	background
-X0018	198.135724	156	2019_11: IS_High vs IS_Low	background
-X0019	613.246284	141	2019_11: IS_High vs IS_Low	background
-X0020	238.081944	30	2019_11: IS_High vs IS_Low	background
-X0021	167.082634	146	2019_11: IS_High vs IS_Low	background
-X0022	332.143484	127	2019_11: IS_High vs IS_Low	background
-X0023	135.056224	67	2019_11: IS_High vs IS_Low	background
-X0024	124.978894	203	2019_11: IS_High vs IS_Low	background
-X0025	344.145064	35	2019_11: IS_High vs IS_Low	background
-X0026	101.120684	29	2019_11: IS_High vs IS_Low	background
-X0027	89.500484	193	2019_11: IS_High vs IS_Low	background
-X0028	734.287724	31	2019_11: IS_High vs IS_Low	background
-X0029	137.041314	151	2019_11: IS_High vs IS_Low	"L-Methionine (13C5, 99%; 15N, 99%): [M+H-H2O]+"
-X0030	165.1311537	54	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0031	339.2524856	135	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0032	700.4863132	137	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0033	170.9858706	294	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0034	68.03870482	44	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0035	156.064224	95	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0036	166.110424	33	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0037	474.3187593	59	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0038	165.1271972	65	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0039	69.04150223	68	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0040	202.0798399	70	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0041	152.0947781	37	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0042	452.3354218	135	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0043	282.168124	40	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0044	389.1620663	73	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0045	135.0935554	34	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0046	474.3226	123	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0047	299.283	30	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0048	577.130724	31	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0049	325.371	23	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0050	328.2483	59	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0051	304.150124	40	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0052	530.4002	27	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0053	164.124224	125	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0054	414.205	31	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0055	183.978124	34	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0056	124.063724	47	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0057	112.063824	64	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0058	178.139824	53	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0059	222.981124	188	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0060	576.127324	34	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0061	303.293024	24	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0062	340.255924	134	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0063	458.344724	55	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0064	137.120424	27	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0065	138.079324	33	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0066	194.141524	28	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0067	716.4606	131	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0068	452.336424	54	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0069	154.033524	93	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0070	208.182324	29	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0071	320.3083	29	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0072	336.234324	56	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0073	463.328124	140	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0074	429.383024	26	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0075	82.053964	36	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0076	381.159924	70	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0077	420.235324	40	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0078	208.157624	28	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0079	910.680324	143	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0080	225.944424	114	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0081	490.314124	38	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0082	401.350724	27	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0083	911.684124	143	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0084	140.095024	35	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0085	334.298524	25	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0086	393.160424	50	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0087	328.318	30	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0088	206.151924	31	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
-X0089	156.070224	135	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext	background
+X0001	192.155324	29	2019_11: IS_High vs IS_Low POS	IS
+X0002	216.09976	29	2019_11: IS_High vs IS_Low POS	IS
+X0003	138.059624	100	2019_11: IS_High vs IS_Low POS	IS
+X0004	514.405953	27	2019_11: IS_High vs IS_Low POS	IS
+X0005	181.153124	117	2019_11: IS_High vs IS_Low POS	IS
+X0006	134.088324	136	2019_11: IS_High vs IS_Low POS	IS
+X0007	73.090324	32	2019_11: IS_High vs IS_Low POS	IS
+X0008	129.151724	27	2019_11: IS_High vs IS_Low POS	IS
+X0009	171.949024	194	2019_11: IS_High vs IS_Low POS	IS
+X0010	173.949024	192	2019_11: IS_High vs IS_Low POS	IS
+X0011	152.127224	40	2019_11: IS_High vs IS_Low POS	IS
+X0012	648.299504	29	2019_11: IS_High vs IS_Low POS	IS
+X0013	171.059924	179	2019_11: IS_High vs IS_Low POS	IS
+X0014	189.121624	39	2019_11: IS_High vs IS_Low POS	IS
+X0015	518.187824	31	2019_11: IS_High vs IS_Low POS	IS
+X0016	392.290824	25	2019_11: IS_High vs IS_Low POS	IS
+X0017	169.080424	43	2019_11: IS_High vs IS_Low POS	IS
+X0018	198.135724	156	2019_11: IS_High vs IS_Low POS	IS
+X0019	613.246284	141	2019_11: IS_High vs IS_Low POS	IS
+X0020	238.081944	30	2019_11: IS_High vs IS_Low POS	IS
+X0021	167.082634	146	2019_11: IS_High vs IS_Low POS	IS
+X0022	332.143484	127	2019_11: IS_High vs IS_Low POS	IS
+X0023	135.056224	67	2019_11: IS_High vs IS_Low POS	IS
+X0024	124.978894	203	2019_11: IS_High vs IS_Low POS	IS
+X0025	344.145064	35	2019_11: IS_High vs IS_Low POS	IS
+X0026	101.120684	29	2019_11: IS_High vs IS_Low POS	IS
+X0027	89.500484	193	2019_11: IS_High vs IS_Low POS	IS
+X0028	734.287724	31	2019_11: IS_High vs IS_Low POS	IS
+X0029	137.041314	151	2019_11: IS_High vs IS_Low POS	"L-Methionine (13C5, 99%; 15N, 99%): [M+H-H2O]+"
+X0030	165.1311537	54	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0031	339.2524856	135	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0032	700.4863132	137	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0033	170.9858706	294	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0034	68.03870482	44	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0035	156.064224	95	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0036	166.110424	33	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0037	474.3187593	59	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0038	165.1271972	65	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0039	69.04150223	68	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0040	202.0798399	70	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0041	152.0947781	37	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0042a	452.3354218	135	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0042b	452.336424	54	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0043	282.168124	40	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0044	389.1620663	73	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0045	135.0935554	34	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0046	474.3226	123	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0047	299.283	30	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0048	577.130724	31	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0049	325.371	23	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0050	328.2483	59	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0051	304.150124	40	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0052	530.4002	27	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0053	164.124224	125	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0054	414.205	31	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0055	183.978124	34	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0056	124.063724	47	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0057	112.063824	64	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0058	178.139824	53	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0059	222.981124	188	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0060	576.127324	34	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0061	303.293024	24	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0062	340.255924	134	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0063	458.344724	55	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0064	137.120424	27	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0065	138.079324	33	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0066	194.141524	28	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0067	716.4606	131	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0068	153.089724	88	2016_05: MIX-06 vs Blank POS	MIX-06
+X0069	154.033524	93	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0070	208.182324	29	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0071	320.3083	29	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0072	336.234324	56	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0073	463.328124	140	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0074	429.383024	26	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0075	82.053964	36	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0076	381.159924	70	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0077	420.235324	40	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0078	208.157624	28	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0079	910.680324	143	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0080a	225.944424	114	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0080b	225.943724	163	2016_05: MIX-01 vs Blank POS	MIX-01
+X0081	490.314124	38	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0082	401.350724	27	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0083	911.684124	143	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0084	140.095024	35	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0085	334.298524	25	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0086	393.160424	50	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0087	328.318	30	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0088	206.151924	31	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0089	156.070224	135	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0090	181.9777	201	2019_11: IS_High vs IS_Low vs Blank_Inj vs Blank_Ext POS	IS
+X0091	152.105824	161	2016_05: MIX-06 vs Blank POS	MIX-06
+X0092	123.079524	55	2016_05: MIX-01 vs Blank POS	MIX-01
+X0093	C5H11NO2	157	2016_05: MIX-01 vs Blank POS	Betaine
+X0094	113.0587	78	2016_05: MIX-01 vs Blank POS	MIX-01
+X0095	139.060524	157	2016_05: MIX-01 vs Blank POS	MIX-01
+X0096	837.826424	164	2016_05: MIX-01 vs Blank POS	MIX-01
+X0097	429.905224	154	2016_05: MIX-01 vs Blank POS	MIX-01
+X0098	278.085424	43	2016_05: MIX-01 vs Blank POS	MIX-01
+X0099	218.053024	35	2016_05: MIX-01 vs Blank POS	MIX-01
+X0100	300.067424	59	2016_05: MIX-01 vs Blank POS	MIX-01
+X0101	C11H21NO4	36	2016_05: MIX-02 vs Blank POS	C4 Carnitine
+X0102	C5H4N4O	117	2016_05: MIX-02 vs Blank POS	Hypoxanthine
+X0103	C6H6N4O2	69	2016_05: MIX-02 vs Blank POS	1-Methylxanthine
+X0104	131.069324	139	2016_05: MIX-02 vs Blank POS	MIX-02
+X0105	253.128824	36	2016_05: MIX-02 vs Blank POS	MIX-02
+X0106	462.292424	36	2016_05: MIX-02 vs Blank POS	MIX-02
+X0107	156.027424	41	2016_05: MIX-02 vs Blank POS	MIX-02
+X0108	180.001924	113	2016_05: MIX-02 vs Blank POS	MIX-02
+X0109	C23H45NO4	33	2016_05: MIX-03 vs Blank POS	Palmitoylcarnitine
+X0110	C6H13N3O3	179	2016_05: MIX-03 vs Blank POS	Citrulline
+X0111	C4H5N3O	140	2016_05: MIX-03 vs Blank POS	Cytosine
+X0112	C6H13NO2	139	2016_05: MIX-03 vs Blank POS	Isoleucine
+X0113	401.340204	33	2016_05: MIX-03 vs Blank POS	MIX-03
+X0114	181.182364	14	2016_05: MIX-03 vs Blank POS	MIX-03
+X0115	88.500254	205	2016_05: MIX-03 vs Blank POS	MIX-03
+X0116	306.076184	204	2016_05: MIX-03 vs Blank POS	MIX-03
+X0117	C4H9NO2	115	2016_05: MIX-04 vs Blank POS	Gamma-Aminobutyric acid
+X0118	C17H20N4O6	142	2016_05: MIX-04 vs Blank POS	Riboflavin
+X0119	C8H11N	36	2016_05: MIX-04 vs Blank POS	Phenylethylamine
+X0120	C5H10N2O3	176	2016_05: MIX-04 vs Blank POS	Glutamine
+X0121a	297.089204	192	2016_05: MIX-04 vs Blank POS	MIX-04
+X0121b	297.089124	37	2016_05: MIX-05 vs Blank POS	MIX-05
+X0122	328.061654	36	2016_05: MIX-04 vs Blank POS	MIX-04
+X0123	335.066054	140	2016_05: MIX-04 vs Blank POS	MIX-04
+X0124	382.032964	127	2016_05: MIX-04 vs Blank POS	MIX-04
+X0125	281.050024	198	2016_05: MIX-06 vs Blank POS	MIX-06
+X0126	C11H15N5O3S	68	2016_05: MIX-05 vs Blank POS	5-MTA
+X0127a	78.014494	57	2016_05: MIX-05 vs Blank POS	MIX-05
+X0127b	78.014454	78	2016_05: MIX-05 vs Blank POS	MIX-05
+X0128	C21H30O4	31	2016_05: MIX-05 vs Blank POS	Corticosterone
+X0129	99.995794	37	2016_05: MIX-05 vs Blank POS	MIX-05
+X0130	62.991804	50	2016_05: MIX-05 vs Blank POS	MIX-05
+X0131	C11H12N2O2	150	2016_05: MIX-06 vs Blank POS	Tryptophan
+X0132	C7H11NO5	75	2016_05: MIX-06 vs Blank POS	Acetylglutamic acid
+X0133	246.159024	175	2016_05: MIX-06 vs Blank POS	MIX-06
+X0134	C18H38NO5P	148	2016_05: MIX-06 vs Blank POS	Sphingosine-1-phosphate
+X0135	107.569624	173	2016_05: MIX-06 vs Blank POS	MIX-06
+X0136	439.053924	48	2016_05: MIX-06 vs Blank POS	MIX-06
+X0137	384.027324	152	2016_05: MIX-06 vs Blank POS	MIX-06
+X0138	423.211024	148	2016_05: MIX-06 vs Blank POS	MIX-06
+X0139	429.905024	144	2016_05: MIX-06 vs Blank POS	MIX-06
+X0140	C5H11NO3S	180	2016_05: MIX-06 vs Blank POS	Methioninesulfoxide
+X0141	C5H13NO	41	2016_05: MIX-06 vs Blank POS	Choline

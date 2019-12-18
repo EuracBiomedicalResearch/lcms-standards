@@ -11,9 +11,9 @@ output:
 # Parameters
 
 ```{r}
-study <- "internal_standards" # specify "internal_standards" OR 
+study <- "standards_dilution" # specify "internal_standards" OR 
                               #         "standards_dilution"
-mixnum <- 2 # specify which MIX
+mixnum <- 1 # specify which MIX
 polarity <- "POS" # specify "POS" or "NEG"
 
 #' Define the path where we can find the mzML files:
