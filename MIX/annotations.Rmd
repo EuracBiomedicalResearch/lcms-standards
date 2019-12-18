@@ -19,7 +19,7 @@ startpoint <- Sys.time()
 ## Parameters
 ```{r}
 polarity <- "POS" # specify "POS" or "NEG"
-mix <- 6         # specify MIX number
+mix <- 11         # specify MIX number
 mz.d <- 0.01
 ```
 
@@ -183,6 +183,7 @@ for(i in seq(length(levels(factor(feat_filter$cmp))))){
       abs(apply(combn(tmp$mzmed, 2), 2, diff))) # calculate their diff
     
     # Isotopes ---------------------------------------------------------
+    ##### 13C
     # subset pairs with a relationship of 1.003355 (13C):
     tmp3 <- data.frame(tmp2[ ,
                              which(tmp2[3,] > (1.003355 - mz.d) & 
@@ -201,11 +202,33 @@ for(i in seq(length(levels(factor(feat_filter$cmp))))){
     
     # write the annotations
     for(j in seq(ncol(tmp3))){
-      tmp$isotope[tmp$mzmed == tmp3[1,j]] <- paste("i", j, sep = "-")
-      tmp$isotope[tmp$mzmed == tmp3[2,j]] <- paste("i", j, sep = "-")
+      tmp$isotope[tmp$mzmed == tmp3[1,j]] <- paste("i_13C", j, sep = "-")
+      tmp$isotope[tmp$mzmed == tmp3[2,j]] <- paste("i_13C", j, sep = "-")
     }
     
     # add info to feat_filter matrix
+    idx <- which(rownames(feat_filter) %in% rownames(tmp))
+    feat_filter$isotope[idx] <- tmp$isotope
+    
+    ##### 34S
+    tmp3 <- data.frame(tmp2[ ,
+                             which(tmp2[3,] > (1.995796 - mz.d) & 
+                                     tmp2[3,] < (1.995796 + mz.d))])
+    
+    mi <- c()
+    for(j in seq(ncol(tmp3))){
+      mi <- c(mi, 
+              mean(data_NONimp[,rownames(tmp)[tmp$mzmed==tmp3[2,j]]] /
+                     data_NONimp[,rownames(tmp)[tmp$mzmed==tmp3[1,j]]],
+              na.rm = TRUE))
+    }
+    tmp3 <- data.frame(tmp3[, which(mi < 0.5)])
+    
+    for(j in seq(ncol(tmp3))){
+      tmp$isotope[tmp$mzmed == tmp3[1,j]] <- paste("i_34S", j, sep = "-")
+      tmp$isotope[tmp$mzmed == tmp3[2,j]] <- paste("i_34S", j, sep = "-")
+    }
+    
     idx <- which(rownames(feat_filter) %in% rownames(tmp))
     feat_filter$isotope[idx] <- tmp$isotope
     
@@ -294,18 +317,34 @@ for(i in seq(nrow(std_info))){
   rt.i <- std_info$RT[i]
   if(length(unlist(which_within(mz.i, feat_filter$mzmed))) == 1){
     idx <- unlist(which_within(mz.i, feat_filter$mzmed))
+    
     feat_filter$compound[idx] <- std_info$name[i]
     feat_filter$annotation[idx] <- "[M+H]+"
-    idx <- which(feat_filter$cmp == feat_filter$cmp[idx])
-    feat_filter$compound[idx] <- std_info$name[i]
+    idy <- which(feat_filter$cmp == feat_filter$cmp[idx])
+    idy.c <- feat_filter$compound[idy]
+    idy.c <- idy.c[grep("^[X].*", idy.c)]
+    idy.c <- idy.c[!duplicated(idy.c)]
+    for(j in length(idy.c)){
+      idz <- which(feat_filter$compound == idy.c[j] & feat_filter$cmp == feat_filter$cmp[idx])
+      feat_filter$compound[idz] <- ih_cmp$comments[ih_cmp$cmp_ID == idy.c[j]]
+    }
+    
   } else if(length(unlist(which_within(mz.i, feat_filter$mzmed))) > 1) {
     idx <- unlist(which_within(mz.i, feat_filter$mzmed))
     feat.i <- feat_filter[idx,]
     idx <- idx[unlist(which_within(rt.i, feat.i$rtmed, mzd = 20))]
-      feat_filter$compound[idx] <- std_info$name[i]
+    
+   feat_filter$compound[idx] <- std_info$name[i]
     feat_filter$annotation[idx] <- "[M+H]+"
-    idx <- which(feat_filter$cmp == feat_filter$cmp[idx])
-    feat_filter$compound[idx] <- std_info$name[i]
+    idy <- which(feat_filter$cmp == feat_filter$cmp[idx])
+    idy.c <- feat_filter$compound[idy]
+    idy.c <- idy.c[grep("^[X].*", idy.c)]
+    idy.c <- idy.c[!duplicated(idy.c)]
+    for(j in length(idy.c)){
+      idz <- which(feat_filter$compound == idy.c[j] & feat_filter$cmp == feat_filter$cmp[idx])
+      feat_filter$compound[idz] <- ih_cmp$comments[ih_cmp$cmp_ID == idy.c[j]]
+    }
+
     } else {
       print(
         paste(i, ": There is NOT any feature with mz of", 
