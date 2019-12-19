@@ -38,3 +38,14 @@ Creatinine (N-Methhyl_D3)	POS	233.1627805	[2M+H]+	NA
 "L-Tyrosine (13C9, 99%; 15N, 99%)"	POS	174.0978335	[M+H-H2O]+	NA
 "L-Tyrosine (13C9, 99%; 15N, 99%)"	POS	191.1050434	12C[M+H]+	9.090909091
 "L-Valine (13C5, 99%; 15N, 99%)"	POS	77.09123007	[M+H-H2O-CO]+	NA
+"Succinic acid-2,2,3,3-d4"	NEG	122.0472455	13C[M-H]-	4.326291317
+"Succinic acid-2,2,3,3-d4"	NEG	265.0775509	[2M+Na-2H]-	NA
+"Succinic acid-2,2,3,3-d4"	NEG	360.9730288	[-]	NA
+"Succinic acid-2,2,3,3-d4"	NEG	485.2842645	[-]	NA
+"Succinic acid-2,2,3,3-d4"	NEG	77.05406138	[M-H-CO2]-	NA
+"L-Tyrosine (13C9, 99%; 15N, 99%)"	NEG	403.1763631	[2M+Na-2H]-	NA
+"Glucose (6,6-D2)"	NEG	181.0681166	[M-H]-	NA
+"Glucose (6,6-D2)"	NEG	217.0403241	13C[M+Cl]-	NA
+"Glucose (6,6-D2)"	NEG	219.037374	13C37Cl[M+Cl]-	NA
+"Glucose (6,6-D2)"	NEG	416.0570393	[-]	NA
+"L-Arginine HCl (13C6, 99%; 15N4, 99%)"	NEG	219.0904067	[-]	NA
