@@ -1,5 +1,6 @@
 ---
-title: "Internal Standards: Matrix effect - XCMS processing"
+title: "XCMS processing"
+subtitle: "Standards Library: MIX"
 author: "Mar Garcia-Aloy"
 output: 
   BiocStyle::html_document:
@@ -16,19 +17,8 @@ startpoint <- Sys.time()
 ```
 
 
-This document belongs to the project designed to check the matrix effect 
-in retention times (RT) of internal standards (IS). After checking this 
-information ([output here](RT_matrix_effect.Rmd)), the current aim is to 
-check the feature extraction of each IS.     
-I'll start using only samples that consisted with 2 different 
-concentrations of IS diluted in water (i.e., `Low_IS` and `High_IS`). 
-Later, I'll go with QC-serum samples. The group of samples that are going 
-to be used is specified in the parameter "study" (in section 
-"preliminaries" - "parameters").  
-In this document I'm going to do the XCMS processing. This output will be 
-taken for the upcoming document in order to plot each feature 
-(from each IS) separately and have the enough information to check the 
-processed data.  
+Te current aim is to annotate the ions associated with the in-house 
+standards. In this document I'm going to do the XCMS processing.   
 
 # Preliminaries
 I define the specific parameters for the current study, I load all 
@@ -37,7 +27,7 @@ required libraries, and I set up the parallel processing.
 ## Parameters
 ```{r, echo=TRUE}
 polarity <- "POS" # specify "POS" or "NEG"
-study <- "IS"     # specify "IS" or "QC"
+mix <- 17          # specify MIX number
 rt_cut <- 340
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 ```
@@ -62,22 +52,18 @@ Below I'm going to import the document with the file names and later I'll
 restrict them to the current polarity.  
 
 ```{r}
-injections <- read.table(paste0(gsub("std_serum", "", getwd()), 
-                                "data/is_serum_files.txt"), 
+injections <- read.table(paste0(gsub("MIX", "", getwd()), 
+                                "data/standards_dilution_files.txt"), 
                          sep = "\t", as.is = TRUE, header = TRUE)
 
 injections <- injections[injections$polarity == polarity, ]
-if (study == "IS") {
-  injections <- injections[injections$class == "Blank_Inj" |
-                             injections$class == "Blank_Ext" |
-                             injections$class == "LowIS" | 
-                             injections$class == "HighIS", ]
-} else if (study == "QC"){
-  injections <- injections[injections$class == "QC" | 
-                             injections$class == "QC_LowIS" |
-                             injections$class == "QC_HighIS", ]
+if(mix < 10){
+  injections <- injections[injections$sample_group == "Blank" | 
+                             injections$mix == paste0("MIX0", mix), ]
+} else {
+  injections <- injections[injections$sample_group == "Blank" | 
+                             injections$mix == paste0("MIX", mix), ]
 }
-
 myfiles <- paste(injections$folder, injections$mzML, sep = "/") 
 ```
 
@@ -85,10 +71,17 @@ myfiles <- paste(injections$folder, injections$mzML, sep = "/")
 Also, I define colors to be used for the various experimental groups 
 throughout the experiment.
 ```{r}
+injections$class <- "Blank"
+if(mix < 10){
+  injections$class[injections$sample_group != "Blank"] <- paste0("MIX0", mix)
+} else {
+  injections$class[injections$sample_group != "Blank"] <- paste0("MIX", mix)
+}
 injections$class <- factor(injections$class)
 if(length(levels(injections$class)) < 3){
   col_class <- brewer.pal(3, "Set1")
-  col_class <- col_class[1:length(levels(injections$class))]}else{
+  col_class <- col_class[-2]
+  } else {
     col_class <- brewer.pal(length(levels(injections$class)), "Set1")
   }
 names(col_class) <- levels(injections$class)
@@ -113,17 +106,17 @@ raw_data <- filterRt(raw_data, rt = c(0, rt_cut))
 cwp <- CentWaveParam(
   peakwidth = c(2, 20), 
   ppm = 50, 
-  snthresh = 10,
+  snthresh = 5,
   mzdiff = 0.001,
   prefilter = c(4, 5000),
   noise = 100,
   integrate = 2)
 
 mnp <- MergeNeighboringPeaksParam(
-  expandRt = 8, 
+  expandRt = 2, 
   expandMz = 0.001, 
   ppm = 10,
-  minProp = 0.75)
+  minProp = 0.66)
 
 xdata <- findChromPeaks(raw_data, param = cwp)
 
@@ -137,37 +130,30 @@ xdata <- refineChromPeaks(xdata,
 ```{r}
 pdp1 <- PeakDensityParam(
   sampleGroups = xdata$class, 
-  minFraction = 0.9, 
+  minFraction = 0.75, 
   bw = 3,
-  binSize = 0.005)
+  binSize = 0.01)
 
 pdp2 <- PeakDensityParam(
   sampleGroups = xdata$class, 
-  minFraction = 0.9, 
-  bw = 20,
-  binSize = 0.005)
+  minFraction = 0.3, 
+  bw = 2,
+  binSize = 0.01)
 
-if (study == "IS") {
-  pgp <- PeakGroupsParam(
-    span = 0.3,
-    subset = which(xdata$class == "LowIS"),  
-    subsetAdjust = "average",
-    minFraction = 0.9 
-  ) 
-} else if (study == "QC"){
-  pgp <- PeakGroupsParam(
-    span = 0.3,
-    subset = which(xdata$class == "QC_LowIS"),  
-    subsetAdjust = "average",
-    minFraction = 0.9 
-  ) 
-}
+pgp <- PeakGroupsParam(
+  span = 0.3,
+  subset = 
+    which(xdata$class == 
+            levels(injections$class)[levels(injections$class) != 
+                                       "Blank"]),  
+  subsetAdjust = "average",
+  minFraction = 0.9) 
 
 xdata <- groupChromPeaks(xdata, param = pdp1)
 xdata <- adjustRtime(xdata, param = pgp)
 plotAdjustedRtime(xdata,  col = col_class[xdata$class],
                   peakGroupsCol = "grey", peakGroupsPch = 1)
-legend("bottomright",
+legend("topleft",
        legend=names(col_class), col = col_class,
        lty = 1, ncol = 1)
 xdata <- groupChromPeaks(xdata, param = pdp2)
@@ -189,24 +175,12 @@ ls()
 save(list = c("raw_data", "xdata", 
               "cwp", "mnp", "pdp1", "pdp2", "pgp", "fcp",
               "MZML_PATH", "myfiles"), 
-     file = paste0("XCMS_processing_", study, "_", polarity, ".Rdata"))
+     file = 
+       paste0("XCMS_processing_",
+              levels(injections$class)[levels(injections$class) != 
+                                         "Blank"], "_", polarity, 
+              ".Rdata"))
 ```
-
-# Summary
-Following I mention the changes in XCMS parameters that I've applied for 
-this dataset:  
-
-- Peak detection (for most IS there are several "ghost peaks"):  
-  - snthresh = 10  
-  - prefilter = (4, 5000)  
-
-- Peak post-processing:  
-  - expandRt = 8 (splitted peaks: Carnitine [4] & Creatinine [8])
-
-- Peak grouping (correspondance):   
-  - minFraction = 0.9 (sample groups are made up of replicates from the same sample)    
-  - bw (II) = 20 (for some IS I got 2 features [10, except for Creatinine {20})    
-  - binSize = 0.005 (for Ala sample #1 we got "ghost peaks" interfering in the final intensity value)  
 
 
 # Session information
