@@ -27,7 +27,7 @@ required libraries, and I set up the parallel processing.
 ## Parameters
 ```{r, echo=TRUE}
 polarity <- "POS" # specify "POS" or "NEG"
-mix <- 14          # specify MIX number
+mix <- 17          # specify MIX number
 rt_cut <- 340
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 ```

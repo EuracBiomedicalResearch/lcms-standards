@@ -19,7 +19,7 @@ startpoint <- Sys.time()
 ## Parameters
 ```{r}
 polarity <- "POS" # specify "POS" or "NEG"
-mix <- 13          # specify MIX number
+mix <- 17         # specify MIX number
 mz.d <- 0.01
 rt.d <- 10
 myseed <- 589
