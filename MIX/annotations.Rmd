@@ -18,7 +18,7 @@ startpoint <- Sys.time()
 # Preliminaries
 ## Parameters
 ```{r}
-polarity <- "POS" # specify "POS" or "NEG"
+polarity <- "NEG" # specify "POS" or "NEG"
 mix <- 17         # specify MIX number
 mz.d <- 0.01
 ```
@@ -50,9 +50,10 @@ std_info <- read.table(
   #"https://raw.githubusercontent.com/EuracBiomedicalResearch/lcms-standards/master/data/standards_dilution.txt",
   gsub("MIX", "data/standards_dilution.txt", getwd()),
   sep = "\t", header = TRUE, as.is = TRUE)
+std_info$name <- trimws(std_info$name) # remove space at end of string
 std_info <- std_info[!is.na(std_info[, grep(polarity, 
                                             colnames(std_info))]),]
-std_info <- std_info[std_info$mix == mix, ]
+#std_info <- std_info[std_info$mix == mix, ]
 rownames(std_info) <- seq(nrow(std_info))
 
 std_info$mzneut = NA
@@ -255,14 +256,28 @@ for(i in seq(length(levels(factor(feat_filter$cmp))))){
     
     
     # Dimers -----------------------------------------------------------
-    tmp3 <- combn((tmp$mzmed), 2) # combine in pairs all mz of cmp "z"
-    tmp3[1, ] <- tmp3[1,] - 1.007276
-    tmp3[1, ] <- (tmp3[1,]*2) + 1.007276
+   tmp3 <- t(expand.grid(tmp$mzmed, tmp$mzmed))
+    tmp4 <- tmp3
+    tmp3[1, ] <- tmp3[1,] - ion
+    tmp3[1, ] <- (tmp3[1,]*2) + ion
     tmp3 <- rbind(tmp3, abs(tmp3[1,] - tmp3[2,]))
     di <- which(tmp3[3,] > 0 & tmp3[3,] < 0.02)
     for(j in seq(length(di))){
-      tmp$dimer[tmp$mzmed == tmp2[1, di[j]]] <- paste("d", j, sep = "-")
-      tmp$dimer[tmp$mzmed == tmp2[2, di[j]]] <- paste("d", j, sep = "-")
+      tmp$dimer[tmp$mzmed == tmp4[1, di[j]]] <- paste("d", j, sep = "-")
+      tmp$dimer[tmp$mzmed == tmp4[2, di[j]]] <- paste("d", j, sep = "-")
+    }
+    idx <- which(rownames(feat_filter) %in% rownames(tmp))
+    feat_filter$dimer[idx] <- tmp$dimer
+    
+    tmp3 <- t(expand.grid(tmp$mzmed, tmp$mzmed))
+    tmp4 <- tmp3
+    tmp3[1, ] <- tmp3[1,] - ion
+    tmp3[1, ] <- (tmp3[1,]*2) + ion + 21.98198
+    tmp3 <- rbind(tmp3, abs(tmp3[1,] - tmp3[2,]))
+    di <- which(tmp3[3,] > 0 & tmp3[3,] < 0.02)
+    for(j in seq(length(di))){
+      tmp$dimer[tmp$mzmed == tmp4[1, di[j]]] <- paste("dNa", j, sep = "-")
+      tmp$dimer[tmp$mzmed == tmp4[2, di[j]]] <- paste("dNa", j, sep = "-")
     }
     idx <- which(rownames(feat_filter) %in% rownames(tmp))
     feat_filter$dimer[idx] <- tmp$dimer
@@ -302,6 +317,28 @@ for(i in seq(length(levels(factor(feat_filter$cmp))))){
     idx <- which(rownames(feat_filter) %in% rownames(tmp))
     feat_filter$adduct[idx] <- tmp$adduct
     
+    ##### FA
+    tmp3 <- data.frame(tmp2[ ,
+                             which(tmp2[3,] > (46.00547 - mz.d) & 
+                                     tmp2[3,] < (46.00547 + mz.d))])
+    for(j in seq(ncol(tmp3))){
+      tmp$adduct[tmp$mzmed == tmp3[1,j]] <- paste("a_FA", j, sep = "-")
+      tmp$adduct[tmp$mzmed == tmp3[2,j]] <- paste("a_FA", j, sep = "-")
+    }
+    idx <- which(rownames(feat_filter) %in% rownames(tmp))
+    feat_filter$adduct[idx] <- tmp$adduct
+    
+    ##### FA
+    tmp3 <- data.frame(tmp2[ ,
+                             which(tmp2[3,] > (67.98745 - mz.d) & 
+                                     tmp2[3,] < (67.98745 + mz.d))])
+    for(j in seq(ncol(tmp3))){
+      tmp$adduct[tmp$mzmed == tmp3[1,j]] <- paste("a_CHOONa", j, sep = "-")
+      tmp$adduct[tmp$mzmed == tmp3[2,j]] <- paste("a_CHOONa", j, sep = "-")
+    }
+    idx <- which(rownames(feat_filter) %in% rownames(tmp))
+    feat_filter$adduct[idx] <- tmp$adduct
+    
     # Fragments --------------------------------------------------------
     ##### NH3
     tmp3 <- data.frame(tmp2[ ,
@@ -314,27 +351,62 @@ for(i in seq(length(levels(factor(feat_filter$cmp))))){
     idx <- which(rownames(feat_filter) %in% rownames(tmp))
     feat_filter$fragment[idx] <- tmp$fragment
     
+    ##### H2O
+    tmp3 <- data.frame(tmp2[ ,
+                             which(tmp2[3,] > (18.01056 - mz.d) & 
+                                     tmp2[3,] < (18.01056 + mz.d))])
+    for(j in seq(ncol(tmp3))){
+      tmp$fragment[tmp$mzmed == tmp3[1,j]] <- paste("f_H2O", j, sep = "-")
+      tmp$fragment[tmp$mzmed == tmp3[2,j]] <- paste("f_H2O", j, sep = "-")
+    }
+    idx <- which(rownames(feat_filter) %in% rownames(tmp))
+    feat_filter$fragment[idx] <- tmp$fragment
+    
+    ##### H2O - CO
+    tmp3 <- data.frame(tmp2[ ,
+                             which(tmp2[3,] > (46.00547 - mz.d) & 
+                                     tmp2[3,] < (46.00547 + mz.d))])
+    for(j in seq(ncol(tmp3))){
+      tmp$fragment[tmp$mzmed == tmp3[1,j]] <- paste("f_H2O_CO", j, sep = "-")
+      tmp$fragment[tmp$mzmed == tmp3[2,j]] <- paste("f_H2O_CO", j, sep = "-")
+    }
+    idx <- which(rownames(feat_filter) %in% rownames(tmp))
+    feat_filter$fragment[idx] <- tmp$fragment
+    
+    ##### CO2
+    tmp3 <- data.frame(tmp2[ ,
+                             which(tmp2[3,] > (43.98982 - mz.d) & 
+                                     tmp2[3,] < (43.98982 + mz.d))])
+    for(j in seq(ncol(tmp3))){
+      tmp$fragment[tmp$mzmed == tmp3[1,j]] <- paste("f_CO2", j, sep = "-")
+      tmp$fragment[tmp$mzmed == tmp3[2,j]] <- paste("f_CO2", j, sep = "-")
+    }
+    idx <- which(rownames(feat_filter) %in% rownames(tmp))
+    feat_filter$fragment[idx] <- tmp$fragment
+    
     # Charged ----------------------------------------------------------
     #### C13
     tmp3 <- t(expand.grid(tmp$mzmed, tmp$mzmed))
+    tmp4 <- tmp3
     tmp3[1, ] <- (tmp3[1,] + ion + 1.003355) / 2
     tmp3 <- rbind(tmp3, abs(tmp3[1,] - tmp3[2,]))
     di <- which(tmp3[3,] > 0 & tmp3[3,] < 0.02)
     for(j in seq(length(di))){
-      tmp$charged[tmp$mzmed == tmp3[1, di[j]]] <- paste("c13C", j, sep = "-")
-      tmp$charged[tmp$mzmed == tmp3[2, di[j]]] <- paste("c13C", j, sep = "-")
+      tmp$charged[tmp$mzmed == tmp4[1, di[j]]] <- paste("c13C", j, sep = "-")
+      tmp$charged[tmp$mzmed == tmp4[2, di[j]]] <- paste("c13C", j, sep = "-")
     }
     idx <- which(rownames(feat_filter) %in% rownames(tmp))
     feat_filter$charged[idx] <- tmp$charged
 
     #### C12
     tmp3 <- t(expand.grid(tmp$mzmed, tmp$mzmed))
+    tmp4 <- tmp3
     tmp3[1, ] <- (tmp3[1,] + ion) / 2
     tmp3 <- rbind(tmp3, abs(tmp3[1,] - tmp3[2,]))
     di <- which(tmp3[3,] > 0 & tmp3[3,] < 0.02)
     for(j in seq(length(di))){
-      tmp$charged[tmp$mzmed == tmp3[1, di[j]]] <- paste("c", j, sep = "-")
-      tmp$charged[tmp$mzmed == tmp3[2, di[j]]] <- paste("c", j, sep = "-")
+      tmp$charged[tmp$mzmed == tmp4[1, di[j]]] <- paste("c", j, sep = "-")
+      tmp$charged[tmp$mzmed == tmp4[2, di[j]]] <- paste("c", j, sep = "-")
     }
     idx <- which(rownames(feat_filter) %in% rownames(tmp))
     feat_filter$charged[idx] <- tmp$charged
@@ -363,66 +435,26 @@ for(i in seq(nrow(feat_filter))){
     feat_filter$compound[i] <- id.i$ID
     feat_filter$annotation[i] <- as.character(id.i$assignation)
   } else if(nrow(id.i) == 2){
-    if(id.i$mz[1] == id.i$mz[2]){
+    if(round(id.i$mz[1],3) == round(id.i$mz[2],3)){
       feat_filter$compound[i] <- 
-        paste(ih_cmp$comments[ih_cmp$cmp_ID == id.i$ID[1]], "/", 
-              ih_cmp$comments[ih_cmp$cmp_ID == id.i$ID[2]])
+        paste(id.i$ID[1], "/", id.i$ID[2])
       feat_filter$annotation[i] <- as.character(
         paste(id.i$assignation[1], "/", id.i$assignation[2])
       )
     }
-  }else if(nrow(id.i) > 2) {
+  } else if((nrow(id.i) > 2) & 
+            (round(mean(id.i$mz) - ion, 3) == 230.019)){
+    feat_filter$compound[i] <- "Ribulose/Ribose/Xylulose 5-Phosphate"
+    feat_filter$annotation[i] <- as.character(paste(id.i$assignation[1]))
+  } else {
     print(paste(i, rownames(feat_filter)[i], ": there is some CONFLICT"))
   }
 }
 ```
 
 
-## Standards library
-First of all I'm going to annotate the main ion for each IS.
-```{r, eval=FALSE}
-for(i in seq(nrow(std_info))){
-  mz.i <- std_info$mz[i]
-  rt.i <- std_info$RT[i]
-  if(length(unlist(which_within(mz.i, feat_filter$mzmed))) == 1){
-    idx <- unlist(which_within(mz.i, feat_filter$mzmed))
-    
-    feat_filter$compound[idx] <- std_info$name[i]
-    feat_filter$annotation[idx] <- std_info[i, grep(polarity, colnames(std_info))]
-    idy <- which(feat_filter$cmp == feat_filter$cmp[idx])
-    idy.c <- feat_filter$compound[idy]
-    idy.c <- idy.c[grep("^[X].*", idy.c)]
-    idy.c <- idy.c[!duplicated(idy.c)]
-    for(j in length(idy.c)){
-      idz <- which(feat_filter$compound == idy.c[j] & feat_filter$cmp == feat_filter$cmp[idx])
-      feat_filter$compound[idz] <- ih_cmp$comments[ih_cmp$cmp_ID == idy.c[j]]
-    }
-    
-  } else if(length(unlist(which_within(mz.i, feat_filter$mzmed))) > 1) {
-    idx <- unlist(which_within(mz.i, feat_filter$mzmed))
-    feat.i <- feat_filter[idx,]
-    idx <- idx[unlist(which_within(rt.i, feat.i$rtmed, mzd = 20))]
-    
-   feat_filter$compound[idx] <- std_info$name[i]
-    feat_filter$annotation[idx] <- std_info[i, grep(polarity, colnames(std_info))]
-    idy <- which(feat_filter$cmp == feat_filter$cmp[idx])
-    idy.c <- feat_filter$compound[idy]
-    idy.c <- idy.c[grep("^[X].*", idy.c)]
-    idy.c <- idy.c[!duplicated(idy.c)]
-    for(j in length(idy.c)){
-      idz <- which(feat_filter$compound == idy.c[j] & feat_filter$cmp == feat_filter$cmp[idx])
-      feat_filter$compound[idz] <- ih_cmp$comments[ih_cmp$cmp_ID == idy.c[j]]
-    }
-
-    } else {
-      print(
-        paste(i, ": There is NOT any feature with mz of", 
-              std_info$name[i]))
-    }
-}
-```
-
-Now, I'm going to annotate their isotopes considering both the mz value 
+## IS, isotopic pattern
+I'm going to annotate their isotopes considering both the mz value 
 & the abundance:
 ```{r}
 for(i in seq(nrow(std_info))){
@@ -511,6 +543,14 @@ for(i in seq(nrow(tmp))){
   feat_filter$compound[idx] <- tmp$comments[i]
 }
 ```
+
+```{r}
+if(polarity == "NEG"){
+  feat_filter$annotation <- gsub("\\[M\\+Na\\]\\+", "[M+Na-2H]-", feat_filter$annotation)
+  feat_filter$annotation <- gsub("\\[2M\\+Na\\]\\+", "[2M+Na-2H]-", feat_filter$annotation)
+}
+```
+
 
 # Table
 ```{r}
