@@ -1,6 +1,6 @@
 ---
 title: "XCMS processing"
-subtitle: "Internal Standards: Matrix effect"
+subtitle: "QC Serum: Matrix effect"
 author: "Mar Garcia-Aloy"
 output: 
   BiocStyle::html_document:
@@ -26,8 +26,8 @@ required libraries, and I set up the parallel processing.
 
 ## Parameters
 ```{r, echo=TRUE}
-polarity <- "NEG" # specify "POS" or "NEG"
-study <- "IS"     # specify "IS" or "QC"
+polarity <- "POS" # specify "POS" or "NEG"
+study <- "QC"     # specify "IS" or "QC"
 rt_cut <- 340
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 ```
@@ -54,7 +54,7 @@ restrict them to the current polarity.
 ```{r}
 injections <- read.table(paste0(gsub("std_serum", "", getwd()), 
                                 "data/is_serum_files.txt"), 
-                 sep = "\t", as.is = TRUE, header = TRUE)
+                         sep = "\t", as.is = TRUE, header = TRUE)
 
 injections <- injections[injections$polarity == polarity, ]
 
@@ -64,8 +64,9 @@ if (study == "IS") {
                              injections$class == "LowIS" | 
                              injections$class == "HighIS", ]
 } else if (study == "QC"){
-  injections <- injections[injections$class == "QC" | 
-                           injections$class == "QC_LowIS" |
+  injections <- injections[injections$class == "Blank_Inj" |
+                             injections$class == "QC" | 
+                             injections$class == "QC_LowIS" |
                              injections$class == "QC_HighIS", ]
 }
 
@@ -77,9 +78,10 @@ Also, I define colors to be used for the various experimental groups
 throughout the experiment.
 ```{r}
 injections$class <- factor(injections$class)
-if(length(levels(injections$class)) < 3){
+if(length(levels(injections$class)) == 2){
   col_class <- brewer.pal(3, "Set1")
-  col_class <- col_class[1:length(levels(injections$class))]}else{
+  col_class <- col_class[-2]
+  } else {
     col_class <- brewer.pal(length(levels(injections$class)), "Set1")
   }
 names(col_class) <- levels(injections$class)
@@ -122,6 +124,7 @@ xdata <- refineChromPeaks(xdata,
                           param = mnp, 
                           msLevel = 1L,
                           BPPARAM = bpparam())
+save.image("tmp.RData")
 ```
 
 ## Aligment and Correspondance
@@ -186,9 +189,10 @@ save(list = c("raw_data", "xdata",
 # Summary
 Following I mention the changes in XCMS parameters that I’ve applied for this dataset:  
   
-- Peak grouping (correspondance):   
+- Peak grouping (correspondance):  
   - minFraction = 0.9 (sample groups are made up of replicates from the same sample)  
   
+
 # Session information
 ```{r}
 Sys.time()-startpoint

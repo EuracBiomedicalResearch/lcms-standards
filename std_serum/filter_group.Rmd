@@ -1,6 +1,6 @@
 ---
 title: "Feature filtering + grouping"
-subtitle: "Internal Standards: Matrix effect"
+subtitle: "QC Serum: Matrix effect"
 author: "Mar Garcia-Aloy"
 output: 
   BiocStyle::html_document:
@@ -18,8 +18,8 @@ startpoint <- Sys.time()
 # Preliminaries
 ## Parameters
 ```{r}
-polarity <- "NEG" # specify "POS" or "NEG"
-study <- "IS"     # specify "IS" or "QC"
+polarity <- "POS" # specify "POS" or "NEG"
+study <- "QC"     # specify "IS" or "QC"
 mz.d <- 0.01
 rt.d <- 10
 myseed <- 589
@@ -62,6 +62,7 @@ data_imp <- data.frame(t(imputeRowMinRand(data, method = "from_to")))
 ```
 
 
+
 # Filtering
 ```{r}
 dim(data_NONimp)
@@ -88,7 +89,8 @@ dim(data_NONimp_filter)
 ## Intensity
 Restrict to high intensity features
 ```{r}
-feat$int <- apply(data_NONimp, 2, function(x){
+data_NONimp_smpl <- data_NONimp[xdata$blank == 0, ]
+feat$int <- apply(data_NONimp_smpl, 2, function(x){
   median(x, na.rm = TRUE)
 })
 data_NONimp_filter <- 
@@ -100,12 +102,12 @@ dim(data_NONimp_filter)
 ## Variation
 Keep features where between-group variation > within-group variation
 ```{r}
-tmp <- apply(data_NONimp[xdata$class == "LowIS",], 2, stat.cv)
-feat$cv_low <- tmp
-tmp <- apply(data_NONimp[xdata$class == "HighIS",], 2, stat.cv)
-feat$cv_high <- tmp
-for(i in seq(nrow(feat))){
-  feat$cv_intra[i] <- max(feat$cv_low[i], feat$cv_high[i], na.rm = TRUE)
+tmp <- aggregate(data_NONimp, by = list(xdata$class), stat.cv)
+tmp <- setNames(data.frame(t(tmp[,-1])), tmp[,1])
+tmp <- tmp[,-1] # delete CV_blanks
+feat$cv_intra <- NA
+for(i in seq(nrow(tmp))){
+  feat$cv_intra[i] <- max(tmp[i,], na.rm = TRUE)
 }
 tmp <- apply(data_NONimp, 2, stat.cv)
 feat$cv_all <- tmp

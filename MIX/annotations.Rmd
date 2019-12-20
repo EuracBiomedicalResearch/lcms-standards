@@ -18,8 +18,8 @@ startpoint <- Sys.time()
 # Preliminaries
 ## Parameters
 ```{r}
-polarity <- "NEG" # specify "POS" or "NEG"
-mix <- 17         # specify MIX number
+polarity <- "POS" # specify "POS" or "NEG"
+mix <- 15         # specify MIX number
 mz.d <- 0.01
 ```
 
@@ -37,9 +37,9 @@ source("https://raw.githubusercontent.com/EuracBiomedicalResearch/lcms-standards
 ## Data import
 ```{r}
 if(mix < 10){
-  load(paste0("filter_group_MIX0", mix, "_", polarity, ".Rdata"))
+  load(paste0("filter_group_MIX0", mix, "_", polarity, ".RData"))
 } else {
-  load(paste0("filter_group_MIX", mix, "_", polarity, ".Rdata"))
+  load(paste0("filter_group_MIX", mix, "_", polarity, ".RData"))
 }
 ```
 
@@ -593,7 +593,7 @@ save(list = c(
   "feat_filter", "tb.ann"),
   file = paste0("annotations_", 
                 levels(xdata$class)[levels(xdata$class) != "Blank"], 
-                "_", polarity, ".Rdata"))
+                "_", polarity, ".RData"))
 ```
 
 
