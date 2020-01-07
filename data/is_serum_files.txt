@@ -3,8 +3,8 @@ folder	mzML	polarity	sample	class	rep	inj_idx
 2019/2019_11	20191118_Blank_Inj_2_NEG.mzML	NEG	Blank_Inj_2	Blank_Inj	2	2
 2019/2019_11	20191118_Blank_Inj_3_NEG.mzML	NEG	Blank_Inj_3	Blank_Inj	3	3
 2019/2019_11	20191118_Blank_Ext_1_NEG.mzML	NEG	Blank_Ext_1	Blank_Ext	1	4
-2019/2019_11	20191118_Blank_Ext_1_NEG.mzML	NEG	Blank_Ext_2	Blank_Ext	2	5
-2019/2019_11	20191118_Blank_Ext_1_NEG.mzML	NEG	Blank_Ext_3	Blank_Ext	3	6
+2019/2019_11	20191118_Blank_Ext_2_NEG.mzML	NEG	Blank_Ext_2	Blank_Ext	2	5
+2019/2019_11	20191118_Blank_Ext_3_NEG.mzML	NEG	Blank_Ext_3	Blank_Ext	3	6
 2019/2019_11	20191118_LowIS_1_NEG.mzML	NEG	LowIS_1	LowIS	1	7
 2019/2019_11	20191118_LowIS_2_NEG.mzML	NEG	LowIS_2	LowIS	2	8
 2019/2019_11	20191118_LowIS_3_NEG.mzML	NEG	LowIS_3	LowIS	3	9

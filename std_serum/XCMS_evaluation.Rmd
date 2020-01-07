@@ -1,5 +1,6 @@
 ---
-title: "Internal Standards: Matrix effect - Evaluation XCMS"
+title: "Evaluation XCMS"
+subtitle: "Standards Library: MIX"
 author: "Mar Garcia-Aloy"
 output: 
   BiocStyle::html_document:
@@ -15,13 +16,10 @@ startpoint <- Sys.time()
 ```
 
 In this document I'm going to check the quality of the data obtained 
-after processing raw files with XCMS. For that I'm going to focus first 
-of all to the 20 IS and later also to the 200 STDs. Different things to 
+after processing raw files with XCMS. Different things to 
 look for are to check if there is only 1 detected peak per compound 
 (peak detection step), as well as, 1 feature per compound 
-(correspondance step). I'll check that separately for ISs and for 
-QC-serum samples. The group of samples that are going to be used is 
-specified in the parameter "study" (in section "preliminaries" - "parameters").
+(correspondance step). 
 
 # Preliminaries
 I define the specific parameters for the current study, I load all 
@@ -30,11 +28,16 @@ required libraries, and I set up the parallel processing.
 ## Parameters
 ```{r, echo=TRUE}
 polarity <- "POS" # specify "POS" or "NEG"
-study <- "IS"     # specify "IS" or "QC"
+mix <- 1         # specify MIX number
 mz.d <- 0.01
 rt.d <- 10
-dir.create(paste0("images/", study, "/", polarity, "/XCMS_eval"), 
+if(mix < 10){
+  dir.create(paste0("images/MIX0", mix, "/", polarity, "/XCMS_eval"), 
                   recursive = TRUE, showWarnings = FALSE)
+} else {
+  dir.create(paste0("images/MIX", mix, "/", polarity, "/XCMS_eval"), 
+                  recursive = TRUE, showWarnings = FALSE)
+}
 ```
 
 ## Libraries
@@ -55,23 +58,24 @@ register(DoparParam(), default = TRUE)
 
 ## Data import
 ```{r}
-load(paste0("XCMS_processing_", study, "_", polarity, ".Rdata"))
+if(mix < 10){
+  load(paste0("XCMS_processing_MIX0", mix, "_", polarity, ".Rdata"))
+} else {
+  load(paste0("XCMS_processing_MIX", mix, "_", polarity, ".Rdata"))
+}
 ```
 
 ## Colouring factors
 Also, I define colors to be used for the various experimental groups 
 throughout the experiment.
 ```{r}
-xdata$class <- factor(xdata$class)
-if(length(levels(xdata$class)) < 3){
-  col_class <- brewer.pal(3, "Set1")
-  col_class <- col_class[1:length(levels(xdata$class))]}else{
-  col_class <- brewer.pal(length(levels(xdata$class)), "Set1")
-  }
-names(col_class) <- levels(xdata$class)
+getPalette <- colorRampPalette(brewer.pal(9, "YlOrRd"))
+col_class <- c("grey", 
+               rev(getPalette(length(which(xdata$class != "Blank")))))
+names(col_class) <- levels(factor(xdata$sample_group))
 plot(NULL ,xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
-legend("topleft", legend = names(col_class),
-       col = col_class, pch = 16, pt.cex=3, cex=1.5, bty='n')
+legend("top", legend = names(col_class), bty='n', 
+       col = col_class, pch = 16, pt.cex = 1.5, cex = 0.9, ncol = 3)
 mtext("Class", at=0.2, cex=2)
 ```
 
@@ -79,8 +83,9 @@ mtext("Class", at=0.2, cex=2)
 ### Import
 ```{r}
 std_info <- read.table(
-    "https://raw.githubusercontent.com/EuracBiomedicalResearch/lcms-standards/master/data/internal_standards.txt",
+    "https://raw.githubusercontent.com/EuracBiomedicalResearch/lcms-standards/master/data/standards_dilution.txt",
     sep = "\t", header = TRUE, as.is = TRUE)
+std_info <- std_info[std_info$mix == mix, ]
 ```
 
 ### Quality
@@ -113,7 +118,6 @@ std_info$quality <- c(NA,      # succinic
 ```{r}
 std_info <- std_info[!is.na(std_info[, grep(polarity, 
                                             colnames(std_info))]),]
-std_info <- std_info[!grepl("Isoleucine", std_info$name),]
 rownames(std_info) <- seq(nrow(std_info))
 
 std_info$mzneut = NA
@@ -133,7 +137,7 @@ for(i in seq(nrow(std_info))){
 ```{r}
 dim(featureValues(xdata))
 
-for(i in seq(nrow(std_info))){ # for each IS do the following:
+for(i in seq(nrow(std_info))){ # for each STD do the following:
   
   mz.i <- std_info$mz[i]
   rt.i <- std_info$RT[i]
@@ -150,44 +154,60 @@ for(i in seq(nrow(std_info))){ # for each IS do the following:
       which.max(rowMeans(featureValues(chr, value = "into"), 
                          na.rm = TRUE))]
   }
-  ft_chr <- featureChromatograms(xdata, features = ft)
+  if(exists("ft")){
+    ft_chr <- featureChromatograms(xdata, features = ft)
   
-  filename <- paste0("images/", study, "/", polarity, "/XCMS_eval/", 
-                     #std_info$quality[i], "_", 
-                     cmpname, "_FT.png")
+  filename <-
+    paste0("images/", 
+           levels(xdata$class)[levels(xdata$class) != "Blank"], 
+           "/", polarity, "/XCMS_eval/", cmpname, "_FT.png")
   png(file = filename, width = 1000, height = 500)
   par(mfrow = c(1,2))
   plot(ft_chr, col = "#00000040", 
-     peakCol = col_class[xdata$class[chromPeaks(ft_chr)[, "column"]]],
+     peakCol = col_class[xdata$sample_group[chromPeaks(ft_chr)[, "column"]]],
      peakBg = 
-       paste0(col_class[xdata$class[chromPeaks(ft_chr)[, "column"]]],
+       paste0(col_class[xdata$sample_group[chromPeaks(ft_chr)[, "column"]]],
               "10"))
   plot(ft_chr, col = "#00000040", 
-       peakCol = col_class[xdata$class[chromPeaks(ft_chr)[, "column"]]],
+       peakCol = col_class[xdata$sample_group[chromPeaks(ft_chr)[, "column"]]],
        peakBg = paste0(col_class[
-         xdata$class[chromPeaks(ft_chr)[, "column"]]], "10"))
+         xdata$sample_group[chromPeaks(ft_chr)[, "column"]]], "10"))
   xcms:::.add_chromatogram_peaks(
     ft_chr, chromPeaks(ft_chr),
-    col = col_class[xdata$class[chromPeaks(ft_chr)[, "column"]]],
+    col = col_class[xdata$sample_group[chromPeaks(ft_chr)[, "column"]]],
     bg = NA,
     type = "rectangle")
   dev.off()
+  } else {
+    print(paste(std_info$name, "NOT detected"))
+  }
   
   # CORRESPONDANCE
-  filename <- paste0("images/", study, "/", polarity, "/XCMS_eval/", 
-                     #std_info$quality[i], "_", 
-                     cmpname, "_GR.png")
+  filename <-
+    paste0("images/", 
+           levels(xdata$class)[levels(xdata$class) != "Blank"], 
+           "/", polarity, "/XCMS_eval/", cmpname, "_GR.png")
   png(file = filename, width = 1000, height = 500)
-  plotChromPeakDensity(
+  if(exists("ft")) {
+    plotChromPeakDensity(
     chr, pdp2, 
-    peakCol = col_class[xdata$class[chromPeaks(chr)[, "column"]]],
+    peakCol = col_class[xdata$sample_group[chromPeaks(chr)[, "column"]]],
     peakBg = paste0(col_class[
-      xdata$class[chromPeaks(chr)[, "column"]]], "10"))
+      xdata$sample_group[chromPeaks(chr)[, "column"]]], "10"))
+  } else {
+    plot(chr, col = col_class[xdata$sample_group])
+  }
   dev.off()
   
   chr2 <- chromatogram(raw_data, mz = c((mz.i - mz.d), (mz.i + mz.d)),
                       aggregationFun = "max")
-  chr2 <- findChromPeaks(chr2, param = cwp)
+  filename <-
+    paste0("images/", 
+           levels(xdata$class)[levels(xdata$class) != "Blank"], 
+           "/", polarity, "/XCMS_eval/", cmpname, "_GR_zoom.png")
+  png(file = filename, width = 1000, height = 500)
+  if(nrow(chromPeaks(findChromPeaks(chr2, param = cwp))) > 0){
+    chr2 <- findChromPeaks(chr2, param = cwp)
   delta_rt <- abs(chromPeaks(chr2)[, "rt"] - rt.i)
   pks <- data.frame(chromPeaks(chr2)[delta_rt < 60, , drop=FALSE])
   if (nrow(pks)) {
@@ -208,16 +228,16 @@ for(i in seq(nrow(std_info))){ # for each IS do the following:
   chr2 <- chromatogram(xdata, mz = c((mz.i - mz.d), (mz.i + mz.d)),
                        rt = c((rt.i - rt.d), (rt.i + rt.d)),
                       aggregationFun = "max")
-  filename <- paste0("images/", study, "/", polarity, "/XCMS_eval/", 
-                     #std_info$quality[i], "_", 
-                     cmpname, "_GR_zoom.png")
-  png(file = filename, width = 1000, height = 500)
   plotChromPeakDensity(
     chr2, pdp2, 
-    peakCol = col_class[xdata$class[chromPeaks(chr2)[, "column"]]],
+    peakCol = col_class[xdata$sample_group[chromPeaks(chr2)[, "column"]]],
     peakBg = paste0(col_class[
-      xdata$class[chromPeaks(chr2)[, "column"]]], "10"))
+      xdata$sample_group[chromPeaks(chr2)[, "column"]]], "10"))
+  } else {
+    plot(chr, col = col_class[xdata$sample_group], xlim = rt.i + 30 * c(-1,2))
+  }
   dev.off()
+  rm(ft)
 }
 ```
 

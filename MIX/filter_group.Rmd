@@ -18,7 +18,7 @@ startpoint <- Sys.time()
 # Preliminaries
 ## Parameters
 ```{r}
-polarity <- "POS" # specify "POS" or "NEG"
+polarity <- "NEG" # specify "POS" or "NEG"
 mix <- 17         # specify MIX number
 mz.d <- 0.01
 rt.d <- 10
@@ -26,13 +26,6 @@ myseed <- 589
 filter.int <- 50000
 cor.thr.i <- 0.7 # correlation intensity
 cor.thr.s <- 0.9 # correlation peak shape
-#if(mix < 10){
-#  dir.create(paste0("images/MIX0", mix, "/", polarity, "/exclusion"), 
-#                  recursive = TRUE, showWarnings = FALSE)
-#} else {
-#  dir.create(paste0("images/MIX", mix, "/", polarity, "/exclusion"), 
-#                  recursive = TRUE, showWarnings = FALSE)
-#}
 ```
 
 ## Libraries
@@ -73,67 +66,10 @@ data_imp <- data.frame(t(imputeRowMinRand(data, method = "from_to")))
 ```
 
 
-## Exclusion list
-```{r, eval=FALSE}
-if(polarity == "NEG"){ ion = -1.007276 
-} else if(polarity == "POS"){ ion = 1.007276 }
-
-ih_exclusion <- read.table(gsub("MIX", "data/inhouse_exclusion.txt", getwd()),
-                           sep = "\t", header = TRUE, as.is = TRUE)
-ih_exclusion$mzneut = NA
-ih_exclusion$mz <- NA
-for(i in seq(nrow(ih_exclusion))){
-  
-  if(grepl("C", ih_exclusion$formula[i])){
-    ih_exclusion$mzneut[i] = 
-      getMolecule(as.character(ih_exclusion$formula[i]))$exactmass
-  } else {
-      ih_exclusion$mzneut[i] = as.numeric(ih_exclusion$formula[i])
-      }
-  
-  ih_exclusion$mz[i] <- ih_exclusion$mzneut[i] + ion
-}
-```
-
 
 # Filtering
 ```{r}
 dim(data_NONimp)
-```
-
-## Exclusion list
-```{r, eval=FALSE}
-idx <- unlist(which_within(ih_exclusion$mz, feat$mzmed))
-
-data_NONimp_filter <- data_NONimp[, !colnames(data_NONimp) %in% 
-                                    colnames(data_NONimp)[idx]]
-
-for(i in seq(length(idx))){
-  ft.i <- rownames(feat)[idx[i]]
-  mz.i <- feat$mzmed[idx[i]]
-  rt.i <- feat$rtmed[idx[i]]
-  xdata_n <- 
-      filterFile(raw_data, 
-                 order(data_imp[, ft.i], decreasing=TRUE)[1])
-  chrs <- chromatogram(xdata_n, aggregationFun = "max",
-                              mz = c(mz.i + 0.01 * c(-1, 1)))
-  ft_chr <- featureChromatograms(xdata, features = ft.i)
-  
-  cmpname <- paste0("X", round(mz.i, 4), "_", round(rt.i))
-  filename <- paste0("images/", 
-                     levels(xdata$class)[levels(xdata$class) != "Blank"], 
-                     "/", polarity, "/exclusion/", cmpname, "_FT.png")
-  png(file = filename, width = 1000, height = 500)
-  par(mfrow = c(1,2))
-  plot(chrs)
-  points(rt.i, intensity(chrs[[1]])[which.max(intensity(chrs[[1]]))], 
-         pch = 8, col = "red")
-  
-  plot(ft_chr[[order(data_imp[, ft.i], decreasing=TRUE)[1]]])
-  dev.off()
-}
-
-dim(data_NONimp_filter)
 ```
 
 ## Blanks
