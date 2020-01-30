@@ -1,0 +1,133 @@
+---
+title: "Sample files"
+subtitle: "LCMS Standards"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+
+This code belows to the experiment of the injections of all mixes in triplicate and randomly.   
+Mixes were injected in 2 different concentrations (low- and high-) and in water and in serum (QC).  
+Vinicius Veri did the experiments on January 2020.  
+Here I'm going to generate the table file with the names and metadata of injected files.  
+
+## Preliminaries
+# Libraries
+```{r, message=FALSE, warning=FALSE}
+startpoint <- Sys.time()
+library(xcms)
+library(doParallel)
+library(CompMetaboTools)
+```
+
+## Parallel processing
+```{r parallel-proc, echo=TRUE}
+ncores <- detectCores()-1
+registerDoParallel(ncores)
+register(DoparParam(), default = TRUE)
+```
+
+# Table
+Generate a data frame indicating the folder of the files (`2020/2020_01`) and their names:
+```{r}
+std_serum_files <- data.frame(
+  folder <- "2020/2020_01",
+  mzML   <- list.files("Z:/mzML/2020/2020_01"))
+colnames(std_serum_files) <- c("folder", "mzML")
+
+tmp <- data.frame(
+  do.call("rbind", strsplit(as.character(std_serum_files$mzML), "_")))
+```
+
+Indicate the polarity according to file name:
+```{r}
+std_serum_files$polarity <- gsub(".*_", "", std_serum_files$mzML)
+std_serum_files$polarity <- gsub(".mzML", "", std_serum_files$polarity)
+```
+
+Add the time stamp from the individual files:
+```{r, eval=FALSE}
+raw_data <- readMSData(files = paste0("Z:/mzML/", std_serum_files$folder, 
+                                      "/", std_serum_files$mzML), 
+                       mode = "onDisk")
+std_serum_files$time[1] <- as.character(extract_time_stamp(fileNames(raw_data[1])))
+std_serum_files <- std_serum_files[order(std_serum_files$time),]
+```
+
+Indicate the sample type:
+```{r}
+std_serum_files$type <- NA
+std_serum_files$type[
+  which(grepl("Blank", std_serum_files$mzML) & 
+          grepl("Water", std_serum_files$mzML))] <- "Blank_Water"
+std_serum_files$type[
+  which(grepl("Blank", std_serum_files$mzML) & 
+          grepl("QC", std_serum_files$mzML))] <- "Blank_QC"
+for(i in seq(nrow(std_serum_files))){
+  if(is.na(std_serum_files$type[i])){
+    if(tmp$X1[i] == "QC"){
+      std_serum_files$type[i] <- as.character(tmp$X3[i])
+    } else {
+      std_serum_files$type[i] <- as.character(tmp$X2[i])
+    }
+  }
+}
+```
+
+Indicate the sample class:
+```{r}
+std_serum_files$class <- NA
+std_serum_files$class[
+  which(grepl("Blank", std_serum_files$mzML) & 
+          grepl("Water", std_serum_files$mzML))] <- "Blank_Water"
+std_serum_files$type[
+  which(grepl("Blank", std_serum_files$mzML) & 
+          grepl("QC", std_serum_files$mzML))] <- "Blank_QC"
+for(i in seq(nrow(std_serum_files))){
+  if(is.na(std_serum_files$class[i])){
+    if(tmp$X1[i] == "QC"){
+      std_serum_files$class[i] <- 
+        paste(as.character(tmp$X1[i]),
+              as.character(tmp$X3[i]), 
+              as.character(tmp$X2[i]), sep = "_")
+    } else {
+      std_serum_files$class[i] <- 
+        paste("Water", as.character(tmp$X2[i]), 
+              as.character(tmp$X1[i]), sep = "_")
+    }
+  }
+}
+std_serum_files$class <- gsub("IS", "", std_serum_files$class)
+```
+
+Indicate the scan mode:
+```{r}
+std_serum_files$mode <- "FS"
+for(i in seq(nrow(std_serum_files))){
+  if(grepl("CE", std_serum_files$mzML[i])){
+    if(tmp$X1[i] == "QC"){
+      std_serum_files$mode[i] <- as.character(tmp$X4[i])
+    } else {
+      std_serum_files$mode[i] <- as.character(tmp$X3[i])
+    }
+  }
+}
+```
+
+# Output
+```{r}
+write.table(std_serum_files, "std_serum_files.txt", 
+            sep = "\t", row.names = FALSE)
+```
+
+
+# Session information
+```{r}
+Sys.time()-startpoint
+
+devtools::session_info()
+```
