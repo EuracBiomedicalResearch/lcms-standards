@@ -1,0 +1,78 @@
+---
+title: "CluMSID: create library"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+In this code I'm going to creat a library of all MS/MS spectras obtained in the samples that will be used.  
+Here I'll use the QC-serum samples injected by Vinicius Veri on January 2020.  
+
+# Preliminaries
+## Parameters
+```{r, warning=FALSE}
+polarity <- "NEG" # specify "POS" or "NEG"
+dir.create("data/", recursive = TRUE)
+MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+startpoint <- Sys.time()
+```
+
+## Libraries
+```{r, message=FALSE, warning=FALSE}
+library(doParallel)
+library(xcms)
+library(CluMSID)
+```
+
+## Parallel processing
+```{r parallel-proc, echo=TRUE}
+ncores <- detectCores()-1
+registerDoParallel(ncores)
+register(DoparParam(), default = TRUE)
+```
+
+# Study samples
+```{r}
+injections <- read.table(paste0(gsub("std_serum", "", getwd()), 
+                                  "data/std_serum_files.txt"), 
+                           sep = "\t", header = TRUE, as.is = TRUE)
+injections <- injections[injections$polarity == polarity, ]
+injections <- injections[injections$mode != "FS", ]
+#injections <- injections[grep("QC", injections$class), ]
+myfiles <- paste(injections$folder, injections$mzML, sep = "/") 
+```
+
+# Library building
+```{r}
+spectras = lapply(myfiles, 
+                  function(x) extractMS2spectra(paste0(MZML_PATH, x),
+                  min_peaks = 2,
+                  recalibrate_precursor = FALSE))
+ms2list <- unlist(spectras)
+for(i in seq(length(ms2list))){
+  slot(ms2list[[i]], "id") <-
+    paste(round(accessPrecursor(ms2list[[i]]),5),
+          round(accessRT(ms2list[[i]])), sep="_")
+  }
+muestra <- NA
+for(i in seq(length(spectras))){
+  muestra <- c(muestra, rep(myfiles[[i]], length(spectras[[i]])))
+  }
+muestra <- muestra[!is.na(muestra)]
+for(i in seq(length(muestra))){
+  slot(ms2list[[i]], "annotation") <- muestra[i]
+  }
+
+rm(muestra, spectras, i)
+save.image(paste0("data/CluMSID_library_",polarity,".RData"))
+```
+
+# Session information
+```{r}
+Sys.time()-startpoint
+
+devtools::session_info()
+```
