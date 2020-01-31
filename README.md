@@ -4,10 +4,6 @@ This repository contains measurement of sets of standards on LC-MS systems with
 specific configurations. The aim is to provide approximate retention times 
 (RTs) for the standard compounds in the respective setups.  
   
-In the folder `std_serum` there are the files used for analyse the 
-experiments about IS (and maybe in the future also the STDs) 
-at 2 different concentrations in water and in QC-serum samples.  
-
 
 ## Data tables
 
@@ -60,3 +56,11 @@ at 2 different concentrations in water and in QC-serum samples.
   each compound.
 - [exclusion_mz.R](exclusion_mz.R): R code for generate the 
   table `exclusion_mz.txt`.
+
+## Matrix effects
+In the folder `std_serum` there are the files used for analyse the 
+experiments about IS and STDs (injected in different MIXs) 
+at 2 different concentrations in water and in QC-serum samples.  
+The code [RT_matrix_effect](std_serum/RT_matrix_effect.Rmd) plots all 
+the EICs present in the sample (ie, IS or MIX 01-20) in the folder `images`.  
+

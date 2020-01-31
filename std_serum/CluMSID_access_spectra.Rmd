@@ -1,0 +1,125 @@
+---
+title: "CluMSID: access spectra"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+Here I'll import the libraries created with the code [CluMSID_library](CluMSID_library.Rmd) 
+in order to check if there is any MS/MS spectrum for a specific mz-RT pair.   
+I'll check at the same time the data in POS and NEG modes.
+
+# Preliminaries
+## Query
+```{r}
+mz <- 174.08920 # neutral mass
+rt <- 37 # seconds
+
+d.mz <- 0.010
+d.rt <- 30
+
+startpoint <- Sys.time()
+```
+
+## Libraries
+```{r, message = FALSE}
+library(CluMSID)
+```
+
+# MS/MS spectrum
+```{r, echo = FALSE}
+llibreries <- c("POS", "NEG")
+spectras.pos=c()
+spectras.neg=c()
+
+# Select spectras with specified mz and rt values
+for(k in seq(length(llibreries))){
+  
+  # load the library
+  load(paste0("data/CluMSID_library_", llibreries[k], ".RData"))
+  
+  # Select spectras of the corresponding mz value:
+  if(grepl("POS", llibreries[k])){
+    myspectras <-
+      getSpectrum(ms2list, "precursor", mz + 1.007276, mz.tol = d.mz)
+  }else if(grepl("NEG", llibreries[k])){
+    myspectras <- 
+      getSpectrum(ms2list, "precursor", mz - 1.007276, mz.tol = d.mz)
+  }
+  
+  # Select spectras within the specified RT:
+  if(length(myspectras) > 1){
+    myspectras <- getSpectrum(myspectras, "rt", rt, rt.tol = d.rt)
+  }
+  
+  # Almazenar the selected spectras:
+  if(grepl("POS", llibreries[k])){
+    spectras.pos <- 
+      c(spectras.pos, myspectras)
+  }else if(grepl("NEG", llibreries[k])){
+    spectras.neg <- 
+      c(spectras.neg,myspectras)
+  }
+}
+
+
+# Print 3 most intense spectras
+for(k in seq(length(llibreries))){
+  
+  print(llibreries[k])
+  
+  if(grepl("POS", llibreries[k])){
+    spectras <- spectras.pos
+  }else if(grepl("NEG", llibreries[k])){
+    spectras <- spectras.neg
+  }
+  
+  if(length(spectras) == 0){
+    print(paste0(llibreries[k],": No spectrum with that precursor."))
+  }else{
+    intensitats <- c()
+    for(i in seq(spectras)){
+      intensitats <- c(intensitats,
+                       accessSpectrum(spectras[[i]])[,2][
+                         which.max(accessSpectrum(spectras[[i]])[,2])])
+    }
+    
+    if(length(spectras) > 0){
+      print(
+        paste0(accessAnnotation(spectras[[order(intensitats, 
+                                                decreasing = T)[1]]]),
+               ": ", accessID(spectras[[order(intensitats, 
+                                              decreasing = T)[1]]])))
+      specplot(spectras[[order(intensitats, decreasing = T)[1]]])
+      }
+    
+    if(length(spectras) > 1){
+      print(
+        paste0(accessAnnotation(spectras[[order(intensitats, 
+                                                decreasing = T)[2]]]),
+               ": ",accessID(spectras[[order(intensitats, 
+                                             decreasing = T)[2]]])))
+      specplot(spectras[[order(intensitats, decreasing = T)[2]]])
+      }
+    
+    if(length(spectras) > 2){
+      print(paste0(accessAnnotation(
+        spectras[[order(intensitats, decreasing = T)[3]]]), ":", 
+        accessID(spectras[[order(intensitats, decreasing = T)[3]]])))
+      specplot(spectras[[order(intensitats, decreasing = T)[3]]])
+      }
+  }
+  print("##########################################################")
+}
+```
+
+
+# Session information
+```{r}
+Sys.time()-startpoint
+
+devtools::session_info()
+```
