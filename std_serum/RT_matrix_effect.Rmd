@@ -32,9 +32,9 @@ This scheme is for the IS. The same was done for each of the MIXs.
 # Preliminaries
 ## Parameters
 ```{r}
-polarity <- "POS" # specify "POS" or "NEG"
+polarity <- "NEG" # specify "POS" or "NEG"
 study <- "MIX"    # specify "IS" or "MIX"
-mix.n <- 2        # if study == MIX, specify which MIX number
+mix.n <- 16       # if study == MIX, specify which MIX number
 da <- 0.01
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 dir.create(paste0("images/", tolower(study), "_serum"), 
@@ -75,7 +75,8 @@ if(study == "MIX"){
 }
 for(i in seq(nrow(std_info))){
   if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
-    getMolecule(as.character(std_info$formula[i]))$exactmass}else{
+    getMolecule(as.character(std_info$formula[i]))$exactmass
+  }else{
       std_info$mzneut[i] = as.numeric(std_info$formula[i])}
 }
 ```
