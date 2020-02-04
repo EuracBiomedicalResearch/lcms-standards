@@ -63,4 +63,6 @@ experiments about IS and STDs (injected in different MIXs)
 at 2 different concentrations in water and in QC-serum samples.  
 The code [RT_matrix_effect](std_serum/RT_matrix_effect.Rmd) plots all 
 the EICs present in the sample (ie, IS or MIX 01-20) in the folder `images`.  
+In that folder there is also the code [`MS2_plot`](std_serum/MS2_plot.Rmd) 
+to search a MS2 spectrum for a specific mz-rt value
 

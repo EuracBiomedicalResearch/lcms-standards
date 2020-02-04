@@ -34,7 +34,7 @@ This scheme is for the IS. The same was done for each of the MIXs.
 ```{r}
 polarity <- "POS" # specify "POS" or "NEG"
 study <- "MIX"    # specify "IS" or "MIX"
-mix.n <- 2        # if study == MIX, specify which MIX number
+mix.n <- 18       # if study == MIX, specify which MIX number
 da <- 0.01
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 dir.create(paste0("images/", tolower(study), "_serum"), 
@@ -60,22 +60,66 @@ cwp <- CentWaveParam(
 ```{r}
 if(study == "IS"){
   std_info <- read.table(
-    "https://raw.githubusercontent.com/EuracBiomedicalResearch/lcms-standards/master/data/internal_standards.txt",
+    #"https://raw.githubusercontent.com/EuracBiomedicalResearch/lcms-standards/master/data/internal_standards.txt",
+    "C:/Users/mgarciaaloy/Documents/GitHub/lcms-standards/data/internal_standards.txt",
     sep = "\t", header = TRUE, as.is = TRUE)
 } else if(study == "MIX"){
   std_info <- read.table(
-    "https://raw.githubusercontent.com/EuracBiomedicalResearch/lcms-standards/master/data/standards_dilution.txt",
+    #"https://raw.githubusercontent.com/EuracBiomedicalResearch/lcms-standards/master/data/standards_dilution.txt",
+    "C:/Users/mgarciaaloy/Documents/GitHub/lcms-standards/data/standards_dilution.txt",
     sep = "\t", header = TRUE, as.is = TRUE)
 }
+
+std_info$cmpname <- tolower(gsub(" .*", "", std_info$name))
+std_info$cmpname <- gsub("l-", "", std_info$cmpname)
+std_info$cmpname <- gsub("alpha-", "", std_info$cmpname)
+std_info$cmpname <- gsub("Gamma-", "", std_info$cmpname)
+for(i in seq(nrow(std_info))){
+  if((substr(std_info$cmpname[i], 1, 1) %in% (seq(9))) & 
+     (substr(std_info$cmpname[i], 3, 3) %in% letters)){
+    std_info$cmpname[i] <- paste(gsub("*.-", "", std_info$cmpname[i]), 
+                                 gsub("-.*", "", std_info$cmpname[i]), sep = "_")
+  } else if((substr(std_info$cmpname[i], 1, 1) %in% (seq(9))) & 
+            (substr(std_info$cmpname[i], 3, 3) %in% seq(9))){
+    std_info$cmpname[i] <- paste(gsub(".*-", "", std_info$cmpname[i]), 
+                                 gsub(",", "_", gsub("-.*", "", std_info$cmpname[i])), 
+                                 sep = "_")
+  }
+}
+std_info$cmpname <- gsub("-", "_", std_info$cmpname)
+std_info$cmpname[std_info$name == "Glucose 1-Phosphate"] <- "glucose_phosphate_1"
+std_info$cmpname[std_info$name == "Glucose 6-Phosphate"] <- "glucose_phosphate_6"
+std_info$cmpname[std_info$name == "Fructose-1,6-Diphosphate"] <- "fructose_diphosphate"
+std_info$cmpname[std_info$name == "Ribose 5-Phosphate"] <- "ribose_phosphate_5"
+std_info$cmpname[std_info$name == "Ribulose 5-Phosphate"] <- "ribulose_phosphate_5"
+std_info$cmpname[std_info$name == "Glutathione Oxidized"] <- "glutathione_oxidized"
+std_info$cmpname[std_info$name == "Glutathione Reduced"] <- "glutathione_reduced"
+std_info$cmpname[std_info$name == "C3 Carnitine"] <- "carnitine_c3"
+std_info$cmpname[std_info$name == "C4 Carnitine"] <- "carnitine_c4"
+std_info$cmpname[std_info$name == "C5 Carnitine"] <- "carnitine_c5"
+std_info$cmpname[std_info$name == "5,6-Dihydro Thymine"] <- "dihydrothymine"
 
 std_info <- std_info[!is.na(std_info[, grep(polarity, 
                                             colnames(std_info))]),]
 if(study == "MIX"){
   std_info <- std_info[std_info$mix == mix.n, ]
+  
+  if(mix.n == 5){
+    std_info <- std_info[std_info$name != "Glycerophospho-inositol", ]
+  }
+  
+  if(mix.n == 9){
+    std_info <- std_info[std_info$name != "Eplerone", ]
+  }
+  
+  if(mix.n == 17){
+    std_info <- std_info[std_info$name != "3-Hydroxy-DL-kynurenine", ]
+  }
 }
 for(i in seq(nrow(std_info))){
   if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
-    getMolecule(as.character(std_info$formula[i]))$exactmass}else{
+    getMolecule(as.character(std_info$formula[i]))$exactmass
+  }else{
       std_info$mzneut[i] = as.numeric(std_info$formula[i])}
 }
 ```
@@ -138,20 +182,7 @@ for(i in 1:(nrow(std_info))){
                      mz = c(mzvalue - da,  mzvalue + da),
                      aggregationFun = "max")
   
-  cmpname <- tolower(gsub(" .*", "", std_info$name[i]))
-  cmpname <- gsub("l-", "", cmpname)
-  if((substr(cmpname, 1, 1) %in% (seq(9))) & 
-     (substr(cmpname, 3, 3) %in% letters)){
-    cmpname <- paste(gsub("*.-", "", cmpname), 
-                     gsub("-.*", "", cmpname), sep = "_")
-  } else if((substr(cmpname, 1, 1) %in% (seq(9))) & 
-            (substr(cmpname, 3, 3) %in% seq(9))){
-    cmpname <- paste(gsub(".*-", "", cmpname), 
-                     gsub(",", "_", gsub("-.*", "", cmpname)), 
-                     sep = "_")
-  }
-  cmpname <- gsub("-", "_", cmpname)
-  
+  cmpname <- std_info$cmpname[i]
   filename <- paste0("images/", tolower(study), "_serum/", 
                      cmpname, "_", polarity, ".png")
   
