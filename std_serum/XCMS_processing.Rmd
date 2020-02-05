@@ -145,7 +145,7 @@ pdp2 <- PeakDensityParam(
   sampleGroups = xdata$class, 
   minFraction = 0.9, 
   bw = 20,
-  binSize = 0.02)
+  binSize = 0.01)
 
 if (study == "IS") {
   pgp <- PeakGroupsParam(
