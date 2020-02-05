@@ -1,6 +1,6 @@
 ---
 title: "XCMS processing"
-subtitle: "QC Serum: Matrix effect"
+subtitle: "Standards Library: MIX"
 author: "Mar Garcia-Aloy"
 output: 
   BiocStyle::html_document:
@@ -26,8 +26,8 @@ required libraries, and I set up the parallel processing.
 
 ## Parameters
 ```{r, echo=TRUE}
-polarity <- "POS" # specify "POS" or "NEG"
-study <- "QC"     # specify "IS" or "QC"
+polarity <- "NEG" # specify "POS" or "NEG"
+mix <- 17          # specify MIX number
 rt_cut <- 340
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 ```
@@ -52,24 +52,18 @@ Below I'm going to import the document with the file names and later I'll
 restrict them to the current polarity.  
 
 ```{r}
-injections <- read.table(paste0(gsub("std_serum", "", getwd()), 
-                                "data/is_serum_files.txt"), 
+injections <- read.table(paste0(gsub("MIX", "", getwd()), 
+                                "data/standards_dilution_files.txt"), 
                          sep = "\t", as.is = TRUE, header = TRUE)
 
 injections <- injections[injections$polarity == polarity, ]
-
-if (study == "IS") {
-  injections <- injections[injections$class == "Blank_Inj" |
-                             injections$class == "Blank_Ext" |
-                             injections$class == "LowIS" | 
-                             injections$class == "HighIS", ]
-} else if (study == "QC"){
-  injections <- injections[injections$class == "Blank_Inj" |
-                             injections$class == "QC" | 
-                             injections$class == "QC_LowIS" |
-                             injections$class == "QC_HighIS", ]
+if(mix < 10){
+  injections <- injections[injections$sample_group == "Blank" | 
+                             injections$mix == paste0("MIX0", mix), ]
+} else {
+  injections <- injections[injections$sample_group == "Blank" | 
+                             injections$mix == paste0("MIX", mix), ]
 }
-
 myfiles <- paste(injections$folder, injections$mzML, sep = "/") 
 ```
 
@@ -77,8 +71,14 @@ myfiles <- paste(injections$folder, injections$mzML, sep = "/")
 Also, I define colors to be used for the various experimental groups 
 throughout the experiment.
 ```{r}
+injections$class <- "Blank"
+if(mix < 10){
+  injections$class[injections$sample_group != "Blank"] <- paste0("MIX0", mix)
+} else {
+  injections$class[injections$sample_group != "Blank"] <- paste0("MIX", mix)
+}
 injections$class <- factor(injections$class)
-if(length(levels(injections$class)) == 2){
+if(length(levels(injections$class)) < 3){
   col_class <- brewer.pal(3, "Set1")
   col_class <- col_class[-2]
   } else {
@@ -131,31 +131,24 @@ save.image("tmp.RData")
 ```{r}
 pdp1 <- PeakDensityParam(
   sampleGroups = xdata$class, 
-  minFraction = 0.9, 
+  minFraction = 0.75, 
   bw = 3,
   binSize = 0.01)
 
 pdp2 <- PeakDensityParam(
   sampleGroups = xdata$class, 
-  minFraction = 0.9, 
+  minFraction = 0.3, 
   bw = 2,
   binSize = 0.01)
 
-if (study == "IS") {
-  pgp <- PeakGroupsParam(
-    span = 0.3,
-    subset = which(xdata$class == "LowIS"),  
-    subsetAdjust = "average",
-    minFraction = 0.9 
-  ) 
-} else if (study == "QC"){
-  pgp <- PeakGroupsParam(
-    span = 0.3,
-    subset = which(xdata$class == "QC_LowIS"),  
-    subsetAdjust = "average",
-    minFraction = 0.9 
-  ) 
-}
+pgp <- PeakGroupsParam(
+  span = 0.3,
+  subset = 
+    which(xdata$class == 
+            levels(injections$class)[levels(injections$class) != 
+                                       "Blank"]),  
+  subsetAdjust = "average",
+  minFraction = 0.9) 
 
 xdata <- groupChromPeaks(xdata, param = pdp1)
 xdata <- adjustRtime(xdata, param = pgp)
@@ -183,15 +176,13 @@ ls()
 save(list = c("raw_data", "xdata", 
               "cwp", "mnp", "pdp1", "pdp2", "pgp", "fcp",
               "MZML_PATH", "myfiles"), 
-     file = paste0("XCMS_processing_", study, "_", polarity, ".RData"))
+     file = 
+       paste0("XCMS_processing_",
+              levels(injections$class)[levels(injections$class) != 
+                                         "Blank"], "_", polarity, 
+              ".Rdata"))
 ```
 
-# Summary
-Following I mention the changes in XCMS parameters that I’ve applied for this dataset:  
-  
-- Peak grouping (correspondance):  
-  - minFraction = 0.9 (sample groups are made up of replicates from the same sample)  
-  
 
 # Session information
 ```{r}

@@ -1,0 +1,123 @@
+---
+title: "MS2 in-house library"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+Here I'm going to import a series of MS2 spectras in order to later check 
+if there exists a MS2 spectra for a specific  mz-rt value.
+
+# Preliminaries
+```{r}
+mymz <- 174.0892 # neutral mass
+myrt <- 40       # RT deviation
+myint <- 10      # intensity threshold (%) for mz text
+MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+```
+
+
+```{r, echo=FALSE, message=FALSE}
+startpoint <- Sys.time()
+
+# Libraries
+library(doParallel)
+library(Spectra)
+
+
+# Parallel processing
+ncores <- detectCores()-1
+registerDoParallel(ncores)
+register(DoparParam(), default = TRUE)
+
+
+## Study samples
+injections <- read.table(paste0(gsub("std_serum", "", getwd()), 
+                                "data/std_serum_files.txt"), 
+                         sep = "\t", header = TRUE, as.is = TRUE)
+injections <- injections[injections$mode != "FS", ]
+```
+
+
+# MS/MS Spectrum
+```{r, echo=FALSE, warning=FALSE}
+polarity <- c("POS", "NEG")
+for(k in seq(length(polarity))){
+  
+  print(polarity[[k]])
+  
+  injections.k <- injections[injections$polarity == polarity[[k]], ]
+  myfiles <- paste(injections.k$folder, injections.k$mzML, sep = "/") 
+  
+  if(polarity[[k]] == "POS"){
+    mymz.k <- mymz + 1.007276
+  } else if(polarity[[k]] == "NEG"){
+    mymz.k <- mymz - 1.007276
+  }
+  
+  # Data import
+  sps <- Spectra(paste0(MZML_PATH, myfiles), backend = MsBackendMzR())
+  ms2 <- filterMsLevel(sps, 2) # get all MS level 2 spectra
+  ms2 <- pickPeaks(ms2) # clean the spectra
+  
+  ms2x <- filterPrecursorMz(ms2, 
+                            mz = mymz.k + ppm(c(-mymz.k, mymz.k), 20))
+  ms2x <- filterRt(ms2x, rt = myrt + 10*c(-1, 1))
+  
+  if(length(ms2x) == 0){
+    print("There are not MS2 spectras.")
+  }
+  
+  if(length(ms2x) > 0){
+    i <- order(unlist(lapply(ms2x$intensity, max)))[1]
+    i100 <- (ms2x$intensity[[i]]/max(ms2x$intensity[[i]]))*100
+    plot(ms2x$mz[[i]], i100, type = "h", 
+         xlab = "m/z", ylab = "relative intensity", 
+         main = paste0(gsub(".mzML", "", basename(ms2x[i]$dataOrigin)), 
+                       "\n mz: ", round(precursorMz(ms2x[i]), 4), 
+                       " - RT: ", round(rtime(ms2x[i]))),
+         xlim = (c(50, precursorMz(ms2x[i])+10)))
+    text(ms2x$mz[[i]][i100 > myint], i100[i100 > myint], 
+         round(ms2x$mz[[i]], 4)[i100 > myint])
+  }
+  
+  if(length(ms2x) > 1){
+    i <- order(unlist(lapply(ms2x$intensity, max)))[2]
+    i100 <- (ms2x$intensity[[i]]/max(ms2x$intensity[[i]]))*100
+    plot(ms2x$mz[[i]], i100, type = "h", 
+         xlab = "m/z", ylab = "relative intensity", 
+         main = paste0(gsub(".mzML", "", basename(ms2x[i]$dataOrigin)), 
+                       "\n mz: ", round(precursorMz(ms2x[i]), 4), 
+                       " - RT: ", round(rtime(ms2x[i]))),
+         xlim = (c(50, precursorMz(ms2x[i])+10)))
+    text(ms2x$mz[[i]][i100 > myint], i100[i100 > myint], 
+         round(ms2x$mz[[i]], 4)[i100 > myint])
+  }
+  
+  if(length(ms2x) > 2){
+    i <- order(unlist(lapply(ms2x$intensity, max)))[3]
+    i100 <- (ms2x$intensity[[i]]/max(ms2x$intensity[[i]]))*100
+    plot(ms2x$mz[[i]], i100, type = "h", 
+         xlab = "m/z", ylab = "relative intensity", 
+         main = paste0(gsub(".mzML", "", basename(ms2x[i]$dataOrigin)), 
+                       "\n mz: ", round(precursorMz(ms2x[i]), 4), 
+                       " - RT: ", round(rtime(ms2x[i]))),
+         xlim = (c(50, precursorMz(ms2x[i])+10)))
+    text(ms2x$mz[[i]][i100 > myint], i100[i100 > myint], 
+         round(ms2x$mz[[i]], 4)[i100 > myint])
+  }
+  
+  print("########################################################")
+}
+```
+
+
+# Session information
+```{r}
+Sys.time()-startpoint
+
+devtools::session_info()
+```
