@@ -32,10 +32,12 @@ This scheme is for the IS. The same was done for each of the MIXs.
 # Preliminaries
 ## Parameters
 ```{r}
-polarity <- "POS" # specify "POS" or "NEG"
-study <- "MIX"    # specify "IS" or "MIX"
-mix.n <- 18       # if study == MIX, specify which MIX number
+polarity <- "NEG" # specify "POS" or "NEG"
+study <- "IS"    # specify "IS" or "MIX"
+mix.n <- 1        # if study == MIX, specify which MIX number
 da <- 0.01
+rt.d <- 20
+i.thr <- 10
 MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 dir.create(paste0("images/", tolower(study), "_serum"), 
            recursive = TRUE, showWarnings = FALSE)
@@ -47,13 +49,131 @@ startpoint <- Sys.time()
 library(Rdisop)
 library(CompoundDb)
 library(RColorBrewer)
+library(kableExtra)
 library(xcms)
 cwp <- CentWaveParam(
   peakwidth = c(2, 20), 
-  ppm = 30, 
-  snthresh = 4,
+  ppm = 50, 
+  snthresh = 5,
+  mzdiff = 0.001,
+  prefilter = c(3, 1000),
+  noise = 100,
   integrate = 2)
+
+source("C:/Users/mgarciaaloy/OneDrive - Scientific Network South Tyrol/R/which_within.R")
 ```
+
+## Annotations
+```{r}
+ih_cmp <- read.table(
+  "C:/Users/mgarciaaloy/Documents/GitHub/lcms-standards/data/inhouse_cmps.txt",
+  sep = "\t", header = TRUE, as.is = TRUE)
+
+ih_ion <- read.table(
+  "C:/Users/mgarciaaloy/Documents/GitHub/lcms-standards/data/inhouse_ions.txt", 
+  sep = "\t", header = TRUE, as.is = TRUE)
+
+ih_feat <- read.table(
+  "C:/Users/mgarciaaloy/Documents/GitHub/lcms-standards/data/inhouse_feat.txt",
+  sep = "\t", header = TRUE, as.is = TRUE)
+
+ih_feat$rt <- NA
+for(i in seq(nrow(ih_feat))){
+  if(any(which(ih_cmp$cmp_ID == ih_feat$ID[i]))){
+    ih_feat$rt[i] <- ih_cmp$RT[which(ih_cmp$cmp_ID == ih_feat$ID[i])]
+  } else {
+    if(any(which(ih_cmp$comments == ih_feat$ID[i]))){
+      ih_feat$rt[i] <- ih_cmp$RT[which(ih_cmp$comments == ih_feat$ID[i])]
+    }
+  }
+}
+ih_feat <- subset(ih_feat, 
+                  select = c("ID", "rt", "mode", "mz", "assignation" ))
+
+# Calculate the mz values of the molecular ion:
+ih_cmp$mzneut = NA
+ih_cmp$mz <- NA
+if(polarity == "NEG"){ ion = -1.007276 
+} else if(polarity == "POS"){ ion = 1.007276 }
+for(i in seq(nrow(ih_cmp))){
+  
+  if(grepl("C", ih_cmp$formula[i])){
+    ih_cmp$mzneut[i] = 
+      getMolecule(as.character(ih_cmp$formula[i]))$exactmass
+  } else {
+      ih_cmp$mzneut[i] = as.numeric(ih_cmp$formula[i])
+      }
+  
+  ih_cmp$mz[i] <- ih_cmp$mzneut[i] + ion
+}
+
+# Get all ions associated with annotated compounds:
+ions.long = data.frame(matrix(ncol=5,nrow=0))
+colnames(ions.long) = c("ID", "rt", "mode", "mz", "assignation")
+
+ions.loop <- data.frame(matrix(ncol=5, nrow=nrow(ih_cmp)))
+colnames(ions.loop) <- c("ID", "rt", "mode", "mz", "assignation")
+
+ions.loop$ID <- ih_cmp$cmp_ID
+ions.loop$rt <- ih_cmp$RT
+ions.loop$mode <- polarity
+ions.loop$mz <- ih_cmp$mz
+if(polarity == "NEG"){
+  ions.loop$assignation <- "[M-H]-"
+}else if(polarity == "POS"){
+    ions.loop$assignation = "[M+H]+"}
+ions.long = rbind(ions.long, ions.loop)
+
+for(i in 4:ncol(ih_ion)){
+  for(j in seq(nrow(ih_ion))){
+    if(ih_ion[j,i]!=0){
+      ions.loop = data.frame(matrix(ncol=5,nrow=1))
+      colnames(ions.loop) = c("ID", "rt", "mode", "mz", "assignation")
+      ions.loop$ID = colnames(ih_ion)[i]
+      ions.loop$rt = 
+        ih_cmp$RT[which(ih_cmp$cmp_ID == colnames(ih_ion)[i])]
+      ions.loop$mode <- polarity
+      
+      if(ih_ion$type[j] == "dimer"){
+        ions.loop$mz = (ih_cmp[ih_cmp$cmp_ID == colnames(ih_ion)[i], 
+                               "mzneut"])*2 + ion + ih_ion$delta[j]
+        # close statment "if ion "j" is a dimer"
+      } else if(ih_ion$type[j] == "trimer"){
+        ions.loop$mz = (ih_cmp[ih_cmp$cmp_ID == colnames(ih_ion)[i], 
+                               "mzneut"])*3 + ion + ih_ion$delta[j]
+        # close statment "if ion "j" is a trimer"
+      } else if(ih_ion$type[j] == "charged"){
+        ions.loop$mz = (ih_cmp[ih_cmp$cmp_ID == colnames(ih_ion)[i], 
+                               "mz"] + ion)/2
+        ions.loop$assignation <- ih_ion$ion_id[j]
+        # close statment "if ion `j` is a charged"
+      }else {
+        ions.loop$mz = (ih_cmp[ih_cmp$cmp_ID == colnames(ih_ion)[i], 
+                               "mz"]) + ih_ion$delta[j]
+      } # close statment "if ion "j" is NOT  dimer / trimer / charged"
+      ions.loop$assignation <- ih_ion$ion_id[j]
+      ions.long = rbind(ions.long, ions.loop)
+    } # close statment "if ion "j" in cmp "i" is detected"...
+  } # close loop ion "j"
+} # close loop in-house compound "i"
+
+if(polarity == "POS"){
+  ions.long$assignation = gsub("\\*", "+", ions.long$assignation)
+} else if(polarity == "NEG"){
+  ions.long$assignation = gsub("\\*", "-", ions.long$assignation)
+}
+ions.long <- rbind(ions.long, ih_feat)
+
+for(i in seq(nrow(ih_cmp))){
+  if(ih_cmp$identified[i] == "YES"){
+    ions.long$cmp_ID[ions.long$ID == ih_cmp$cmp_ID[i]] <- 
+      ih_cmp$comments[i]
+  }
+}
+
+ions.long <- ions.long[ions.long$mode == polarity, ]
+```
+
 
 # Data import
 ## Standards
@@ -70,37 +190,6 @@ if(study == "IS"){
     sep = "\t", header = TRUE, as.is = TRUE)
 }
 
-std_info$cmpname <- tolower(gsub(" .*", "", std_info$name))
-std_info$cmpname <- gsub("l-", "", std_info$cmpname)
-std_info$cmpname <- gsub("alpha-", "", std_info$cmpname)
-std_info$cmpname <- gsub("Gamma-", "", std_info$cmpname)
-for(i in seq(nrow(std_info))){
-  if((substr(std_info$cmpname[i], 1, 1) %in% (seq(9))) & 
-     (substr(std_info$cmpname[i], 3, 3) %in% letters)){
-    std_info$cmpname[i] <- paste(gsub("*.-", "", std_info$cmpname[i]), 
-                                 gsub("-.*", "", std_info$cmpname[i]), sep = "_")
-  } else if((substr(std_info$cmpname[i], 1, 1) %in% (seq(9))) & 
-            (substr(std_info$cmpname[i], 3, 3) %in% seq(9))){
-    std_info$cmpname[i] <- paste(gsub(".*-", "", std_info$cmpname[i]), 
-                                 gsub(",", "_", gsub("-.*", "", std_info$cmpname[i])), 
-                                 sep = "_")
-  }
-}
-std_info$cmpname <- gsub("-", "_", std_info$cmpname)
-std_info$cmpname[std_info$name == "Glucose 1-Phosphate"] <- "glucose_phosphate_1"
-std_info$cmpname[std_info$name == "Glucose 6-Phosphate"] <- "glucose_phosphate_6"
-std_info$cmpname[std_info$name == "Fructose-1,6-Diphosphate"] <- "fructose_diphosphate"
-std_info$cmpname[std_info$name == "Ribose 5-Phosphate"] <- "ribose_phosphate_5"
-std_info$cmpname[std_info$name == "Ribulose 5-Phosphate"] <- "ribulose_phosphate_5"
-std_info$cmpname[std_info$name == "Glutathione Oxidized"] <- "glutathione_oxidized"
-std_info$cmpname[std_info$name == "Glutathione Reduced"] <- "glutathione_reduced"
-std_info$cmpname[std_info$name == "C3 Carnitine"] <- "carnitine_c3"
-std_info$cmpname[std_info$name == "C4 Carnitine"] <- "carnitine_c4"
-std_info$cmpname[std_info$name == "C5 Carnitine"] <- "carnitine_c5"
-std_info$cmpname[std_info$name == "5,6-Dihydro Thymine"] <- "dihydrothymine"
-
-std_info <- std_info[!is.na(std_info[, grep(polarity, 
-                                            colnames(std_info))]),]
 if(study == "MIX"){
   std_info <- std_info[std_info$mix == mix.n, ]
   
@@ -116,6 +205,20 @@ if(study == "MIX"){
     std_info <- std_info[std_info$name != "3-Hydroxy-DL-kynurenine", ]
   }
 }
+
+#std_info <- std_info[!is.na(std_info[, grep(polarity, 
+#                                            colnames(std_info))]),]
+std_info[,c(1:5,8,grep(polarity, colnames(std_info)))] %>%
+  kable() %>%
+  kable_styling()
+if(polarity == "POS"){
+  std_info[which(is.na(std_info[, grep(polarity, colnames(std_info))])),
+           grep(polarity, colnames(std_info))] <- "[M+H]+"
+}else if(polarity == "NEG"){
+  std_info[which(is.na(std_info[, grep(polarity, colnames(std_info))])),
+           grep(polarity, colnames(std_info))] <- "[M-H]-"
+}
+
 for(i in seq(nrow(std_info))){
   if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
     getMolecule(as.character(std_info$formula[i]))$exactmass
@@ -123,6 +226,7 @@ for(i in seq(nrow(std_info))){
       std_info$mzneut[i] = as.numeric(std_info$formula[i])}
 }
 ```
+
 
 ## Experiment
 ```{r}
@@ -172,42 +276,48 @@ data_raw <- readMSData(paste0(MZML_PATH, myfiles),
                    pdata = new("NAnnotatedDataFrame", injections),
                    mode = "onDisk")
 
-for(i in 1:(nrow(std_info))){
+peak_quality <- data.frame(
+  compound = NA,
+  peak_with = NA,
+  RT_delta = NA
+)
+
+for(i in 1:(nrow(std_info))
+    ){
   mzvalue <- 
     unlist(mass2mz(std_info$mzneut[i], 
                    adduct = as.character(
                      std_info[i, grep(polarity, colnames(std_info))])))
   
-  chr = chromatogram(data_raw, 
-                     mz = c(mzvalue - da,  mzvalue + da),
-                     aggregationFun = "max")
-  
-  cmpname <- std_info$cmpname[i]
+  cmpname <- std_info$abbreviation[i]
   filename <- paste0("images/", tolower(study), "_serum/", 
                      cmpname, "_", polarity, ".png")
   
-  png(file = filename, width = 1000, height = 500)
-  par(mfrow = c(1, 2))
+  png(file = filename, width = 1000, height = 1000)
+  par(mfrow = c(2, 2))
   
-  plot(chr, main = cmpname,
+  # EIC full RT range -------------------------------------------------
+  chr <- chromatogram(data_raw, 
+                     mz = c(mzvalue - da,  mzvalue + da),
+                     aggregationFun = "max")
+  plot(chr, main = std_info$name[i],
       col = col_class[chr$class],
        bg = "white")
   legend("topright", legend = names(col_class), 
          pch = 16, col = gsub("60", "", col_class))
   abline(v = std_info$RT[i], lty = 2)
   
+  # EIC RT zoomed -----------------------------------------------------
   chr2 <- findChromPeaks(chr, param = cwp)
   delta_rt <- abs(chromPeaks(chr2)[, "rt"] - std_info$RT[i])
   pks <- data.frame(chromPeaks(chr2)[delta_rt < 60, , drop=FALSE])
   if (nrow(pks)) {
     pks2 <- pks[0, ]
-    for(j in levels(factor(pks$column))
-        #seq(length(levels(factor(pks$column))))
-        ){
+    for(j in levels(factor(pks$column))){
       pks3 <- pks[pks$column == j, ]
       pks2 <- rbind(pks2, pks3[which.max(pks3$maxo),])
     }
-    pks2 <- pks2[pks2$column < 7 | pks2$column > 9, ]
+    #pks2 <- pks2[pks2$column < 7 | pks2$column > 9, ]
     rtmin <- min(pks2$rtmin)
     rtmax <- max(pks2$rtmax)
     ylim <- c(0, max(pks$maxo, na.rm = TRUE))
@@ -217,16 +327,110 @@ for(i in 1:(nrow(std_info))){
       ylim <- c(0, max(sapply(chr, intensity), na.rm = TRUE))
     }
   
-  plot(chr, 
-       col = col_class[chr$class],
-       bg = "white",
+  plot(chr2, peakType = "none", 
+       col = col_class[chr2$class],
        xlim = c(rtmin, rtmax))
   legend("topright", legend = names(col_class), 
          pch = 16, col = gsub("60", "", col_class))
   abline(v = std_info$RT[i], lty = 2)
   
+  # EIC RT zoomed only for serum samples -------------------------------
+  xdata.i <- filterFile(data_raw, grep("QC", myfiles))
+  chr.i <- chromatogram(xdata.i, 
+                     mz = c(mzvalue - da,  mzvalue + da),
+                     aggregationFun = "max")
+  if(study == "IS"){
+    pks3 <- pks2[(pks2$column %in% grep("18_QC_LowIS", myfiles)) |
+                   (pks2$column %in% grep("18_QC_HighIS", myfiles)),]
+    rtmin <- min(pks3$rtmin)
+    rtmax <- max(pks3$rtmax)
+  }
+  plot(chr.i, 
+       col = col_class[factor(chr.i$class, levels = names(col_class))],
+       bg = "white", main = "QC serum",
+       xlim = c(rtmin, rtmax))
+  abline(v = std_info$RT[i], lty = 2)
+  
+  rm(pks3)
+  
+  # FS spectrum in HighIS_water ----------------------------------------
+  if(study == "IS"){
+    pks3 <- pks2[pks2$column %in% grep("18_HighIS", myfiles),]
+    idx <- pks3$column[which.max(pks3$maxo)]
+    rt.i <- pks3$rt[which.max(pks3$maxo)]
+  }else if(study == "MIX"){ ####################################
+    idx <- which.max(pks2[pks2$column %in% 
+                          grep("/HighIS", myfiles), 
+                        "maxo"])
+  }
+  if(any(pks2$column %in% grep("18_HighIS", myfiles))){
+    xdata.i <- filterFile(data_raw, idx)
+    sps <- xdata.i %>%
+      filterRt(rt = c(round(rt.i) - 0.5, 
+                      round(rt.i) + 0.5)) %>%
+      spectra
+  sps2 <- data.frame(sps[[2]])
+  sps2$i100 <- (sps2$i / max(sps2$i))*100
+  
+  il <- ions.long[ions.long$rt > (sps[[2]]@rt - rt.d) & 
+                    ions.long$rt < (sps[[2]]@rt + rt.d),]
+  il$cmp_ID[is.na(il$cmp_ID)] <- il$ID[is.na(il$cmp_ID)]
+  
+  sps2$cmp <- NA
+  sps2$annotation <- NA
+  for(j in seq(nrow(sps2))){
+    mz.i <- sps2$mz[j]
+    id.i <- il[unlist(which_within(mz.i, il$mz)), ]
+    if(nrow(id.i) == 1){
+      sps2$cmp[j] <- id.i$cmp_ID
+      sps2$annotation[j] <- id.i$assignation
+    } else if(nrow(id.i) > 1){
+      id.i <- id.i[(abs(sps[[2]]@rt - id.i$rt) < 10),]
+      if(nrow(id.i) == 1){
+        sps2$cmp[j] <- id.i$cmp_ID
+        sps2$annotation[j] <- id.i$assignation
+      }
+      #print(paste(j, "There is >1 matching!!"))
+    }
+  }
+  sps2$cmp[is.na(sps2$cmp)] <- "Unknown"
+  sps2$cmp <- factor(sps2$cmp)
+  
+  plot(sps2$mz, sps2$i100, type = "h", 
+       xlab = "m/z", ylab = "relative intensity", 
+       main = paste(gsub(".mzML", "", xdata.i@phenoData@data$mzML), 
+                    "\n RT:", round(sps[[2]]@rt)))
+  sps3 <- sps2[sps2$i100 > i.thr, ]
+  sps3$cmp <- droplevels(sps3$cmp)
+  cmps <- levels(sps3$cmp)
+  for(j in seq(length(cmps))){
+    lines(sps3$mz[sps3$cmp == cmps[j]], sps3$i100[sps3$cmp == cmps[j]], 
+        type = "h", col = j + 1)
+    text(sps3$mz[sps3$cmp == cmps[j]], sps3$i100[sps3$cmp == cmps[j]],
+         paste(round(sps3$mz[sps3$cmp == cmps[j]], 4), "\n", 
+               sps3$annotation[sps3$cmp == cmps[j]]), 
+         col = j + 1#, cex = 0.5
+         )
+  }
+  legend("topright", cmps, col = seq(length(cmps)) + 1, pch = 16)
+  }
+  
   dev.off()
   rm(chr, chr2)
+  
+  
+  # peak quality data
+  #peak_quality$compound[i] <- std_info$name[i]
+  #pks2$peak_width <- pks2$rtmax - pks2$rtmin
+  #peak_quality$peak_with[i] <- 
+  #  paste0(round(median(pks2$peak_width)), " (", 
+  #         round(min(pks2$peak_width)), " - ",
+  #         round(max(pks2$peak_width)),")")
+  #peak_quality$RT_delta <- 
+  #  paste0(round(max(pks2$rt) - min(pks2$rt)), " (", 
+  #         round(min(pks2$rt)), " - ", round(max(pks2$rt)), ")")
+  
+  # CV in peak area/intensity
 }
 ```
 
