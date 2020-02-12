@@ -25,7 +25,7 @@ library(CompMetaboTools)
 ```
 
 ## Parallel processing
-```{r parallel-proc, echo=TRUE}
+```{r, echo=TRUE}
 ncores <- detectCores()-1
 registerDoParallel(ncores)
 register(DoparParam(), default = TRUE)
@@ -36,7 +36,7 @@ Generate a data frame indicating the folder of the files (`2020/2020_01`) and th
 ```{r}
 std_serum_files <- data.frame(
   folder <- "2020/2020_01",
-  mzML   <- list.files("Z:/mzML/2020/2020_01"))
+  mzML   <- list.files("C:/Users/mgarciaaloy/Documents/mzML/2020/2020_01"))
 colnames(std_serum_files) <- c("folder", "mzML")
 
 tmp <- data.frame(
@@ -50,12 +50,12 @@ std_serum_files$polarity <- gsub(".mzML", "", std_serum_files$polarity)
 ```
 
 Add the time stamp from the individual files:
-```{r, eval=FALSE}
-raw_data <- readMSData(files = paste0("Z:/mzML/", std_serum_files$folder, 
-                                      "/", std_serum_files$mzML), 
-                       mode = "onDisk")
-std_serum_files$time[1] <- as.character(extract_time_stamp(fileNames(raw_data[1])))
-std_serum_files <- std_serum_files[order(std_serum_files$time),]
+```{r, eval=TRUE}
+raw_data <- readMSData(
+  files = paste0("C:/Users/mgarciaaloy/Documents/mzML/", 
+                 std_serum_files$folder, "/", std_serum_files$mzML), 
+  mode = "onDisk")
+std_serum_files$time <- as.character(extract_time_stamp(fileNames(raw_data)))
 ```
 
 Indicate the sample type:
@@ -120,6 +120,7 @@ for(i in seq(nrow(std_serum_files))){
 
 # Output
 ```{r}
+std_serum_files <- std_serum_files[order(std_serum_files$time),]
 write.table(std_serum_files, "std_serum_files.txt", 
             sep = "\t", row.names = FALSE)
 ```
