@@ -463,64 +463,59 @@ for(k in 1:(length(mix.levels))){
       chr3 <- refineChromPeaks(chr2, param = mnp) # Peak refinement
       pks <- data.frame(chromPeaks(chr3)) # Extract info detected peaks
       
-      # Indicate filenames in "pks" matrix
-      if(mix.levels[k] == 0){
-        pks$file <- gsub(".mzML", "", 
-                         gsub("2019/2019_11/20191118_", "", 
-                              myfiles[pks$column]))
-      } else{
-         pks$file <- gsub(".mzML", "", 
-                         gsub("2020/2020_01/", "", 
-                              myfiles[pks$column]))
-      }
-      
-      pks <- pks[order(pks$column, pks$rt), ]
-      
-      # Select only 1 peak / sample:
       if(nrow(pks)){
+        # Indicate filenames in "pks" matrix
+        if(mix.levels[k] == 0){
+          pks$file <- gsub(".mzML", "", 
+                           gsub("2019/2019_11/20191118_", "", 
+                                myfiles[pks$column]))
+        } else{
+          pks$file <- gsub(".mzML", "", 
+                           gsub("2020/2020_01/", "", 
+                                myfiles[pks$column]))
+        }
+        
+        pks <- pks[order(pks$column, pks$rt), ]
+        
+        # Select only 1 peak / sample:
         pks2 <- pks[0, ]
         for(l in levels(factor(pks$column))){
           pks3 <- pks[pks$column == l, ]
           pks2 <- rbind(pks2, pks3[which.max(pks3$maxo),])
         } # close sample "l"
         rm(pks3)
-      } # close "if(nrow(pks))"
-      
-      
-      filename <- paste0("images/", cmpname, "_", polarity, "_indiv.png")
-      
-      png(file = filename, width = 1000, height = 1000)
-      par(mfrow = c(5, 3), mar = c(2, 2, 2, 0))
-      for(y in seq(length(chr3))){
-        if(mix.levels[k] == 0){
-          mytitle <- gsub(".mzML", "", gsub("2019/2019_11/20191118_", "", 
-                                           myfiles[y]))
-        } else{
-          mytitle <- gsub(".mzML", "", gsub("2020/2020_01/", "", 
-                                           myfiles[y]))
-        }
         
-        plot(chr3[[y]], 
-             main = mytitle)
-        if(any(length(pks$rt[pks$column == y]))){
-          for(x in seq(length(pks$rt[pks$column == y]))){
-            text(pks$rt[pks$column == y][x],
-                 pks$maxo[pks$column == y][x],
-                 x)
+        filename <- paste0("images/", cmpname, "_", polarity, "_indiv.png")
+        
+        png(file = filename, width = 1000, height = 1000)
+        par(mfrow = c(5, 3), mar = c(2, 2, 2, 0))
+        for(y in seq(length(chr3))){
+          if(mix.levels[k] == 0){
+            mytitle <- gsub(".mzML", "", gsub("2019/2019_11/20191118_", "", 
+                                              myfiles[y]))
+          } else{
+            mytitle <- gsub(".mzML", "", gsub("2020/2020_01/", "", 
+                                              myfiles[y]))
           }
-          points(pks2$rt[pks2$column == y],
-                 pks2$maxo[pks2$column == y],
-                 pch = 8, col = "red")
+          
+          plot(chr3[[y]], 
+               main = mytitle)
+          if(any(length(pks$rt[pks$column == y]))){
+            for(x in seq(length(pks$rt[pks$column == y]))){
+              text(pks$rt[pks$column == y][x],
+                   pks$maxo[pks$column == y][x],
+                   x)
+            }
+            points(pks2$rt[pks2$column == y],
+                   pks2$maxo[pks2$column == y],
+                   pch = 8, col = "red")
+          }
         }
-      }
-      dev.off()
-      
+        dev.off()
+      } # close "if(nrow(pks))"
       
       rm(chr, chr2, chr3)
     } # close std "i"
-    
-    
-    
   } # close polarity "z"
 } # close mix.levels "k"
 ```
