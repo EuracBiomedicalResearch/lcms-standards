@@ -36,7 +36,8 @@ polarity.all <- c("POS", "NEG")
 da <- 0.01
 rt.d <- 20
 i.thr <- 10
-MZML_PATH <- "/data/massspec/mzML/"
+MZML_PATH <- "/data/massspec/mzML/" 
+# MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 dir.create("images/", 
            recursive = TRUE, showWarnings = FALSE)
 startpoint <- Sys.time()
@@ -100,6 +101,10 @@ ih_feat <- read.table(
   "../data/inhouse_feat.txt",
   sep = "\t", header = TRUE, as.is = TRUE)
 
+ih_ip <- read.table(
+  "../data/is_isotopic_pattern.txt",
+  sep = "\t", header = TRUE, as.is = TRUE)
+
 ih_feat$rt <- NA
 for(i in seq(nrow(ih_feat))){
   if(any(which(ih_cmp$cmp_ID == ih_feat$ID[i]))){
@@ -111,6 +116,20 @@ for(i in seq(nrow(ih_feat))){
   }
 }
 ih_feat <- subset(ih_feat, 
+                  select = c("ID", "rt", "mode", "mz", "assignation" ))
+
+colnames(ih_ip) <- c("ID", "mode", "mz", "assignation", "abundance")
+ih_ip$rt <- NA
+for(i in seq(nrow(ih_ip))){
+  if(any(which(ih_cmp$cmp_ID == ih_ip$ID[i]))){
+    ih_ip$rt[i] <- ih_cmp$RT[which(ih_cmp$cmp_ID == ih_ip$ID[i])]
+  } else {
+    if(any(which(ih_cmp$comments == ih_ip$ID[i]))){
+      ih_ip$rt[i] <- ih_cmp$RT[which(ih_cmp$comments == ih_ip$ID[i])]
+    }
+  }
+}
+ih_ip <- subset(ih_ip, 
                   select = c("ID", "rt", "mode", "mz", "assignation" ))
 
 # Calculate the mz values of the molecular ion:
@@ -188,19 +207,19 @@ for(k in seq(length(polarity.all))){
   } else if(polarity == "NEG"){
     ions.long$assignation = gsub("\\*", "-", ions.long$assignation)
   }
-  ions.long <- rbind(ions.long, ih_feat)
-  
-  for(i in seq(nrow(ih_cmp))){
-    if(ih_cmp$identified[i] == "YES"){
-      ions.long$cmp_ID[ions.long$ID == ih_cmp$cmp_ID[i]] <- 
-        ih_cmp$comments[i]
-    }
-  }
   
   ions.long <- ions.long[ions.long$mode == polarity, ]
   ions.long.list[[k]] <- ions.long
 }
 ions.long <- do.call("rbind", ions.long.list)
+ions.long <- rbind(ions.long, ih_feat)
+ions.long <- rbind(ions.long, ih_ip)
+for(i in seq(nrow(ih_cmp))){
+    if(ih_cmp$identified[i] == "YES"){
+      ions.long$cmp_ID[ions.long$ID == ih_cmp$cmp_ID[i]] <- 
+        ih_cmp$comments[i]
+    }
+  }
 rm(ions.long.list, ih_cmp, ih_feat, ih_ion, i, j, k, polarity, ions.loop, ion)
 ```
 
@@ -412,7 +431,7 @@ for(k in 1:(length(mix.levels))){
             sps2$annotation <- NA
             for(j in seq(nrow(sps2))){
               mz.i <- sps2$mz[j]
-              id.i <- il[unlist(which_within(mz.i, il$mz)), ]
+              id.i <- il[unlist(which_within(mz.i, il$mz, mzd = 0.015)), ]
               if(nrow(id.i) == 1){
                 sps2$cmp[j] <- id.i$cmp_ID
                 sps2$annotation[j] <- id.i$assignation
@@ -436,15 +455,18 @@ for(k in 1:(length(mix.levels))){
             sps3$cmp <- droplevels(sps3$cmp)
             cmps <- levels(sps3$cmp)
             for(j in seq(length(cmps))){
-              lines(sps3$mz[sps3$cmp == cmps[j]], sps3$i100[sps3$cmp == cmps[j]], 
+              lines(sps3$mz[sps3$cmp == cmps[j]], 
+                    sps3$i100[sps3$cmp == cmps[j]], 
                     type = "h", col = j + 1)
-              text(sps3$mz[sps3$cmp == cmps[j]], sps3$i100[sps3$cmp == cmps[j]],
+              text(sps3$mz[sps3$cmp == cmps[j]], 
+                   sps3$i100[sps3$cmp == cmps[j]],
                    paste(round(sps3$mz[sps3$cmp == cmps[j]], 4), "\n", 
                          sps3$annotation[sps3$cmp == cmps[j]]), 
                    col = j + 1#, cex = 0.5
               )
             }
-            legend("topright", cmps, col = seq(length(cmps)) + 1, pch = 16)
+            legend("topright", cmps, 
+                   col = seq(length(cmps)) + 1, pch = 16)
           }
         } # close if(nrow(pks)) (II)
       } # close if(!is.na(std_info$RT))
