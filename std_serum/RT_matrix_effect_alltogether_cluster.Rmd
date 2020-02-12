@@ -81,7 +81,7 @@ which_within <- function(x, y, mzd = 0.01){
 ```
 
 ## Parallel processing
-```{r}
+```{r, eval=TRUE}
 ncores <- Sys.getenv("SLURM_JOB_CPUS_PER_NODE", 3)
 register(bpstart(MulticoreParam(ncores)))
 ```
@@ -246,7 +246,7 @@ for(k in 1:(length(mix.levels))){
                              sep = "\t", header = TRUE, as.is = TRUE)
     injections <- injections[injections$mode == "FS", ]
     inj_blankQC <- injections[injections$type == "Blank_QC", ]
-    inj_blankQC <- inj_blankQC[grep("QC_5", injections$mzML), ]
+    inj_blankQC <- inj_blankQC[grep("QC_5", inj_blankQC$mzML), ]
     inj_blankQC$class <- "QC"
     injections <- injections[grep("Mix", injections$mzML), ]
     injections <- injections[
@@ -259,13 +259,9 @@ for(k in 1:(length(mix.levels))){
   std_info.i <- std_info[std_info$mix == mix.levels[k], ]
   if(mix.levels[k] == 5){
     std_info.i <- std_info.i[std_info.i$name != "Glycerophospho-inositol", ]
-  }
-  
-  if(mix.levels[k] == 9){
+  } else if(mix.levels[k] == 9){
     std_info.i <- std_info.i[std_info.i$name != "Eplerone", ]
-  }
-  
-  if(mix.levels[k] == 17){
+  } else if(mix.levels[k] == 17){
     std_info.i <- std_info.i[std_info.i$name != "3-Hydroxy-DL-kynurenine", ]
   }
   
