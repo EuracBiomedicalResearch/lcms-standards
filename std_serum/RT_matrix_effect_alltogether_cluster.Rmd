@@ -256,7 +256,7 @@ mix.levels <- levels(factor(std_info$mix))
 
 # Output
 ```{r}
-for(k in 2#:(length(mix.levels))
+for(k in 2:(length(mix.levels))
     ){
   if(mix.levels[k] == 0){ # start import table "injections"
     injections <- read.table("../data/is_serum_files.txt", 
@@ -337,7 +337,8 @@ for(k in 2#:(length(mix.levels))
       
       
       cmpname <- std_info.i$abbreviation[i]
-      filename <- paste0("images/", cmpname, "_", polarity, "_x4.png")
+      filename <- paste0("images/", mix.levels[k], "_", cmpname, "_", 
+                         polarity, ".png")
       
       png(file = filename, width = 1000, height = 1000)
       #par(mfrow = c(2, 2))
