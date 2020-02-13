@@ -256,7 +256,7 @@ mix.levels <- levels(factor(std_info$mix))
 
 # Output
 ```{r}
-for(k in 1#:(length(mix.levels))
+for(k in 2#:(length(mix.levels))
     ){
   if(mix.levels[k] == 0){ # start import table "injections"
     injections <- read.table("../data/is_serum_files.txt", 
