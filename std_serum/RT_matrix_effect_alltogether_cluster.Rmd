@@ -354,6 +354,8 @@ for(k in 2:(length(mix.levels))
       legend("topright", legend = names(col_class), 
              pch = 16, col = gsub("60", "", col_class))
       abline(v = std_info.i$RT[i], lty = 2)
+      
+      dev.off()
     } # close std "i"
   } # close polarity "z"
 } # close mix.levels "k"
