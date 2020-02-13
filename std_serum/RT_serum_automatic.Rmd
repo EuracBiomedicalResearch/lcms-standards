@@ -1,0 +1,183 @@
+---
+title: "Standards: Matrix effect in RT"
+subtitle: "Automatically get the RT in serum spicked samples"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+# Preliminaries
+## Parameters
+```{r}
+MZML_PATH <- "/data/massspec/mzML/" 
+#MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+polarity.all <- c("POS", "NEG") 
+startpoint <- Sys.time()
+```
+
+## Libraries
+```{r, message=FALSE,warning=FALSE}
+library(doParallel)
+library(xcms)
+library(Rdisop)
+library(CompoundDb)
+
+cwp <- CentWaveParam(
+  peakwidth = c(2, 20), 
+  ppm = 50, 
+  snthresh = 1,
+  mzdiff = 0.001,
+  prefilter = c(3, 1000),
+  noise = 100,
+  integrate = 2)
+mnp <- MergeNeighboringPeaksParam(
+  expandRt = 3, 
+  expandMz = 0.001, 
+  ppm = 10,
+  minProp = 0.66)
+```
+
+## Parallel processing
+```{r, eval=TRUE}
+ncores <- Sys.getenv("SLURM_JOB_CPUS_PER_NODE", 3)
+register(bpstart(MulticoreParam(ncores)))
+```
+
+## Standards
+```{r}
+is_info <- read.table(
+  "../data/internal_standards.txt",
+  sep = "\t", header = TRUE, as.is = TRUE)
+is_info$mix <- 0
+is_info$"HMDB.code" <- NA
+is_info <- 
+  subset(is_info, 
+         select = c("mix", "name", "abbreviation", "HMDB.code", 
+                    "formula", "POS", "NEG", "RT", "data_set", "sample", 
+                    "operator", "version", "SINGLE_POS", "COMMENTS_POS", 
+                    "SINGLE_NEG", "COMMENTS_NEG"))
+std_info <- read.table(
+  "../data/standards_dilution.txt",
+  sep = "\t", header = TRUE, as.is = TRUE)
+
+std_info <- rbind(is_info, std_info)
+rm(is_info)
+std_info$POS[is.na(std_info$POS)] <- "[M+H]+"
+std_info$NEG[is.na(std_info$NEG)] <- "[M-H]-"
+std_info <- std_info[order(std_info$mix, std_info$RT),]
+
+mix.levels <- levels(factor(std_info$mix))
+```
+
+
+# Output
+```{r}
+std_info$serum_POS <- NA
+std_info$serum_NEG <- NA
+
+for(k in 1:(length(mix.levels))){
+  
+  # Select STDs used in mix "k"
+  std_info.i <- std_info[std_info$mix == mix.levels[k], ]
+  if(mix.levels[k] == 5){
+    std_info.i <- std_info.i[std_info.i$name != "Glycerophospho-inositol", ]
+  } else if(mix.levels[k] == 9){
+    std_info.i <- std_info.i[std_info.i$name != "Eplerone", ]
+  } else if(mix.levels[k] == 17){
+    std_info.i <- std_info.i[std_info.i$name != "3-Hydroxy-DL-kynurenine", ]
+  }
+  
+  # File list:
+  if(mix.levels[k] == 0){ # start import table "injections"
+    injections <- read.table("../data/is_serum_files.txt", 
+                             sep = "\t", header = TRUE, as.is = TRUE)
+    injections <- injections[grepl("QC_Low", injections$mzML) |
+                               grepl("QC_High", injections$mzML),]
+  } else {
+    injections <- read.table("../data/std_serum_files.txt", 
+                             sep = "\t", header = TRUE, as.is = TRUE)
+    injections <- injections[injections$mode == "FS", ]
+    injections <- injections[grep("QC_Mix", injections$class), ]
+    injections <- injections[
+      as.numeric(gsub("Mix", "", injections$type)) == mix.levels[k], ]
+  } # close import table "injections"
+  
+  for(z in seq(length(polarity.all))){
+    polarity <- polarity.all[z]
+    injections.j <- injections[injections$polarity == polarity, ]
+    myfiles <- paste(injections.j$folder, injections.j$mzML, sep = "/")
+    
+    # Read the mzML files
+    data_raw <- readMSData(paste0(MZML_PATH, myfiles), 
+                           pdata = new("NAnnotatedDataFrame", injections.j),
+                           mode = "onDisk")
+    
+    for(i in 1:(nrow(std_info.i))){
+      
+      # Calculate the mz for the main ion (mzvalue):
+      if(grepl("C", std_info.i$formula[i])){
+        mzvalue <- getMolecule(as.character(std_info.i$formula[i]))$exactmass
+        mzvalue <- unlist(mass2mz(
+          as.numeric(mzvalue), 
+          adduct = as.character(
+            std_info.i[i, which(colnames(std_info.i) == polarity)]
+          )))
+      } else{
+        mzvalue <- unlist(mass2mz(
+          as.numeric(std_info.i$formula[i]), 
+          adduct = as.character(
+            std_info.i[i, which(colnames(std_info.i) == polarity)]
+          )))
+      } # close calculate mzvalue
+      
+      # Do the EIC for the mzvalue:
+      chr <- chromatogram(data_raw,
+                          aggregationFun = "max",
+                          mz = mzvalue + 0.01 * c(-1, 1),
+                          rt = std_info.i$RT[i] + 30 * c(-1, 1))
+      
+      # Do the peak detection:
+      chr2 <- findChromPeaks(chr, param = cwp)
+      
+      # Refine the detected peaks:
+      chr3 <- refineChromPeaks(chr2, param = mnp)
+      
+      # Extract the information of detected peaks:
+      pks <- data.frame(chromPeaks(chr3))
+      
+      if(nrow(pks)){
+        # Select only 1 peak / sample:
+        pks2 <- pks[0, ]
+        for(l in levels(factor(pks$column))){
+          pks3 <- pks[pks$column == l, ]
+          pks2 <- rbind(pks2, pks3[which.max(pks3$maxo),])
+        } # close sample "l"
+        rm(pks3)
+        
+        # Indicate the sample class
+        pks2$class <- injections.j$class[pks2$column]
+      } # close "if(nrow(pks))"
+      
+      std_info[
+        which(std_info$abbreviation == std_info.i$abbreviation[i]),
+        which(colnames(std_info) == paste0("serum_", polarity))] <- 
+        median(pks2$rt, na.rm = TRUE)
+      
+      write.table(std_info, "stds_RT_serum_tmp.txt", 
+                  sep = "\t", row.names = FALSE)
+    } # close compound "i"
+  } # close polarity "z"
+} # close mix "k"
+
+write.table(std_info, "stds_RT_serum.txt", sep = "\t", row.names = FALSE)
+```
+
+# Session information
+```{r}
+Sys.time()-startpoint
+
+devtools::session_info()
+```
