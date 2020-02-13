@@ -256,7 +256,7 @@ mix.levels <- levels(factor(std_info$mix))
 
 # Output
 ```{r}
-for(k in 2:(length(mix.levels))
+for(k in 1:(length(mix.levels))
     ){
   if(mix.levels[k] == 0){ # start import table "injections"
     injections <- read.table("../data/is_serum_files.txt", 
@@ -340,17 +340,24 @@ for(k in 2:(length(mix.levels))
       filename <- paste0("images/", mix.levels[k], "_", cmpname, "_", 
                          polarity, ".png")
       
-      png(file = filename, width = 1000, height = 1000)
-      #par(mfrow = c(2, 2))
+      png(file = filename, width = 1000, height = 500)
+      par(mfrow = c(1, 2))
       
       # EIC full RT range -------------------------------------------------
       chr <- chromatogram(data_raw, 
                           mz = c(mzvalue - da,  mzvalue + da),
-                          rt = c(std_info.i$RT[i] + 5 * c(-1,1)),
+                          #rt = c(std_info.i$RT[i] + 5 * c(-1,1)),
                           aggregationFun = "max")
       plot(chr, main = std_info.i$name[i],
            col = col_class[chr$class],
            bg = "white")
+      legend("topright", legend = names(col_class), 
+             pch = 16, col = gsub("60", "", col_class))
+      abline(v = std_info.i$RT[i], lty = 2)
+      
+      plot(chr, main = std_info.i$name[i],
+           col = col_class[chr$class],
+           bg = "white", xlim = c(std_info.i$RT[i] + 5 * c(-1,1)))
       legend("topright", legend = names(col_class), 
              pch = 16, col = gsub("60", "", col_class))
       abline(v = std_info.i$RT[i], lty = 2)
