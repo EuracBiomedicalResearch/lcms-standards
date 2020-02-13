@@ -38,7 +38,7 @@ rt.d <- 20
 i.thr <- 10
 MZML_PATH <- "/data/massspec/mzML/" 
 #MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
-dir.create("images/trial/", 
+dir.create("images/", 
            recursive = TRUE, showWarnings = FALSE)
 startpoint <- Sys.time()
 ```
@@ -293,9 +293,11 @@ for(k in 1#:(length(mix.levels))
       factor(injections$class, 
              levels = c("LowIS", "HighIS", "QC", "QC_LowIS", "QC_HighIS"))
   } else {
-    injections$class <- gsub(paste0(injections$type[10], "_"), "", injections$class)
+    injections$class <- gsub(paste0(injections$type[10], "_"), "", 
+                             injections$class)
     injections$class <- factor(injections$class, 
-                               levels = c("Water_Low", "Water_High", "QC", "QC_Low", "QC_High"))
+                               levels = c("Water_Low", "Water_High", 
+                                          "QC", "QC_Low", "QC_High"))
   }
   injections <- injections[order(injections$class),]
   
@@ -335,7 +337,7 @@ for(k in 1#:(length(mix.levels))
       
       
       cmpname <- std_info.i$abbreviation[i]
-      filename <- paste0("images/trial/", cmpname, "_", polarity, "_x4.png")
+      filename <- paste0("images/", cmpname, "_", polarity, "_x4.png")
       
       png(file = filename, width = 1000, height = 1000)
       par(mfrow = c(2, 2))
@@ -351,7 +353,6 @@ for(k in 1#:(length(mix.levels))
       legend("topright", legend = names(col_class), 
              pch = 16, col = gsub("60", "", col_class))
       abline(v = std_info.i$RT[i], lty = 2)
-      dev.off()
 
       
 if(!is.na(std_info.i$RT[i])){
@@ -480,8 +481,14 @@ if(!is.na(std_info.i$RT[i])){
       dev.off()
       
       ####################################################################
-      
-      # Plot 1 chr / sample ----------------------------------------------
+    } # close std "i"
+  } # close polarity "z"
+} # close mix.levels "k"
+```
+
+
+```{r, eval=FALSE}
+# Plot 1 chr / sample ----------------------------------------------
       
       chr <- chromatogram(data_raw, # EIC for the mzvalue
                           aggregationFun = "max",
