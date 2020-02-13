@@ -237,7 +237,8 @@ is_info <-
   subset(is_info, 
          select = c("mix", "name", "abbreviation", "HMDB.code", 
                     "formula", "POS", "NEG", "RT", "data_set", "sample", 
-                    "operator", "version"))
+                    "operator", "version", "SINGLE_POS", "COMMENTS_POS", 
+                    "SINGLE_NEG", "COMMENTS_NEG"))
 std_info <- read.table(
   #"https://raw.githubusercontent.com/EuracBiomedicalResearch/lcms-standards/master/data/standards_dilution.txt",
   "../data/standards_dilution.txt",
@@ -255,7 +256,8 @@ mix.levels <- levels(factor(std_info$mix))
 
 # Output
 ```{r}
-for(k in 1:(length(mix.levels))){
+for(k in 1#:(length(mix.levels))
+    ){
   if(mix.levels[k] == 0){ # start import table "injections"
     injections <- read.table("../data/is_serum_files.txt", 
                              sep = "\t", header = TRUE, as.is = TRUE)
@@ -291,9 +293,11 @@ for(k in 1:(length(mix.levels))){
       factor(injections$class, 
              levels = c("LowIS", "HighIS", "QC", "QC_LowIS", "QC_HighIS"))
   } else {
-    injections$class <- gsub(paste0(injections$type[10], "_"), "", injections$class)
+    injections$class <- gsub(paste0(injections$type[10], "_"), "", 
+                             injections$class)
     injections$class <- factor(injections$class, 
-                               levels = c("Water_Low", "Water_High", "QC", "QC_Low", "QC_High"))
+                               levels = c("Water_Low", "Water_High", 
+                                          "QC", "QC_Low", "QC_High"))
   }
   injections <- injections[order(injections$class),]
   
@@ -302,7 +306,8 @@ for(k in 1:(length(mix.levels))){
   names(col_class) <- levels(injections$class)
   
   
-  for(z in seq(length(polarity.all))){
+  for(z in seq(length(polarity.all))
+      ){
     polarity <- polarity.all[z]
     injections.j <- injections[injections$polarity == polarity, ]
     myfiles <- paste(injections.j$folder, injections.j$mzML, sep = "/") 
@@ -340,6 +345,7 @@ for(k in 1:(length(mix.levels))){
       # EIC full RT range -------------------------------------------------
       chr <- chromatogram(data_raw, 
                           mz = c(mzvalue - da,  mzvalue + da),
+                          #rt = c(std_info.i$RT[i] + 5 * c(-1,1)),
                           aggregationFun = "max")
       plot(chr, main = std_info.i$name[i],
            col = col_class[chr$class],
@@ -347,8 +353,9 @@ for(k in 1:(length(mix.levels))){
       legend("topright", legend = names(col_class), 
              pch = 16, col = gsub("60", "", col_class))
       abline(v = std_info.i$RT[i], lty = 2)
+
       
-      if(!is.na(std_info.i$RT[i])){
+if(!is.na(std_info.i$RT[i])){
         # EIC RT zoomed -----------------------------------------------------
         chr2 <- findChromPeaks(chr, param = cwp1)
         delta_rt <- abs(chromPeaks(chr2)[, "rt"] - std_info.i$RT[i])
@@ -474,8 +481,14 @@ for(k in 1:(length(mix.levels))){
       dev.off()
       
       ####################################################################
-      
-      # Plot 1 chr / sample ----------------------------------------------
+    } # close std "i"
+  } # close polarity "z"
+} # close mix.levels "k"
+```
+
+
+```{r, eval=FALSE}
+# Plot 1 chr / sample ----------------------------------------------
       
       chr <- chromatogram(data_raw, # EIC for the mzvalue
                           aggregationFun = "max",
