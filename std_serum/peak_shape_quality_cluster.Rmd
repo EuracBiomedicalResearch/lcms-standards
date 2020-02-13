@@ -12,7 +12,7 @@ output:
 ## Parameters
 ```{r}
 MZML_PATH <- "/data/massspec/mzML/" 
-# MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+#MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 polarity <- c("POS", "NEG")
 startpoint <- Sys.time()
 ```
@@ -192,7 +192,7 @@ for(j in seq(length(polarity)) #######################################
         peak_quality$n_samples[idx] <- 0
         peak_quality[idx, 5:ncol(peak_quality)] <- 9999
       } # close "if(nrow(pks))"
-      
+      save(peak_quality, file = paste0("tmp_", polarity[j], ".RData"))
       rm(chr, chr2, chr3, pks, pks2)
     } # close compound "k"
   } # close mix "i"
