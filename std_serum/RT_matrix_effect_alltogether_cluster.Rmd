@@ -340,12 +340,12 @@ for(k in 2#:(length(mix.levels))
       filename <- paste0("images/", cmpname, "_", polarity, "_x4.png")
       
       png(file = filename, width = 1000, height = 1000)
-      par(mfrow = c(2, 2))
+      #par(mfrow = c(2, 2))
       
       # EIC full RT range -------------------------------------------------
       chr <- chromatogram(data_raw, 
                           mz = c(mzvalue - da,  mzvalue + da),
-                          #rt = c(std_info.i$RT[i] + 5 * c(-1,1)),
+                          rt = c(std_info.i$RT[i] + 5 * c(-1,1)),
                           aggregationFun = "max")
       plot(chr, main = std_info.i$name[i],
            col = col_class[chr$class],
@@ -353,8 +353,13 @@ for(k in 2#:(length(mix.levels))
       legend("topright", legend = names(col_class), 
              pch = 16, col = gsub("60", "", col_class))
       abline(v = std_info.i$RT[i], lty = 2)
+    } # close std "i"
+  } # close polarity "z"
+} # close mix.levels "k"
+```
 
-      
+
+```{r, eval=FALSE}
 if(!is.na(std_info.i$RT[i])){
         # EIC RT zoomed -----------------------------------------------------
         chr2 <- findChromPeaks(chr, param = cwp1)
