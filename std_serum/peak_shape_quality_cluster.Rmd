@@ -184,10 +184,10 @@ for(j in seq(length(polarity)) #######################################
         # Full-fill the table (excluding "QC" samples):
         pks3 <- subset(pks2, class != "QC")
         peak_quality$n_samples[idx] <- nrow(pks3)
-        peak_quality$RT_delta[idx] <-round(max(pks3$rt) - min(pks3$rt))
+        peak_quality$RT_delta[idx] <-max(pks3$rt) - min(pks3$rt)
         pks3$peak_width <- pks3$rtmax - pks3$rtmin
-        peak_quality$peak_with_min[idx] <- round(min(pks3$peak_width))
-        peak_quality$peak_with_max[idx] <- round(max(pks3$peak_width))
+        peak_quality$peak_with_min[idx] <- min(pks3$peak_width)
+        peak_quality$peak_with_max[idx] <- max(pks3$peak_width)
       } else{
         peak_quality$n_samples[idx] <- 0
         peak_quality[idx, 5:ncol(peak_quality)] <- 9999
