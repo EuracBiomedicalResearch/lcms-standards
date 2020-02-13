@@ -1,5 +1,5 @@
 name	abbreviation	formula	POS	NEG	RT	data_set	sample	operator	version	SINGLE_POS	COMMENTS_POS	SINGLE_NEG	COMMENTS_NEG
-"Succinic acid-2,2,3,3-d4"	succinic_d4	122.0517	NA	[M-H]-	37	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2	NA	to check	FALSE	NA
+"Succinic acid-2,2,3,3-d4"	succinic_d4	122.0517	NA	[M-H]-	36	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2	NA	to check	FALSE	NA
 Carnitine (D3)	carnitine_d3	164.124	[M+H]+	NA	60	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2	FALSE	to check	FALSE	to check
 Creatinine (N-Methhyl_D3)	creatinine_methyl_d3	116.0777	[M+H]+	[M-H]-	125	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2	FALSE	to check	FALSE	to check
 "L-Isoleucine (13C6, 99%; 15N, 99%)"	isoleucine_13C_15N	138.1118	[M+H]+	[M-H]-	154	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2	FALSE	to check	FALSE	to check
