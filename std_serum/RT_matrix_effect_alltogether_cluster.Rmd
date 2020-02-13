@@ -37,7 +37,7 @@ da <- 0.01
 rt.d <- 20
 i.thr <- 10
 MZML_PATH <- "/data/massspec/mzML/" 
-# MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+#MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 dir.create("images/", 
            recursive = TRUE, showWarnings = FALSE)
 startpoint <- Sys.time()
