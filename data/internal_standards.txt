@@ -5,7 +5,7 @@ name	abbreviation	formula	POS	NEG	RT	data_set	sample	operator	version
 Carnitine (D3)	carnitine_d3	164.124	[M+H]+	NA	61	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
 Creatinine (N-Methhyl_D3)	creatinine_methyl_d3	116.0777	[M+H]+	[M-H]-	126	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
 "L-Cystine (13C6, 99%; 15N2, 99%)"	cystine_13C_15N	248.038	[M+H]+	[M-H]-	209	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"Glucose (6,6-D2)"	glucose_d2	182.0759	[M+Na]+	[M-H+HCOOH]-	170	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
+"Glucose (6,6-D2)"	glucose_d2	182.0759	[M+Na]+	[M-H+HCOOH]-	166	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
 "L-Glutamic acid (13C5, 99%; 15N, 99%)"	glutamic_13C_15N	153.067	[M+H]+	[M-H]-	171	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
 "Glycine (13C2, 99%; 15N, 99%)"	glycine_13C_15N	78.0358	[M+H]+	NA	168	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
 "L-Histidine HCl H2O (13C6; 15N3, 99%)"	histidine_13C_15N	164.0807	[M+H]+	[M-H]-	185	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
