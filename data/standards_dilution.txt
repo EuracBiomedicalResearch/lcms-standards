@@ -12,7 +12,7 @@ mix	name	abbreviation	HMDB code	formula	POS	NEG	RT	data_set	sample	operator	vers
 1	propionic acid	propionic	HMDB0000237	C3H6O2	NA	NA	53	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 1	Pyruvic Acid	pyruvic	HMDB0000243	C3H4O3	NA	[M-H]-	41	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 1	Suberic Acid	suberic	HMDB0000893	C8H14O4	[M+Na]+	[M-H]-	37	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
-1	Uric acid	uric	HMDB0000289	C5H4N4O3	[M+H]+	[M-H]-	172	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
+1	Uric acid	uric	HMDB0000289	C5H4N4O3	[M+H]+	[M-H]-	NA	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 1	Xanthine	xanthine	HMDB0000292	C5H4N4O2	[M+H]+	[M-H]-	140	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 2	Ascorbic Acid	ascorbic	HMDB0000044	C6H8O6	[M+H]+	[M-H]-	128	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 2	C4 Carnitine	carnitine_c4	HMDB0000736	C11H21NO4	[M+H]+	NA	37	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
@@ -56,8 +56,8 @@ mix	name	abbreviation	HMDB code	formula	POS	NEG	RT	data_set	sample	operator	vers
 4	Putrescine	putrescine	HMDB0001414	C4H12N2	[M+H-NH3]+	NA	173	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 4	Pyridoxine	pyridoxine	HMDB0000239	C8H11NO3	[M+H]+	[M-H]-	123	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 4	Riboflavin	riboflavin	HMDB0000244	C17H20N4O6	[M+H]+	[M-H]-	145	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
-4	Ribose 	ribose	HMDB0000283	C5H10O5	NA	[M-H]-	111	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
-4	SAMe	SAMe	HMDB0001185	C15H23N6O5S	[M+H]+	NA	NA	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
+4	Ribose 	ribose	HMDB0000283	C5H10O5	NA	[M-H]-	NA	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
+4	SAMe	SAMe	HMDB0001185	C15H23N6O5S	[M+H]+	NA	193	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 4	Sedoheptulose-7-phosphate	sedoheptulose_phosphate	HMDB0001068	C7H15O10P	[M+Na]+	[2M-H]-	235	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 5	dADP	ADP_d	HMDB0001508	C10H15N5O9P2	[M+H]+	[M-H]-	260	2020_01_matrix_effect	water	Mar Garcia-Aloy	2
 5	dCDP	CDP_d	HMDB0001245	C9H15N3O10P2	[M+H]+	[M-H]-	260	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
@@ -114,7 +114,7 @@ mix	name	abbreviation	HMDB code	formula	POS	NEG	RT	data_set	sample	operator	vers
 8	Inosine	inosine	HMDB0000195	C10H12N4O5	[M+Na]+	[M-H]-	146	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 8	Mevalonic Acid	mevalonic	HMDB0000227	C6H12O4	NA	[M-H]-	48	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 8	NADPH	NADPH	HMDB0000221	C21H30N7O17P3	NA	NA	207	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
-8	Norepinephrine	norepinephrine	HMDB0000216	C8H11NO3	NA	NA	186	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
+8	Norepinephrine	norepinephrine	HMDB0000216	C8H11NO3	NA	NA	NA	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 8	Ornithine	ornithine	HMDB0000214	C5H12N2O2	[M+H]+	[M-H]-	190	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 8	Succinic Acid	succinic	HMDB0000254	C4H6O4	NA	[M-H]-	37	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 8	Tyrosine	tyrosine	HMDB0000158	C9H11NO3	[M+H]+	[M-H]-	168	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
@@ -214,7 +214,7 @@ mix	name	abbreviation	HMDB code	formula	POS	NEG	RT	data_set	sample	operator	vers
 15	FAD	FAD	HMDB0001248	C27H33N9O15P2	[M+H]+	[M-H]-	290	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 15	Glucosamine-6-Phosphate	glucosamine_phosphate	HMDB0001254	C6H14NO8P	[M+H]+	[M-H]-	219	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 15	Glucuronic Acid	glucuronic	HMDB0000127	C6H10O7	NA	[M-H]-	171	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
-15	p-Hydroxyphenylacetic acid	hydroxyphenylacetic	HMDB0000020	C8H8O3	NA	[M-H]-	31	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
+15	p-Hydroxyphenylacetic acid	hydroxyphenylacetic	HMDB0000020	C8H8O3	NA	[M-H]-	36	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 15	Isovalerylglycine	isovalerylglycine	HMDB0000678	C7H13NO3	[M+H]+	[M-H]-	37	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 15	2-Methylcitric acid	methylcitric	HMDB0000379	C7H10O7	[M+Na]+	[M-H]-	171	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
 15	Phenylalanine	phenylalanine	HMDB0000159	C9H11NO2	[M+H]+	[M-H]-	154	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2
