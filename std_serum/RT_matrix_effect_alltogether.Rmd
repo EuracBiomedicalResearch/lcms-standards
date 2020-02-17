@@ -380,7 +380,7 @@ for(k in 1:(length(mix.levels))
              xlim = c(rtmin, rtmax))
         legend("topright", legend = names(col_class), 
                pch = 16, col = gsub("60", "", col_class))
-        abline(v = std_info$RT[i], lty = 2)
+        abline(v = std_info.i$RT[i], lty = 2)
         
         # EIC RT zoomed only for serum samples -------------------------------
         if(nrow(pks)){
@@ -403,7 +403,7 @@ for(k in 1:(length(mix.levels))
                col = col_class[factor(chr.i$class, levels = names(col_class))],
                bg = "white", main = "QC serum",
                xlim = c(rtmin, rtmax))
-          abline(v = std_info$RT[i], lty = 2)
+          abline(v = std_info.i$RT[i], lty = 2)
           
           rm(pks3)
           
@@ -432,6 +432,7 @@ for(k in 1:(length(mix.levels))
             il <- ions.long[ions.long$rt > (sps[[2]]@rt - rt.d) & 
                               ions.long$rt < (sps[[2]]@rt + rt.d),]
             il$cmp_ID[is.na(il$cmp_ID)] <- il$ID[is.na(il$cmp_ID)]
+            il <- il[il$mode == my.polarity, ]
             
             sps2$cmp <- NA
             sps2$annotation <- NA
@@ -443,9 +444,17 @@ for(k in 1:(length(mix.levels))
                 sps2$annotation[j] <- id.i$assignation
               } else if(nrow(id.i) > 1){
                 id.i <- id.i[(abs(sps[[2]]@rt - id.i$rt) < 10),]
+                if(nrow(id.i) > 1){
+                  id.i <- id.i[abs(mz.i - id.i$mz) < 0.01,]
+                } # close "if(nrow(id.i) > 1)"
                 if(nrow(id.i) == 1){
                   sps2$cmp[j] <- id.i$cmp_ID
                   sps2$annotation[j] <- id.i$assignation
+                } else if(nrow(id.i) == 2){
+                  sps2$cmp[j] <- paste(id.i$cmp_ID, collapse=" / ")
+                  if(id.i$assignation[1] == id.i$assignation[2]){
+                    sps2$annotation[j] <- id.i$assignation[1]
+                  }
                 }
                 #print(paste(j, "There is >1 matching!!"))
               }
