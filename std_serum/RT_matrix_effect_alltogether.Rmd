@@ -432,7 +432,7 @@ for(k in 1:(length(mix.levels))
             il <- ions.long[ions.long$rt > (sps[[2]]@rt - rt.d) & 
                               ions.long$rt < (sps[[2]]@rt + rt.d),]
             il$cmp_ID[is.na(il$cmp_ID)] <- il$ID[is.na(il$cmp_ID)]
-            il <- il[il$mode == my.polarity, ]
+            il <- il[il$mode == polarity, ]
             
             sps2$cmp <- NA
             sps2$annotation <- NA
