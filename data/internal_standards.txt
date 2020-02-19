@@ -1,22 +1,22 @@
-name	abbreviation	formula	POS	NEG	RT	data_set	sample	operator	version
-"L-Alanine (13C3, 99%; 15N, 99%)"	alanine_13C_15N	93.0548	[M+H]+	[M-H]-	167	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"L-Arginine HCl (13C6, 99%; 15N4, 99%)"	arginine_13C_15N	184.1199	[M+H]+	[M-H]-	183	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"L-Aspartic acid (13C4, 99%; 15N, 99%)"	aspartic_13C_15N	138.048	[M+H]+	[M-H]-	179	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-Carnitine (D3)	carnitine_d3	164.124	[M+H]+	NA	61	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-Creatinine (N-Methhyl_D3)	creatinine_methyl_d3	116.0777	[M+H]+	[M-H]-	126	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"L-Cystine (13C6, 99%; 15N2, 99%)"	cystine_13C_15N	248.038	[M+H]+	[M-H]-	209	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"Glucose (6,6-D2)"	glucose_d2	182.0759	[M+Na]+	[M-H+HCOOH]-	166	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"L-Glutamic acid (13C5, 99%; 15N, 99%)"	glutamic_13C_15N	153.067	[M+H]+	[M-H]-	171	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"Glycine (13C2, 99%; 15N, 99%)"	glycine_13C_15N	78.0358	[M+H]+	NA	168	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"L-Histidine HCl H2O (13C6; 15N3, 99%)"	histidine_13C_15N	164.0807	[M+H]+	[M-H]-	185	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"L-Isoleucine (13C6, 99%; 15N, 99%)"	isoleucine_13C_15N	138.1118	[M+H]+	[M-H]-	154	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"L-Leucine (13C6, 99%; 15N, 99%)"	leucine_13C_15N	138.1118	[M+H]+	[M-H]-	151	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"L-Lysine 2HCl (13C6, 99%; 15N2, 99%)"	lysine_13C_15N	154.1197	[M+H]+	[M-H]-	184	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"L-Methionine (13C5, 99%; 15N, 99%)"	methionine_13C_15N	155.0649	[M+H]+	[M-H]-	161	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"L-Phenylalanine (13C9, 99%; 15N, 99%)"	phenylalanine_13C_15N	175.1062	[M+H]+	[M-H]-	153	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"L-Proline (13C5, 99%; 15N, 99%)"	proline_13C_15N	121.0771	[M+H]+	[M-H]-	167	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"L-Serine (13C3, 99%; 15N, 99%)"	serine_13C_15N	109.0497	[M+H]+	[M-H]-	178	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"Succinic acid-2,2,3,3-d4"	succinic_d4	122.0517	NA	[M-H]-	37	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"L-Threonine (13C4, 99%; 15N, 99%)"	threonine_13C_15N	124.0687	[M+H]+	[M-H]-	171	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"L-Tyrosine (13C9, 99%; 15N, 99%)"	tyrosine_13C_15N	191.1011	[M+H]+	[M-H]-	166	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
-"L-Valine (13C5, 99%; 15N, 99%)"	valine_13C_15N	123.0928	[M+H]+	[M-H]-	164	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2
+"abbreviation"	"name"	"formula"	"POS"	"NEG"	"RT"	"data_set"	"sample"	"operator"	"version"	"quality_NEG"	"quality_POS"
+"1"	"alanine_13C_15N"	"L-Alanine (13C3, 99%; 15N, 99%)"	93.0548	"[M+H]+"	"[M-H]-"	167	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"2_medium"	"1_good"
+"2"	"arginine_13C_15N"	"L-Arginine HCl (13C6, 99%; 15N4, 99%)"	184.1199	"[M+H]+"	"[M-H]-"	183	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"0_perfect"	"0_perfect"
+"3"	"aspartic_13C_15N"	"L-Aspartic acid (13C4, 99%; 15N, 99%)"	138.048	"[M+H]+"	"[M-H]-"	179	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"1_good"	"1_good"
+"4"	"carnitine_d3"	"Carnitine (D3)"	164.124	"[M+H]+"	NA	61	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"3_bad"	"2_medium"
+"5"	"creatinine_methyl_d3"	"Creatinine (N-Methhyl_D3)"	116.0777	"[M+H]+"	"[M-H]-"	126	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"2_medium"	"2_medium"
+"6"	"cystine_13C_15N"	"L-Cystine (13C6, 99%; 15N2, 99%)"	248.038	"[M+H]+"	"[M-H]-"	209	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"0_perfect"	"0_perfect"
+"7"	"glucose_d2"	"Glucose (6,6-D2)"	182.0759	"[M+Na]+"	"[M-H+HCOOH]-"	166	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"1_good"	"2_medium"
+"8"	"glutamic_13C_15N"	"L-Glutamic acid (13C5, 99%; 15N, 99%)"	153.067	"[M+H]+"	"[M-H]-"	171	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"0_perfect"	"0_perfect"
+"9"	"glycine_13C_15N"	"Glycine (13C2, 99%; 15N, 99%)"	78.0358	"[M+H]+"	NA	168	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"3_bad"	"1_good"
+"10"	"histidine_13C_15N"	"L-Histidine HCl H2O (13C6; 15N3, 99%)"	164.0807	"[M+H]+"	"[M-H]-"	185	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"0_perfect"	"0_perfect"
+"11"	"isoleucine_13C_15N"	"L-Isoleucine (13C6, 99%; 15N, 99%)"	138.1118	"[M+H]+"	"[M-H]-"	154	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"2_medium"	"2_medium"
+"12"	"leucine_13C_15N"	"L-Leucine (13C6, 99%; 15N, 99%)"	138.1118	"[M+H]+"	"[M-H]-"	151	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"2_medium"	"2_medium"
+"13"	"lysine_13C_15N"	"L-Lysine 2HCl (13C6, 99%; 15N2, 99%)"	154.1197	"[M+H]+"	"[M-H]-"	184	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"1_good"	"0_perfect"
+"14"	"methionine_13C_15N"	"L-Methionine (13C5, 99%; 15N, 99%)"	155.0649	"[M+H]+"	"[M-H]-"	161	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"1_good"	"1_good"
+"15"	"phenylalanine_13C_15N"	"L-Phenylalanine (13C9, 99%; 15N, 99%)"	175.1062	"[M+H]+"	"[M-H]-"	153	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"1_good"	"1_good"
+"16"	"proline_13C_15N"	"L-Proline (13C5, 99%; 15N, 99%)"	121.0771	"[M+H]+"	"[M-H]-"	167	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"1_good"	"1_good"
+"17"	"serine_13C_15N"	"L-Serine (13C3, 99%; 15N, 99%)"	109.0497	"[M+H]+"	"[M-H]-"	178	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"1_good"	"0_perfect"
+"18"	"succinic_d4"	"Succinic acid-2,2,3,3-d4"	122.0517	NA	"[M-H]-"	37	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"2_medium"	"3_bad"
+"19"	"threonine_13C_15N"	"L-Threonine (13C4, 99%; 15N, 99%)"	124.0687	"[M+H]+"	"[M-H]-"	171	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"0_perfect"	"0_perfect"
+"20"	"tyrosine_13C_15N"	"L-Tyrosine (13C9, 99%; 15N, 99%)"	191.1011	"[M+H]+"	"[M-H]-"	166	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"1_good"	"1_good"
+"21"	"valine_13C_15N"	"L-Valine (13C5, 99%; 15N, 99%)"	123.0928	"[M+H]+"	"[M-H]-"	164	"2019_11_matrix_effect"	"serum"	"Mar Garcia-Aloy"	2	"1_good"	"1_good"
