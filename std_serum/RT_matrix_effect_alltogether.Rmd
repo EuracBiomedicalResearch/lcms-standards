@@ -237,7 +237,7 @@ is_info <-
   subset(is_info, 
          select = c("mix", "name", "abbreviation", "HMDB.code", 
                     "formula", "POS", "NEG", "RT", "data_set", "sample", 
-                    "operator", "version"))
+                    "operator", "version", "quality_NEG", "quality_POS"))
 std_info <- read.table(
   #"https://raw.githubusercontent.com/EuracBiomedicalResearch/lcms-standards/master/data/standards_dilution.txt",
   "../data/standards_dilution.txt",
