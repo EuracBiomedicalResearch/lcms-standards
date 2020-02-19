@@ -1,0 +1,221 @@
+---
+title: "Standards: Peak shape quality"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+# Preliminaries
+## Parameters
+```{r}
+MZML_PATH <- "/data/massspec/mzML/" 
+#MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+polarity <- c("POS", "NEG")
+startpoint <- Sys.time()
+```
+
+## Libraries
+```{r, message=FALSE,warning=FALSE}
+library(doParallel)
+library(xcms)
+library(Rdisop)
+library(CompoundDb)
+
+cwp <- CentWaveParam(
+  peakwidth = c(2, 20), 
+  ppm = 50, 
+  snthresh = 1,
+  mzdiff = 0.001,
+  prefilter = c(3, 1000),
+  noise = 100,
+  integrate = 2)
+mnp <- MergeNeighboringPeaksParam(
+  expandRt = 3, 
+  expandMz = 0.001, 
+  ppm = 10,
+  minProp = 0.66)
+```
+
+## Parallel processing
+```{r, eval=TRUE}
+ncores <- Sys.getenv("SLURM_JOB_CPUS_PER_NODE", 3)
+register(bpstart(MulticoreParam(ncores)))
+```
+
+## Standard library
+```{r}
+is_info <- read.table("../data/internal_standards.txt",
+  sep = "\t", header = TRUE, as.is = TRUE)
+is_info$mix <- 0
+is_info$"HMDB.code" <- NA
+is_info <- subset(is_info, 
+                  select = c("mix", "name", "abbreviation", "HMDB.code", 
+                    "formula", "POS", "NEG", "RT", "data_set", "sample", 
+                    "operator", "version"))
+std_info <- read.table("../data/standards_dilution.txt",
+  sep = "\t", header = TRUE, as.is = TRUE)
+
+std_info <- rbind(is_info, std_info)
+rm(is_info)
+std_info$POS[is.na(std_info$POS)] <- "[M+H]+"
+std_info$NEG[is.na(std_info$NEG)] <- "[M-H]-"
+std_info <- std_info[order(std_info$mix, std_info$RT),]
+
+mix.levels <- levels(factor(std_info$mix))
+```
+
+# Output
+```{r}
+peak_quality_l <- list()
+peak_quality <- data.frame(
+  mix = std_info$mix,
+  compound = std_info$name,
+  abbreviation = std_info$abbreviation,
+  n_samples = NA,
+  RT_delta = NA,
+  RT_delta_serum = NA,
+  peak_with_min = NA,
+  peak_with_max = NA,
+  simetry = NA
+)
+#load("tmp.RData")
+
+
+for(j in seq(length(polarity)) #######################################
+){
+  for(i in 1:(length(mix.levels)) #####################################
+  ){
+    
+    # Import table with file names
+    if(mix.levels[i] == 0){
+      injections <- read.table("../data/is_serum_files.txt", 
+                               sep = "\t", header = TRUE, as.is = TRUE)
+      injections <- injections[-grep("Blank", injections$mzML),]
+    } else {
+      injections <- read.table("../data/std_serum_files.txt", 
+                               sep = "\t", header = TRUE, as.is = TRUE)
+      injections <- injections[injections$mode == "FS", ]
+      inj_blankQC <- injections[injections$type == "Blank_QC", ]
+      inj_blankQC <- inj_blankQC[grep("QC_5", inj_blankQC$mzML), ]
+      inj_blankQC$class <- "QC"
+      injections <- injections[grep("Mix", injections$mzML), ]
+      injections <- injections[
+        as.numeric(gsub("Mix", "", injections$type)) == mix.levels[i], ]
+      injections <- rbind(inj_blankQC, injections)
+    } # close import table "injections"
+    
+    # Select STDs used in mix "i":
+    std_info.i <- std_info[std_info$mix == mix.levels[i], ]
+    
+    # Order by class
+    if(mix.levels[i] == 0){
+      injections$class <- factor(injections$class, 
+                                 levels = c("LowIS", "HighIS", "QC", 
+                                            "QC_LowIS", "QC_HighIS"))
+    } else {
+      injections$class <- gsub(paste0(injections$type[10], "_"), "", 
+                               injections$class)
+      injections$class <- factor(injections$class, 
+                                 levels = c("Water_Low", "Water_High", 
+                                            "QC", "QC_Low", "QC_High"))
+    }
+    injections <- injections[order(injections$class),]
+    
+    # Select files from polarity "j":
+    injections.j <- injections[injections$polarity == polarity[j], ]
+    myfiles <- paste(injections.j$folder, injections.j$mzML, sep = "/") 
+    
+    # Read the mzML files
+    data_raw <- readMSData(paste0(MZML_PATH, myfiles), 
+                           pdata = new("NAnnotatedDataFrame", injections.j),
+                           mode = "onDisk")
+    
+    # For each compound in mix "i"...
+    for(k in 1:(nrow(std_info.i)) ######################################
+    ){
+      
+      idx <- which(paste(std_info$mix, std_info$name) == 
+                     paste(std_info.i$mix[k], std_info.i$name[k]))
+      
+      # Calculate the mz for the main ion (mzvalue):
+      if(grepl("C", std_info.i$formula[k])){
+        mzvalue <- getMolecule(as.character(std_info.i$formula[k]))$exactmass
+        mzvalue <- unlist(mass2mz(
+          as.numeric(mzvalue), 
+          adduct = as.character(
+            std_info.i[k, which(colnames(std_info.i) == polarity[j])]
+          )))
+      } else{
+        mzvalue <- unlist(mass2mz(
+          as.numeric(std_info.i$formula[k]), 
+          adduct = as.character(
+            std_info.i[k, which(colnames(std_info.i) == polarity[j])]
+          )))
+      } # close calculate mzvalue
+      
+      # Do the EIC for the mzvalue:
+      chr <- chromatogram(data_raw,
+                          aggregationFun = "max",
+                          mz = mzvalue + 0.01 * c(-1, 1),
+                          rt = std_info.i$RT[k] + 30 * c(-1, 1))
+      
+      # Do the peak detection:
+      chr2 <- findChromPeaks(chr, param = cwp)
+      
+      # Refine the detected peaks:
+      chr3 <- refineChromPeaks(chr2, param = mnp)
+      
+      # Extract the information of detected peaks:
+      pks <- data.frame(chromPeaks(chr3))
+      
+      if(nrow(pks)){
+        # Select only 1 peak / sample:
+        pks2 <- pks[0, ]
+        for(l in levels(factor(pks$column))){
+          pks3 <- pks[pks$column == l, ]
+          pks2 <- rbind(pks2, pks3[which.max(pks3$maxo),])
+        } # close sample "l"
+        rm(pks3)
+        
+        # Indicate the sample class
+        pks2$class <- injections.j$class[pks2$column]
+        
+        # Full-fill the table (excluding "QC" samples):
+        pks3 <- subset(pks2, class != "QC")
+        pks4 <- pks3[grep("QC", pks3$class), ]
+        peak_quality$n_samples[idx] <- nrow(pks3)
+        peak_quality$RT_delta[idx] <-max(pks3$rt) - min(pks3$rt)
+        peak_quality$RT_delta_serum[idx] <- max(pks4$rt) - min(pks4$rt)
+        pks3$peak_width <- pks3$rtmax - pks3$rtmin
+        peak_quality$peak_with_min[idx] <- min(pks3$peak_width)
+        peak_quality$peak_with_max[idx] <- max(pks3$peak_width)
+        pks3$simetry_min <- pks3$rt - pks3$rtmin
+        pks3$simetry_max <- pks3$rtmax - pks3$rt
+        pks3$simetry <- pks3$simetry_max - pks3$simetry_min
+        peak_quality$simetry[idx] <- mean(abs(pks3$simetry))
+      } else{
+        peak_quality$n_samples[idx] <- 0
+        peak_quality[idx, 5:ncol(peak_quality)] <- 9999
+      } # close "if(nrow(pks))"
+      save(peak_quality, file = paste0("tmp_", polarity[j], ".RData"))
+      rm(chr, chr2, chr3, pks, pks2)
+    } # close compound "k"
+  } # close mix "i"
+  peak_quality$mode <- polarity[j]
+  peak_quality_l[[j]] <- peak_quality
+  
+} # close polarity "j"
+
+peak_quality <- do.call("rbind", peak_quality_l)
+save(peak_quality, file = "peak_quality.RData")
+```
+
+# Session information
+```{r}
+Sys.time()-startpoint
+
+devtools::session_info()
+```

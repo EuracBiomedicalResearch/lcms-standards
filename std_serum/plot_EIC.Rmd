@@ -1,0 +1,183 @@
+---
+title: "Standards: Matrix effect in RT"
+subtitle: "Plot EICs"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+# Preliminaries
+## Parameters
+```{r}
+MZML_PATH <- "/data/massspec/mzML/" 
+#MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+polarity.all <- c("POS", "NEG") 
+startpoint <- Sys.time()
+```
+
+## Libraries
+```{r, message=FALSE}
+library(doParallel)
+library(xcms)
+library(Rdisop)
+library(CompoundDb)
+library(RColorBrewer)
+```
+
+## Parallel processing
+```{r, eval=TRUE}
+ncores <- Sys.getenv("SLURM_JOB_CPUS_PER_NODE", 3)
+register(bpstart(MulticoreParam(ncores)))
+```
+
+## Standards
+```{r}
+is_info <- read.table(
+  "../data/internal_standards.txt",
+  sep = "\t", header = TRUE, as.is = TRUE)
+is_info$mix <- 0
+is_info$"HMDB.code" <- NA
+is_info <- 
+  subset(is_info, 
+         select = c("mix", "name", "abbreviation", "HMDB.code", 
+                    "formula", "POS", "NEG", "RT", "data_set", "sample", 
+                    "operator", "version"))
+std_info <- read.table(
+  "../data/standards_dilution.txt",
+  sep = "\t", header = TRUE, as.is = TRUE)
+
+std_info <- rbind(is_info, std_info)
+rm(is_info)
+std_info$POS[is.na(std_info$POS)] <- "[M+H]+"
+std_info$NEG[is.na(std_info$NEG)] <- "[M-H]-"
+std_info <- std_info[order(std_info$mix, std_info$RT),]
+
+mix.levels <- levels(factor(std_info$mix))
+```
+
+
+# Output
+```{r}
+for(k in 1:(length(mix.levels))){
+  
+  # Select STDs used in mix "k"
+  std_info.i <- std_info[std_info$mix == mix.levels[k], ]
+  if(mix.levels[k] == 5){
+    std_info.i <- std_info.i[std_info.i$name != "Glycerophospho-inositol", ]
+  } else if(mix.levels[k] == 9){
+    std_info.i <- std_info.i[std_info.i$name != "Eplerone", ]
+  } else if(mix.levels[k] == 17){
+    std_info.i <- std_info.i[std_info.i$name != "3-Hydroxy-DL-kynurenine", ]
+  }
+  
+  # File list:
+  if(mix.levels[k] == 0){ # start import table "injections"
+    injections <- read.table("../data/is_serum_files.txt", 
+                             sep = "\t", header = TRUE, as.is = TRUE)
+    injections <- injections[-grep("Blank", injections$mzML),]
+  } else {
+    injections <- read.table("../data/std_serum_files.txt", 
+                             sep = "\t", header = TRUE, as.is = TRUE)
+    injections <- injections[injections$mode == "FS", ]
+    inj_blankQC <- injections[injections$type == "Blank_QC", ]
+    inj_blankQC <- inj_blankQC[grep("QC_5", inj_blankQC$mzML), ]
+    inj_blankQC$class <- "QC"
+    injections <- injections[grep("Mix", injections$mzML), ]
+    injections <- injections[
+      as.numeric(gsub("Mix", "", injections$type)) == mix.levels[k], ]
+    injections <- rbind(inj_blankQC, injections)
+  } # close import table "injections"
+  
+  # Colouring factors
+  if(mix.levels[k] == 0){
+    injections$class <- 
+      factor(injections$class, 
+             levels = c("LowIS", "HighIS", "QC", "QC_LowIS", "QC_HighIS"))
+  } else {
+    injections$class <- gsub(paste0(injections$type[10], "_"), "", 
+                             injections$class)
+    injections$class <- factor(injections$class, 
+                               levels = c("Water_Low", "Water_High", 
+                                          "QC", "QC_Low", "QC_High"))
+  }
+  injections <- injections[order(injections$class),]
+  col_class <- brewer.pal(6, "Paired")
+  col_class <- col_class[-4]
+  names(col_class) <- levels(injections$class)
+  
+  
+  for(z in seq(length(polarity.all))){
+    polarity <- polarity.all[z]
+    injections.j <- injections[injections$polarity == polarity, ]
+    myfiles <- paste(injections.j$folder, injections.j$mzML, sep = "/")
+    
+    # Read the mzML files
+    data_raw <- readMSData(paste0(MZML_PATH, myfiles), 
+                           pdata = new("NAnnotatedDataFrame", injections.j),
+                           mode = "onDisk")
+    
+    for(i in 1:(nrow(std_info.i))){
+      # Calculate the mz for the main ion (mzvalue):
+      if(grepl("C", std_info.i$formula[i])){
+        mzvalue <- getMolecule(as.character(std_info.i$formula[i]))$exactmass
+        mzvalue <- unlist(mass2mz(
+          as.numeric(mzvalue), 
+          adduct = as.character(
+            std_info.i[i, which(colnames(std_info.i) == polarity)]
+          )))
+      } else{
+        mzvalue <- unlist(mass2mz(
+          as.numeric(std_info.i$formula[i]), 
+          adduct = as.character(
+            std_info.i[i, which(colnames(std_info.i) == polarity)]
+          )))
+      } # close calculate mzvalue
+      
+      # Extract the EIC for the mzvalue:
+      chr <- chromatogram(data_raw,
+                          aggregationFun = "max",
+                          mz = mzvalue + 0.01 * c(-1, 1))
+      
+      cmpname <- std_info.i$abbreviation[i]
+      
+      # Full RT range
+      filename <- paste0("images/", mix.levels[k], "_", cmpname, "_", 
+                         polarity, "_all.png")
+      png(file = filename, width = 1000, height = 1000)
+      plot(chr, main = std_info.i$name[i],
+           col = col_class[chr$class],
+           bg = "white")
+      legend("topright", legend = names(col_class), 
+             pch = 16, col = gsub("60", "", col_class))
+      abline(v = std_info.i$RT[i], lty = 2)
+      dev.off()
+      
+      # Zoom
+      if(!is.na(std_info.i$RT[i])){
+        filename <- paste0("images/", mix.levels[k], "_", cmpname, "_", 
+                           polarity, "_range.png")
+        png(file = filename, width = 1000, height = 1000)
+        plot(chr, main = std_info.i$name[i],
+             col = col_class[chr$class],
+             bg = "white", xlim = c(std_info.i$RT[i] + 5 * c(-1,1)))
+        legend("topright", legend = names(col_class), 
+               pch = 16, col = gsub("60", "", col_class))
+        abline(v = std_info.i$RT[i], lty = 2)
+        dev.off()
+      }
+    } # close compound "i"
+  } #close polarity "z"
+} # close mix "k"
+```
+
+
+# Session information
+```{r}
+Sys.time()-startpoint
+
+devtools::session_info()
+```
+
