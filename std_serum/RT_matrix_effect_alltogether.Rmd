@@ -247,7 +247,6 @@ std_info <- rbind(is_info, std_info)
 rm(is_info)
 std_info$POS[is.na(std_info$POS)] <- "[M+H]+"
 std_info$NEG[is.na(std_info$NEG)] <- "[M-H]-"
-std_info <- std_info[order(std_info$mix, std_info$RT),]
 
 mix.levels <- levels(factor(std_info$mix))
 ```
@@ -450,10 +449,12 @@ for(k in 1:(length(mix.levels))
                 if(nrow(id.i) == 1){
                   sps2$cmp[j] <- id.i$cmp_ID
                   sps2$annotation[j] <- id.i$assignation
-                } else if(nrow(id.i) == 2){
+                } else if(nrow(id.i) > 1){
                   sps2$cmp[j] <- paste(id.i$cmp_ID, collapse=" / ")
-                  if(id.i$assignation[1] == id.i$assignation[2]){
-                    sps2$annotation[j] <- id.i$assignation[1]
+                  if(length(unique(id.i$assignation)) == 1){
+                    sps2$annotation[j] <- unique(id.i$assignation)
+                  } else {
+                    sps2$annotation[j] <- paste(unique(id.i$assignation), collapse=" / ")
                   }
                 }
                 #print(paste(j, "There is >1 matching!!"))
