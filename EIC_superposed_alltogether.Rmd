@@ -1,5 +1,6 @@
 ---
-title: "EICs"
+title: "Dinamic Range"
+subtitle: "EICs"
 author: "Mar Garcia-Aloy"
 output: 
   BiocStyle::html_document:
