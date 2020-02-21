@@ -1,0 +1,224 @@
+---
+title: "Dinamic Range"
+subtitle: "Calibration curves"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+# Preliminaries
+## Parameters
+```{r}
+MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+modes <- c("POS", "NEG")
+
+library(xcms)
+cwp <- CentWaveParam(
+  peakwidth = c(2, 20), 
+  ppm = 50, 
+  snthresh = 1, ###############
+  mzdiff = 0.001,
+  prefilter = c(3, 100),
+  noise = 100,
+  integrate = 2)
+mnp <- MergeNeighboringPeaksParam(
+  expandRt = 3, 
+  expandMz = 0.001, 
+  ppm = 10,
+  minProp = 0.66)
+
+startpoint <- Sys.time()
+```
+
+## Libraries
+```{r}
+library(Rdisop)
+library(CompoundDb)
+```
+
+## Parallel processing
+```{r, eval=TRUE}
+ncores <- Sys.getenv("SLURM_JOB_CPUS_PER_NODE", 3)
+register(bpstart(MulticoreParam(ncores)))
+```
+
+## Standards data
+```{r}
+std_info <- read.table(
+  "data/standards_dilution.txt",
+  sep = "\t", header = TRUE, as.is = TRUE)
+std_info$POS[is.na(std_info$POS)] <- "[M+H]+"
+std_info$NEG[is.na(std_info$NEG)] <- "[M-H]-"
+mix.n <- levels(factor(std_info$mix))
+```
+
+## Results table
+```{r}
+linearity <- data.frame(
+  compound = std_info$name,
+  range_ppm = NA,
+  slope = NA,
+  offset = NA,
+  R2 = NA
+)
+```
+
+## Concentrations in ppm according to letter code
+```{r}
+letter_ppm <- data.frame(
+  concentration = c("A", "B", "C", "D", "E", "F", "G", "H", "I", "K"),
+  ppm = c(50, 50/2^(seq(9)))
+)
+```
+
+## File names table
+```{r}
+injections <- read.table(
+  "C:/Users/mgarciaaloy/Documents/GitHub/lcms-standards/data/standards_dilution_files.txt",
+  sep = "\t", header = TRUE, as.is = TRUE)
+```
+
+# Output
+```{r}
+for(i in seq(length(modes))){ ########################################## 
+  
+  # Select only files injected in mode "i":
+  injections.i <- injections[injections$polarity == modes[i],]
+  
+  for(j in 1:17){ ###################################################### 
+    
+    # Select only files from mix "j":
+    injections.j <- injections.i[
+      injections.i$mix == 
+        paste0("MIX", 
+               sprintf(paste0("%0", 
+                              ceiling(log10(10 + 1L)), "d"), 1:20)[j]),]
+    std_info.j <- std_info[std_info$mix == j, ]
+    std_info.j <- std_info.j[!is.na(std_info.j$RT), ]
+
+    # Specify the ppm of each sample
+    injections.j <- merge(injections.j, letter_ppm, by = "concentration")
+    
+    # Read the mzML files
+    myfiles <- injections.j$mzML
+    data_raw <- readMSData(
+      paste0(MZML_PATH, myfiles), 
+      pdata = new("NAnnotatedDataFrame", injections.j),
+      mode = "onDisk")
+    
+    for(k in 1:nrow(std_info.j)){ ###################################### 
+      
+      # Data extraction
+      mzvalue <- unlist(
+        mass2mz(getMolecule(as.character(
+          std_info.j$formula[k]))$exactmass, 
+          adduct = std_info.j[k, colnames(std_info.j) == modes[i]]))
+      rtvalue <- std_info.j$RT[k]
+      chr <- chromatogram(data_raw, # EIC for the mzvalue & rtvalue
+                          aggregationFun = "max",
+                          mz = mzvalue + 0.01 * c(-1, 1),
+                          rt = rtvalue + 40 * c(-1, 1))
+      chr2 <- findChromPeaks(chr, param = cwp) # Peak detection
+      chr3 <- refineChromPeaks(chr2, param = mnp) # Peak refinement
+      pks <- data.frame(chromPeaks(chr3)) # Extract info detected peaks
+      if (nrow(pks)) {
+        pks$sample <- gsub(".mzML", "", gsub("2016/2016_05/", "", 
+                                             myfiles[pks$column]))
+        rm(chr, chr2, mzvalue, rtvalue)
+        
+        # Select only 1 peak / sample:
+        pks2 <- pks[0, ]
+        for(l in levels(factor(pks$column))){
+          pks3 <- pks[pks$column == l, ]
+          pks2 <- rbind(pks2, pks3[which.max(pks3$maxo),])
+        } # close sample "l"
+        rm(pks3, l)
+        
+        # Plot detected peaks
+        filename <- paste0("images/peak_detection/", 
+                           std_info.j$abbreviation[k], "_",
+                           modes[i],".png")
+        png(file = filename, width = 1000, height = 1000)
+        par(mfrow = c(5, 4), mar = c(2, 2, 2, 0))
+        for(y in seq(length(chr3))){
+          mytitle <- gsub(".mzML", "", gsub("2016/2016_05/", "", 
+                                            myfiles[y]))
+          
+          plot(chr3[[y]], 
+               main = mytitle)
+          if(any(length(pks$rt[pks$column == y]))){
+            for(x in seq(length(pks$rt[pks$column == y]))){
+              text(pks$rt[pks$column == y][x],
+                   pks$maxo[pks$column == y][x],
+                   x)
+            }
+            points(pks2$rt[pks2$column == y],
+                   pks2$maxo[pks2$column == y],
+                   pch = 8, col = "red")
+          } 
+        }
+        dev.off()
+        rm(chr3, pks, x, y, mytitle)
+        
+        # Plot calibration curve
+        filename <- paste0("images/linearity/", 
+                           std_info.j$abbreviation[k], "_",
+                           modes[i],".png")
+        png(file = filename, width = 500, height = 500)
+        data <- merge(
+          subset(injections.j, select = c("sample", "ppm")),
+          subset(pks2, select = c("sample", "into")),
+          by = "sample"
+        )
+        mdl <- lm(data$into~data$ppm)
+        plot(data$ppm, data$into,
+             ylab = "Area", xlab = "ppm", main = std_info.j$name[k], 
+             pch = 21, bg = "grey", xlim = c(0, 50))
+        if(nrow(data)>2){
+          abline(mdl, lty = 2)
+          text(0, quantile(pks2$into, 0.92), pos= 4, 
+               paste0("Area = ", round(summary(mdl)$coefficients[2,1]), 
+                      "*ppm + ", # slope
+                      round(summary(mdl)$coefficients[1,1]), # offset
+                      "\nR2 = ", round(summary(mdl)$r.squared, 4)))
+        }
+        dev.off()
+        rm(filename, pks2)
+        
+        # Add data to table
+        idx <- which(linearity$compound == std_info.j$name[k])
+        linearity$range_ppm[idx] <- paste0(round(min(data$ppm), 2), 
+                                           " - ", round(max(data$ppm)))
+        if(nrow(summary(mdl)$coefficients)>1){
+          linearity $slope[idx] <- round(summary(mdl)$coefficients[2,1])
+        }
+        if(nrow(summary(mdl)$coefficients)>0){
+          linearity$offset[idx] <- round(summary(mdl)$coefficients[1,1])
+        }
+        linearity$R2[idx] <-  round(summary(mdl)$r.squared, 4)
+        rm(mdl, data, idx)
+        
+      } # close if(nrow(pks))
+      
+    } # close compound "k"
+    rm(std_info.j, injections.j, data_raw, myfiles)
+  } # close mix "j"
+  write.table(linearity, paste0("dinamic_range_", modes[i], ".txt"),
+              sep = "\t", row.names = FALSE)
+  rm(linearity, injections.i)
+} # close polarity "i"
+
+rm(letter_ppm, injections, std_info, mix.n, modes, MZML_PATH, i, j, k, 
+   cwp, mnp)
+```
+
+# Session information
+```{r}
+Sys.time()-startpoint
+
+devtools::session_info()
+```
+
