@@ -57,17 +57,6 @@ std_info$NEG[is.na(std_info$NEG)] <- "[M-H]-"
 mix.n <- levels(factor(std_info$mix))
 ```
 
-## Results table
-```{r}
-linearity <- data.frame(
-  compound = std_info$name,
-  range_ppm = NA,
-  slope = NA,
-  offset = NA,
-  R2 = NA
-)
-```
-
 ## Concentrations in ppm according to letter code
 ```{r}
 letter_ppm <- data.frame(
@@ -87,6 +76,15 @@ injections <- read.table(
 ```{r}
 for(i in seq(length(modes))){ ########################################## 
   
+  # Results table:
+  linearity <- data.frame(
+    compound = std_info$name,
+    range_ppm = NA,
+    slope = NA,
+    offset = NA,
+    R2 = NA
+  )
+  
   # Select only files injected in mode "i":
   injections.i <- injections[injections$polarity == modes[i],]
   
@@ -100,7 +98,7 @@ for(i in seq(length(modes))){ ##########################################
                               ceiling(log10(10 + 1L)), "d"), 1:20)[j]),]
     std_info.j <- std_info[std_info$mix == j, ]
     std_info.j <- std_info.j[!is.na(std_info.j$RT), ]
-
+    
     # Specify the ppm of each sample
     injections.j <- merge(injections.j, letter_ppm, by = "concentration")
     
