@@ -12,7 +12,9 @@ output:
 # Preliminaries
 ## Parameters
 ```{r}
-MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+MZML_PATH <- "/data/massspec/mzML/" 
+#MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+
 modes <- c("POS", "NEG")
 
 library(xcms)
@@ -77,7 +79,7 @@ letter_ppm <- data.frame(
 ## File names table
 ```{r}
 injections <- read.table(
-  "C:/Users/mgarciaaloy/Documents/GitHub/lcms-standards/data/standards_dilution_files.txt",
+  "data/standards_dilution_files.txt",
   sep = "\t", header = TRUE, as.is = TRUE)
 ```
 
