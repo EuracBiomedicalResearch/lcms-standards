@@ -34,7 +34,7 @@ This scheme is for the IS. The same was done for each of the MIXs.
 ```{r}
 polarity.all <- c("POS", "NEG") 
 da <- 0.01
-rt.d <- 20
+rt.d <- 60
 i.thr <- 10
 MZML_PATH <- "/data/massspec/mzML/" 
 #MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
