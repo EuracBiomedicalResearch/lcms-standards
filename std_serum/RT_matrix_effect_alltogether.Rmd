@@ -277,11 +277,14 @@ for(k in 1:(length(mix.levels))
   # Select STDs used in mix "k"
   std_info.i <- std_info[std_info$mix == mix.levels[k], ]
   if(mix.levels[k] == 5){
-    std_info.i <- std_info.i[std_info.i$name != "Glycerophospho-inositol", ]
+    std_info.i <- std_info.i[std_info.i$name != 
+                               "Glycerophospho-inositol", ]
   } else if(mix.levels[k] == 9){
-    std_info.i <- std_info.i[std_info.i$name != "Eplerone", ]
+    std_info.i <- std_info.i[std_info.i$name != 
+                               "Eplerone", ]
   } else if(mix.levels[k] == 17){
-    std_info.i <- std_info.i[std_info.i$name != "3-Hydroxy-DL-kynurenine", ]
+    std_info.i <- std_info.i[std_info.i$name != 
+                               "3-Hydroxy-DL-kynurenine", ]
   }
   
   
@@ -289,7 +292,7 @@ for(k in 1:(length(mix.levels))
   if(mix.levels[k] == 0){
     injections$class <- 
       factor(injections$class, 
-             levels = c("LowIS", "HighIS", "QC", "QC_LowIS", "QC_HighIS"))
+             levels = c("LowIS", "HighIS", "QC", "QC_LowIS","QC_HighIS"))
   } else {
     injections$class <- gsub(paste0(injections$type[10], "_"), "", 
                              injections$class)
@@ -312,14 +315,16 @@ for(k in 1:(length(mix.levels))
     
     # Read the mzML files
     data_raw <- readMSData(paste0(MZML_PATH, myfiles), 
-                           pdata = new("NAnnotatedDataFrame", injections.j),
+                           pdata = new("NAnnotatedDataFrame", 
+                                       injections.j),
                            mode = "onDisk")
     
     for(i in 1:(nrow(std_info.i))){
       
       # Calculate the mz for the main ion (mzvalue):
       if(grepl("C", std_info.i$formula[i])){
-        mzvalue <- getMolecule(as.character(std_info.i$formula[i]))$exactmass
+        mzvalue <- getMolecule(as.character(
+          std_info.i$formula[i]))$exactmass
         mzvalue <- unlist(mass2mz(
           as.numeric(mzvalue), 
           adduct = as.character(
@@ -341,7 +346,7 @@ for(k in 1:(length(mix.levels))
       png(file = filename, width = 1000, height = 1000)
       par(mfrow = c(2, 2))
       
-      # EIC full RT range -------------------------------------------------
+      # EIC full RT range ----------------------------------------------
       chr <- chromatogram(data_raw, 
                           mz = c(mzvalue - da,  mzvalue + da),
                           #rt = c(std_info.i$RT[i] + 5 * c(-1,1)),
@@ -354,7 +359,7 @@ for(k in 1:(length(mix.levels))
       abline(v = std_info.i$RT[i], lty = 2)
       
       if(!is.na(std_info.i$RT[i])){
-        # EIC RT zoomed -----------------------------------------------------
+        # EIC RT zoomed ------------------------------------------------
         chr2 <- findChromPeaks(chr, param = cwp1)
         delta_rt <- abs(chromPeaks(chr2)[, "rt"] - std_info.i$RT[i])
         pks <- data.frame(chromPeaks(chr2)[delta_rt < 60, , drop=FALSE])
@@ -381,25 +386,30 @@ for(k in 1:(length(mix.levels))
                pch = 16, col = gsub("60", "", col_class))
         abline(v = std_info.i$RT[i], lty = 2)
         
-        # EIC RT zoomed only for serum samples -------------------------------
+        # EIC RT zoomed only for serum samples -------------------------
         if(nrow(pks)){
           xdata.i <- filterFile(data_raw, grep("QC", myfiles))
           chr.i <- chromatogram(xdata.i, 
                                 mz = c(mzvalue - da,  mzvalue + da),
                                 aggregationFun = "max")
           if(mix.levels[k] == 0){
-            pks3 <- pks2[(pks2$column %in% grep("18_QC_LowIS", myfiles)) |
-                           (pks2$column %in% grep("18_QC_HighIS", myfiles)),]
+            pks3 <- pks2[(pks2$column %in% grep("18_QC_LowIS", 
+                                                myfiles)) |
+                           (pks2$column %in% grep("18_QC_HighIS", 
+                                                  myfiles)),]
             if(nrow(pks3) >0){
               rtmin <- min(pks3$rtmin)
               rtmax <- max(pks3$rtmax)
             }
           }else {
-            pks3 <- pks2[(pks2$column %in% grep("QC_LowIS", myfiles)) |
-                           (pks2$column %in% grep("QC_HighIS", myfiles)),]
+            pks3 <- pks2[(pks2$column %in% grep("QC_LowIS", 
+                                                myfiles)) |
+                           (pks2$column %in% grep("QC_HighIS", 
+                                                  myfiles)),]
           }
           plot(chr.i, 
-               col = col_class[factor(chr.i$class, levels = names(col_class))],
+               col = col_class[factor(chr.i$class, 
+                                      levels = names(col_class))],
                bg = "white", main = "QC serum",
                xlim = c(rtmin, rtmax))
           abline(v = std_info.i$RT[i], lty = 2)
@@ -407,7 +417,7 @@ for(k in 1:(length(mix.levels))
           rm(pks3)
           
           
-          # FS spectrum in HighIS_water ----------------------------------------
+          # FS spectrum in HighIS_water --------------------------------
           if(mix.levels[k] == 0){
             pks3 <- pks2[pks2$column %in% grep("18_HighIS", myfiles),]
             idx <- pks3$column[which.max(pks3$maxo)]
@@ -417,8 +427,10 @@ for(k in 1:(length(mix.levels))
             idx <- pks3$column[which.max(pks3$maxo)]
             rt.i <- pks3$rt[which.max(pks3$maxo)]
           }
-          if((mix.levels[k] == 0 & any(pks2$column %in% grep("18_HighIS", myfiles))) |
-             (mix.levels[k] > 0 & any(pks2$column %in% grep("/HighIS", myfiles)))
+          if((mix.levels[k] == 0 & any(pks2$column %in% grep("18_HighIS", 
+                                                             myfiles))) |
+             (mix.levels[k] > 0 & any(pks2$column %in% grep("/HighIS", 
+                                                            myfiles)))
           ){
             xdata.i <- filterFile(data_raw, idx)
             sps <- xdata.i %>%
@@ -437,7 +449,7 @@ for(k in 1:(length(mix.levels))
             sps2$annotation <- NA
             for(j in seq(nrow(sps2))){
               mz.i <- sps2$mz[j]
-              id.i <- il[unlist(which_within(mz.i, il$mz, mzd = 0.015)), ]
+              id.i <- il[unlist(which_within(mz.i, il$mz, mzd = 0.015)),]
               if(nrow(id.i) == 1){
                 sps2$cmp[j] <- id.i$cmp_ID
                 sps2$annotation[j] <- id.i$assignation
@@ -454,7 +466,8 @@ for(k in 1:(length(mix.levels))
                   if(length(unique(id.i$assignation)) == 1){
                     sps2$annotation[j] <- unique(id.i$assignation)
                   } else {
-                    sps2$annotation[j] <- paste(unique(id.i$assignation), collapse=" / ")
+                    sps2$annotation[j] <- paste(unique(id.i$assignation), 
+                                                collapse=" / ")
                   }
                 }
                 #print(paste(j, "There is >1 matching!!"))
