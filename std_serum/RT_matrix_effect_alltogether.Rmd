@@ -454,7 +454,7 @@ for(k in 1:(length(mix.levels))
                 sps2$cmp[j] <- id.i$cmp_ID
                 sps2$annotation[j] <- id.i$assignation
               } else if(nrow(id.i) > 1){
-                id.i <- id.i[(abs(sps[[2]]@rt - id.i$rt) < 10),]
+                #id.i <- id.i[(abs(sps[[2]]@rt - id.i$rt) < rt.d),]
                 if(nrow(id.i) > 1){
                   id.i <- id.i[abs(mz.i - id.i$mz) < 0.01,]
                 } # close "if(nrow(id.i) > 1)"
