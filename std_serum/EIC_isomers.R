@@ -112,9 +112,8 @@ for(i in seq(length(fmls))){
            xlim = c(rtmin, rtmax))
       abline(v = tmp$RT[k], lty = 2)
       
-      dev.off()
-      
     } # send compound "k"
+    dev.off()
   } # close mode "j"
 } # close formula "i"
 
