@@ -58,7 +58,7 @@ for(i in seq(length(fmls))){
     
     filename <- paste0("images/isomers/", fmls[i], "_", polarity.j, ".png")
     
-    png(file = filename, width = 500, height = 250*nrow(tmp))
+    png(file = filename, width = 1000, height = 500*nrow(tmp))
     par(mfrow = c(nrow(tmp), 2))
     
     # start loop by compound
