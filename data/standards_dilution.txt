@@ -16,7 +16,7 @@ mix	name	abbreviation	HMDB.code	formula	POS	NEG	RT	data_set	sample	operator	vers
 1	Xanthine	xanthine	HMDB0000292	C5H4N4O2	[M+H]+	[M-H]-	140	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	0_perfect	0_perfect
 2	Ascorbic Acid	ascorbic	HMDB0000044	C6H8O6	[M+H]+	[M-H]-	128	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 2	C4 Carnitine	carnitine_c4	HMDB0000736	C11H21NO4	[M+H]+	NA	37	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	3_bad
-2	Fructose	fructose	HMDB0000660	C6H12O6	[M+Na]+	[M-H]-	150	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
+2	Fructose	fructose	HMDB0000660	C6H12O6	[M+Na]+	[M-H+HCOOH]-	150	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
 2	Glycine	glycine	HMDB0000123	C2H5NO2	[M+H]+	[M-H+HCOONa]-	172	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	2_medium
 2	cGMP	GMP_c	HMDB0001314	C10H12N5O7P	[M+H]+	[M-H]-	217	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 2	Histidine	histidine	HMDB0000177	C6H9N3O2	[M+H]+	[M-H]-	188	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	0_perfect	0_perfect
