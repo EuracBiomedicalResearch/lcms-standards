@@ -1,5 +1,6 @@
 # Preliminaries -------------------------------------------------------
-MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+MZML_PATH <- "/data/massspec/mzML/" 
+#MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 polarity <- c("POS", "NEG")
 
 library(Rdisop)
@@ -15,9 +16,12 @@ cwp <- CentWaveParam(
   noise = 100,
   integrate = 2)
 
+ncores <- Sys.getenv("SLURM_JOB_CPUS_PER_NODE", 3)
+register(bpstart(MulticoreParam(ncores)))
+
 # Injections
 injections <- read.table(
-  "C:/Users/mgarciaaloy/Documents/GitHub/lcms-standards/data/std_serum_files.txt", 
+  "../data/std_serum_files.txt", 
   sep = "\t", header = TRUE, as.is = TRUE)
 injections <- injections[injections$mode == "FS", ]
 inj_blankQC <- injections[injections$type == "Blank_QC", ]
@@ -27,7 +31,7 @@ injections <- injections[grep("Mix", injections$mzML), ]
 
 # Import table of standards:
 std_info <- read.table(
-  "C:/Users/mgarciaaloy/Documents/GitHub/lcms-standards/data/standards_dilution.txt",
+  "../data/standards_dilution.txt",
   sep = "\t", header = TRUE, as.is = TRUE)
 
 # Coloring factors
