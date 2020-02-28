@@ -127,7 +127,7 @@ mix	name	abbreviation	HMDB.code	formula	POS	NEG	RT	data_set	sample	operator	vers
 9	Diethyl malonate	diethylmalonate	HMDB0029573	C7H12O4	[M+H]+	NA	29	2020_01_matrix_effect	water	Mar Garcia-Aloy	2	3_bad	3_bad
 9	Eplerone	eplerone	HMDB0014838	C24H30O6	[M+H]+	NA	NA	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	NA	NA
 9	Erythrose 4-phosphate	erythrose_phosphate	HMDB0001321	C4H9O7P	[M+Na]+	[M-H]-	225	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	2_medium
-9	Glucose 1-Phosphate	glucose_phosphate_1	HMDB0000645	C6H13O9P	[M+H-Hexose-H2O]+	[2M-H]-	237	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
+9	Glucose 1-Phosphate	glucose_phosphate_1	HMDB0000645	C6H13O9P	[2M+H]+	[2M-H]-	237	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 9	Guanosine	guanosine	HMDB0000133	C10H13N5O5	[M+H]+	[M-H]-	163	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	0_perfect	0_perfect
 9	IMP	IMP	HMDB0000175	C10H13N4O8P	[M+H]+	[M-H]-	226	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 9	NADH	NADH	HMDB0001487	C21H29N7O14P2	[M+H]+	[M-H]-	265	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
@@ -241,7 +241,7 @@ mix	name	abbreviation	HMDB.code	formula	POS	NEG	RT	data_set	sample	operator	vers
 17	Succinylacetone	succinylacetone	HMDB0000635	C7H10O4	[M+Na]+	[M-H]-	35	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 17	UTP	UTP	HMDB0000285	C9H15N2O15P3	NA	NA	NA	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	3_bad
 17	Xanthosine	xanthosine	HMDB0000299	C10H12N4O6	[M+Na]+	[M-H]-	153	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	0_perfect
-18	Fructose 6-Phosphate	fructose_phosphate	HMDB0000124	C6H13O9P	NA	[2M-H]-	235	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	1_good
+18	Fructose 6-Phosphate	fructose_phosphate	HMDB0000124	C6H13O9P	[2M+H]+	[2M-H]-	235	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	1_good
 18	2-Hydroxybutyric acid	hydroxybutyric_2	HMDB0000008	C4H8O3	NA	[M-H]-	37	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	2_medium
 18	3-Hydroxy-DL-kynurenine	hydroxykynurenine_3	HMDB0000732	C10H12N2O4	[M+H]+	[M-H]-	163	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 18	Succinyl-CoA	succinyl_CoA	HMDB0001022	C25H40N7O19P3S	NA	NA	227	2020_01_matrix_effect	water	Mar Garcia-Aloy	2	3_bad	3_bad
