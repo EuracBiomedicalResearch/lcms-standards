@@ -338,10 +338,8 @@ for(k in 1:(length(mix.levels))
           )))
       } # close calculate mzvalue
       
-      
-      cmpname <- std_info.i$abbreviation[i]
       filename <- paste0("images/", #mix.levels[k], "_", 
-                         cmpname, "_", 
+                         std_info.i$abbreviation[i], "_", 
                          polarity, "_EIC.png")
       
       png(file = filename, width = 1000, height = 1000)
@@ -537,7 +535,8 @@ for(k in 1:(length(mix.levels))
         } # close sample "l"
         rm(pks3)
         
-        filename <- paste0("images/", mix.levels[k], "_", cmpname, "_", 
+        filename <- paste0("images/", #mix.levels[k], "_", 
+                           std_info.i$abbreviation[i], "_", 
                            polarity, "_peaks.png")
         
         png(file = filename, width = 1000, height = 1000)
