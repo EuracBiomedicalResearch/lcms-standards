@@ -340,7 +340,8 @@ for(k in 1:(length(mix.levels))
       
       
       cmpname <- std_info.i$abbreviation[i]
-      filename <- paste0("images/", mix.levels[k], "_", cmpname, "_", 
+      filename <- paste0("images/", #mix.levels[k], "_", 
+                         cmpname, "_", 
                          polarity, "_EIC.png")
       
       png(file = filename, width = 1000, height = 1000)
