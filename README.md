@@ -28,6 +28,13 @@ specific configurations. The aim is to provide approximate retention times
 
 ## R files
 
+- [EIC_superposed.Rmd](EIC_superposed.Rmd): Markdown file for printing 
+  the EIC of one compound using all samples. The plots are saved 
+  in the folder `plots`.
+- [dinamic_range.Rmd](dinamic_range.Rmd): Markdown file for getting the 
+  calibration curves (and their corresponding plots) of each standard in 
+  each ionization mode (i.e., polarity). Plots are saved in the folder 
+  `images/linearity` and data in the text file `dinamic_range_POL.txt`.
 - [get_rt.Rmd](get_rt.Rmd): Markdown file for obtaining the RTs of the 
   maximum peak corresponding to each compound (considering its exact mass). 
   This serve as a starting point for define the RT of each compound. 
@@ -37,9 +44,6 @@ specific configurations. The aim is to provide approximate retention times
   - `mixnum`: in case we specified `study <- "standards_dilution"`, 
   specify to which MIX we want to focus.
   - `polarity`: specify in which polarity ("POS" or "NEG") we want to focus.
-- [EIC_superposed.Rmd](EIC_superposed.Rmd): Markdown file for printing 
-  the EIC of one compound using all samples. The plots are saved 
-  in the folder `plots`.
 - [EIC_manually.R](EIC_manually.R): R file for plot the EIC for a 
   specific compound in both ionization modes.
 - [spectras_max_ions.Rmd](spectras_max_ions.Rmd): Markdown for printing 

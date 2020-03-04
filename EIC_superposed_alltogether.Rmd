@@ -1,0 +1,150 @@
+---
+title: "Dinamic Range"
+subtitle: "EICs"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+# Parameters
+
+```{r}
+da = 0.01
+RTd = 30
+polarity <- c("POS", "NEG")
+
+MZML_PATH <- "/data/massspec/mzML/" 
+#MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+
+startpoint <- Sys.time()
+```
+
+# Preliminaries
+
+```{r, message=FALSE}
+library(xcms)
+library(reshape2)
+library(ggplot2)
+library(RColorBrewer)
+library(Rdisop)
+library(CompoundDb)
+
+dir.create("images/EIC_superposed", recursive = TRUE, 
+           showWarnings = FALSE)
+```
+
+## Parallel processing
+```{r, eval=TRUE}
+ncores <- Sys.getenv("SLURM_JOB_CPUS_PER_NODE", 3)
+register(bpstart(MulticoreParam(ncores)))
+```
+
+# Data import
+
+In the file `XXXX_files.txt` there is the information regarding 
+the injection sequence.
+
+```{r}
+injections <- read.table("data/standards_dilution_files.txt",
+                         sep = "\t", header = TRUE, as.is = TRUE)
+myfiles <- injections$mzML # get file names
+```
+
+Get the information regarding the standards that are in the samples.
+
+```{r}
+std_info <- read.table("data/standards_dilution.txt",
+                       sep = "\t", header = TRUE, as.is = TRUE)
+std_info$name <- c(substring(std_info$name, 1, 33))
+std_info$POS[is.na(std_info$POS)] <- "[M+H]+"
+std_info$NEG[is.na(std_info$NEG)] <- "[M-H]-"
+std_info$mzneut = NA
+for(i in seq(nrow(std_info))){
+  if(grepl("C", std_info$formula[i])){std_info$mzneut[i] = 
+    getMolecule(as.character(std_info$formula[i]))$exactmass}else{
+      std_info$mzneut[i] = as.numeric(std_info$formula[i])}
+}
+```
+
+# EICs
+
+```{r}
+getPalette = colorRampPalette(brewer.pal(9, "YlOrRd"))
+
+for(k in seq(length(polarity))){
+  
+  # select files names of our polarity:
+  myfiles.i <- myfiles[grep(polarity[k], myfiles)] 
+  
+  for(j in seq(17)){
+    mixnum <- j # specify which MIX
+    myfiles.j <- myfiles.i[grep(paste0("MIX ", mixnum, "[A-Z]"), 
+                                myfiles.i)]
+    std_info.j <- subset(std_info, mix == mixnum)
+    mycols = getPalette(length(myfiles.j))  
+    
+    data <- readMSData(paste0(MZML_PATH, myfiles.j), mode = "onDisk")
+    
+    for(i in 1:nrow(std_info.j)){
+      
+      mzvalue <- unlist(
+        mass2mz(std_info.j$mzneut[i], 
+                adduct = as.character(
+                  std_info.j[i, grep(polarity[k], 
+                                     colnames(std_info.j))])))[1]
+      
+      chr = chromatogram(data, 
+                         mz = c(mzvalue - da,  mzvalue + da),
+                         aggregationFun = "max")
+      
+      cmpname <- std_info.j$abbreviation[i]
+      
+      if(mixnum < 10){
+        filename <- paste0("images/EIC_superposed/MIX_0", mixnum, "_", 
+                           cmpname, "_", polarity[k], ".png") 
+      } else{
+        filename <- paste0("images/EIC_superposed/MIX_", mixnum, "_", 
+                           cmpname, "_", polarity[k], ".png") 
+      }
+      
+      png(file = filename, units = "px",
+          width = 3000, height = 1600, res = 300)
+      
+      par(mfrow=c(1,2))
+      
+      plot(chr, col=mycols, ylab="", main=std_info.j$name[i])
+      abline(v=std_info.j$RT[i], lty=2)
+      
+      if(!is.na(std_info.j$RT[i])){
+        plot(chr, col=mycols, ylab="",
+             xlim=c(std_info.j$RT[i] - RTd, std_info.j$RT[i] + RTd))
+        abline(v=std_info.j$RT[i], lty=2)
+      }else{
+        plot(chr, col=mycols, ylab="",
+             xlim=c(rtime(chr[[length(chr)]])[
+               which.max(intensity(chr[[length(chr)]]))] - RTd, 
+               rtime(chr[[length(chr)]])[
+                 which.max(intensity(chr[[length(chr)]]))] + RTd))
+        text(rtime(chr[[length(chr)]])[
+          which.max(intensity(chr[[length(chr)]]))] - (RTd - 1), 
+          intensity(chr[[length(chr)]])[
+            which.max(intensity(chr[[length(chr)]]))] - (RTd - 1),
+          "NOT RT")
+      }
+      
+      dev.off()
+    }
+  } # close mix "j"
+} # close polarity "k"
+```
+
+# Session information
+```{r}
+Sys.time()-startpoint
+
+devtools::session_info()
+```
+
