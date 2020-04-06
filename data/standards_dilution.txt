@@ -1,4 +1,4 @@
-amix	name	abbreviation	HMDB.code	formula	POS	NEG	RT	data_set	sample	operator	version	quality_POS	quality_NEG
+mix	name	abbreviation	HMDB.code	formula	POS	NEG	RT	data_set	sample	operator	version	quality_POS	quality_NEG
 1	Acetylhistidine	acetylhistidine	HMDB0032055	C8H11N3O3	[M+H]+	[M-H]-	180	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
 1	Betaine	betaine	HMDB0000043	C5H11NO2	[M+H]+	[M-H+HCOOH]-	166	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	3_bad
 1	C3 Carnitine	carnitine_c3	HMDB0000824	C10H19NO4	NA	NA	NA	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	3_bad
