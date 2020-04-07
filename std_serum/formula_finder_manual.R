@@ -1,10 +1,11 @@
 k <- 1 # MIX nº k
-z <- 1 # POs = 1 ; NEG = 2
+z <- 1 # POS = 1 ; NEG = 2
 cmp <- "acetylhistidine" # abbreviation
 
 ### Start auto #########################################################
 
 MZML_PATH <- "Y:/mzML/"
+#MZML_PATH <- "C:/Users/vveri/Documents/stds_ID_files_trial/"
 polarity.all <- c("POS", "NEG") 
 
 library(xcms)
@@ -101,6 +102,7 @@ idx <- injections$type == paste0(
   "Mix",
   sprintf(paste0("%0", ceiling(log10(10 + 1L)), "d"), 1:20)[k])
 filename <- paste0(injections$folder[idx], "/", injections$mzML[idx])
+#filename <- injections$mzML[idx]
 filename <- filename[grep(polarity.all[z], filename)]
 data_raw <- readMSData(paste0(MZML_PATH, filename),
                        mode = "onDisk")
@@ -127,15 +129,26 @@ which((pks$rtmin - 10) < std_info.i$RT[i] & (pks$rtmax + 10) > std_info.i$RT[i])
 
 ### Start auto #########################################################
 
-pks <- pks[which(which((pks$rtmin - 10) < std_info.i$RT[i] & 
-                         (pks$rtmax + 10) > std_info.i$RT[i]) ==  
-                   which.max(pks$maxo)), ]
+pks <- pks[which((pks$rtmin - 10) < std_info.i$RT[i] & (pks$rtmax + 10) > std_info.i$RT[i]), ]
+if(nrow(pks) > 1){pks <- pks[which.max(pks$maxo), ]}
 sps <- data_raw %>%
-  filterRt(rt = pks$rt + 0.5 * c(-1, 1)) %>%
-  spectra
-sps2 <- data.frame(sps[[2]])
-sps2 <- sps2[sps2$mz > (round(std_info.i$mz[i])) & 
-               sps2$mz < (round(std_info.i$mz[i])+3), ]
+  filterRt(rt = pks$rt + 2.5 * c(-1, 1)) %>%
+  extractSpectraData
+sps2 <- Spectra::Spectra(sps)
+sps2 <- Spectra::combineSpectra(sps2, 
+                                 peaks = "intersect", minProp = 0.75,  
+                                 tolerance = 0.001, ppm = 10)
+# "minProp" allows to define which peaks to keep (if peaks = "intersect"), 
+# keeps only peaks present in >= minProp of input spectra
+
+# "tolerance" and "ppm" allow to define how peaks from different spectra are matched. 
+# They are considered to be the same peak if the difference in their m/z is smaller tolerance + ppm(mz)
+
+# Note that by default the mean m/z and intensity are reported. To get the maximum intensity use "intensityFun = max".
+# The trick is actually the peaks = "intersect" because the default peaks = "union" keeps all peaks from all spectra.
+
+sps2 <- data.frame(mz = sps2$mz[[1]],
+                    i = sps2$intensity[[1]])
 sps2$i100 <- (sps2$i / max(sps2$i))*100
 sps2 <- sps2[order(-sps2$i), ]
 idx <- c(which(round(sps2$mz) == round(std_info.i$mz[i]))[1],
@@ -144,7 +157,7 @@ idx <- c(which(round(sps2$mz) == round(std_info.i$mz[i]))[1],
 sps2 <- sps2[idx, ]
 masses <- sps2$mz
 intensities <- sps2$i
-molecules <- decomposeIsotopes(masses, intensities, ppm = 10)
+molecules <- decomposeIsotopes(masses, intensities, ppm = 20)
 formulas <- data.frame(formula = getFormula(molecules))
 tmp <- makeup(as.character(formulas$formula))
 formulas$C <- NA
