@@ -1,0 +1,215 @@
+k <- 1 # MIX nº k
+z <- 1 # POs = 1 ; NEG = 2
+cmp <- "acetylhistidine" # abbreviation
+
+### Start auto #########################################################
+
+MZML_PATH <- "Y:/mzML/"
+polarity.all <- c("POS", "NEG") 
+
+library(xcms)
+library(Rdisop)
+library(CompoundDb)
+library(doParallel)
+library(magrittr)
+library(SummarizedExperiment)
+library(CHNOSZ)
+
+extractSpectraData <- function(x) {
+  if (is(x, "list")) {
+    df <- DataFrame(do.call(rbind, lapply(x, MSnbase:::.spectrum_header)))
+    df$mz <- NumericList(lapply(x, function(z) z@mz))
+    df$intensity <- NumericList(lapply(x, function(z) z@intensity))
+  } else if (inherits(x, "MSnExp")) {
+    df <- DataFrame(MSnbase::fData(x))
+    df$mz <- NumericList(MSnbase::mz(x))
+    df$intensity <- NumericList(MSnbase::intensity(x))
+  } else stop("'x' should be either a 'list' of 'Spectrum' objects or an ",
+              "object extending 'MSnExp'")
+  df
+}
+
+C_rule <- function(x){
+  C <- round(c((x/1.1) - (x/1.1)/10, (x/1.1) + (x/1.1)/10))
+  return(C)
+}
+H_rule <- function(C, N){
+  H <- 2*C + N + 2
+  return(H)
+}
+RPU_rule <- function(C=0, H=0, N=0, P=0, Si=0, Cl=0, Fl=0, I=0){
+  RPU <- (C+Si) - (H+Cl+Fl+I)/2 + (N+P)/2 + 1
+  return(RPU)
+}
+
+std_info <- read.table(
+  "../data/standards_dilution.txt",
+  sep = "\t", header = TRUE, as.is = TRUE)
+
+std_info$mz_POS <- NA
+std_info$mz_NEG <- NA
+for(i in 1:nrow(std_info)){
+  std_info$mz_POS[i] <- unlist(
+    mass2mz(getMolecule(as.character(std_info$formula[i]))$exactmass, 
+            adduct = as.character(std_info$POS[i])))
+  std_info$mz_NEG[i] <- unlist(
+    mass2mz(getMolecule(as.character(std_info$formula[i]))$exactmass, 
+            adduct = as.character(std_info$NEG[i])))
+}
+std_info$form_pred_POS <- NA
+std_info$form_pred_NEG <- NA
+
+mix.levels <- levels(factor(std_info$mix))
+
+injections <- read.table("../data/std_serum_files.txt", 
+                         sep = "\t", header = TRUE, as.is = TRUE)
+injections <- injections[injections$mode == "FS", ]
+injections <- injections[grep("Water_Mix", injections$class), ]
+injections <- injections[grep("_High", injections$class), ]
+injections <- injections[grep("_2_", injections$mzML), ]
+
+cwp <- CentWaveParam(
+  ppm = 50,
+  peakwidth = c(2, 20),
+  snthresh = 10,
+  mzdiff = 0.001,
+  prefilter = c(3, 500),
+  noise = 100,
+  integrate = 2)
+
+# Select STDs used in mix "k"
+std_info.i <- std_info[std_info$mix == mix.levels[k], ]
+if(mix.levels[k] == 5){
+  std_info.i <- std_info.i[std_info.i$name != 
+                             "Glycerophospho-inositol", ]
+} else if(mix.levels[k] == 9){
+  std_info.i <- std_info.i[std_info.i$name != 
+                             "Eplerone", ]
+} else if(mix.levels[k] == 17){
+  std_info.i <- std_info.i[std_info.i$name != 
+                             "3-Hydroxy-DL-kynurenine", ]
+}
+
+if(polarity.all[z] == "NEG"){ 
+  pol <- -1
+  ion <- -1.007276 
+} else if(polarity.all[z] == "POS"){ 
+  pol <- 1
+  ion <- 1.007276 
+}
+idx <- injections$type == paste0(
+  "Mix",
+  sprintf(paste0("%0", ceiling(log10(10 + 1L)), "d"), 1:20)[k])
+filename <- paste0(injections$folder[idx], "/", injections$mzML[idx])
+filename <- filename[grep(polarity.all[z], filename)]
+data_raw <- readMSData(paste0(MZML_PATH, filename),
+                       mode = "onDisk")
+std_info.i$mz <- std_info.i[, which(colnames(std_info.i) == 
+                                      paste0("mz_",polarity.all[z]))]
+std_info.i <- std_info.i[!is.na(std_info.i$mz),]
+
+i <- which(std_info.i$abbreviation == cmp)
+eic <- chromatogram(data_raw, aggregationFun = "max", 
+                    mz = std_info.i$mz[i] + 0.01 * c(-1, 1))
+pks <- data.frame(chromPeaks(findChromPeaks(eic, param = cwp)))
+
+### Finish auto #######################################################
+
+
+
+# Is there any detected peak?
+any(which((pks$rtmin - 10) < std_info.i$RT[i] & (pks$rtmax + 10) > std_info.i$RT[i]) ==  which.max(pks$maxo))
+
+# Is the peak with a close RT the one with the highest height?
+which((pks$rtmin - 10) < std_info.i$RT[i] & (pks$rtmax + 10) > std_info.i$RT[i]) ==  which.max(pks$maxo)
+
+
+
+### Start auto #########################################################
+
+pks <- pks[which(which((pks$rtmin - 10) < std_info.i$RT[i] & 
+                         (pks$rtmax + 10) > std_info.i$RT[i]) ==  
+                   which.max(pks$maxo)), ]
+sps <- data_raw %>%
+  filterRt(rt = pks$rt + 0.5 * c(-1, 1)) %>%
+  spectra
+sps2 <- data.frame(sps[[2]])
+sps2 <- sps2[sps2$mz > (round(std_info.i$mz[i])) & 
+               sps2$mz < (round(std_info.i$mz[i])+3), ]
+sps2$i100 <- (sps2$i / max(sps2$i))*100
+sps2 <- sps2[order(-sps2$i), ]
+idx <- c(which(round(sps2$mz) == round(std_info.i$mz[i]))[1],
+         which(round(sps2$mz) == round(std_info.i$mz[i]+1))[1],
+         which(round(sps2$mz) == round(std_info.i$mz[i]+2))[1])
+sps2 <- sps2[idx, ]
+masses <- sps2$mz
+intensities <- sps2$i
+molecules <- decomposeIsotopes(masses, intensities, ppm = 10)
+formulas <- data.frame(formula = getFormula(molecules))
+tmp <- makeup(as.character(formulas$formula))
+formulas$C <- NA
+formulas$H <- NA
+formulas$O <- NA
+formulas$N <- NA
+formulas$S <- NA
+formulas$P <- NA
+for(j in 1:nrow(formulas)){
+  if(length(tmp[[j]][names(tmp[[j]]) == "C"]) == 1){
+    formulas$C[j] <- tmp[[j]][names(tmp[[j]]) == "C"]  
+  } else {formulas$C[j] <- 0}
+  if(length(tmp[[j]][names(tmp[[j]]) == "H"]) == 1){
+    formulas$H[j] <- tmp[[j]][names(tmp[[j]]) == "H"]
+  } else {formulas$H[j] <- 0}
+  if(length(tmp[[j]][names(tmp[[j]]) == "O"]) == 1){
+    formulas$O[j] <- tmp[[j]][names(tmp[[j]]) == "O"]
+  } else {formulas$O[j] <- 0}
+  if(length(tmp[[j]][names(tmp[[j]]) == "N"]) == 1){
+    formulas$N[j] <- tmp[[j]][names(tmp[[j]]) == "N"]
+  } else {formulas$N[j] <- 0}
+  if(length(tmp[[j]][names(tmp[[j]]) == "S"]) == 1){
+    formulas$S[j] <- tmp[[j]][names(tmp[[j]]) == "S"]
+  } else {formulas$S[j] <- 0}
+  if(length(tmp[[j]][names(tmp[[j]]) == "P"]) == 1){
+    formulas$P[j] <- tmp[[j]][names(tmp[[j]]) == "P"]
+  } else {formulas$P[j] <- 0}
+} # close formula "j"
+
+formulas$C_rule <- FALSE
+tmp <- C_rule((intensities[2] / intensities[1])*100)
+formulas$C_rule[formulas$C >= tmp[1] & formulas$C <= tmp[2]] <- TRUE
+formulas$H_rule <- FALSE
+formulas$H_rule[formulas$H <= H_rule(formulas$C, formulas$N)] <- TRUE
+formulas$N_rule <- formulas$N %% 2 == round(masses[1] - ion) %% 2
+formulas$RPU_rule <- FALSE
+formulas$RPU_rule[RPU_rule(C = formulas$C, H = formulas$H - pol, 
+                           N = formulas$N, P = formulas$P) >= 0] <- TRUE
+formulas$RPU_rule[RPU_rule(C = formulas$C, H = formulas$H - pol, 
+                           N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE
+
+formulas.ok <- formulas[formulas$C_rule & formulas$H_rule & 
+                          formulas$N_rule & formulas$RPU_rule, ]
+
+### Finish auto #######################################################
+
+# How many formulas "OK" there are?
+nrow(formulas.ok)
+
+
+formulas.ok$isodev <- NA
+for(j in 1:nrow(formulas.ok)){
+  formulas.ok$isodev[j] <- mean(abs(
+    (getIsotope(getMolecule(as.character(formulas.ok$formula[j])), 
+                seq(1,3))[2,] / 
+       max(getIsotope(getMolecule(as.character(formulas.ok$formula[j])), 
+                      seq(1,3))[2,]))*100 - 
+      (intensities / max(intensities)*100)))
+} # close formula "j"
+formulas.ok <- formulas.ok[order(formulas.ok$isodev), ]
+
+std_info[
+  which(std_info$name == std_info.i$name[i]),
+  which(colnames(std_info) == 
+          paste0("form_pred_", polarity.all[z]))] <- 
+  paste(formulas.ok$formula, collapse = "; ") 
+
+
