@@ -1,6 +1,6 @@
 k <- 1 # MIX nº k
 z <- 1 # POS = 1 ; NEG = 2
-cmp <- "dimethylglycine" # abbreviation
+cmp <- "acetylhistidine" # abbreviation
 
 ### Start auto #########################################################
 
@@ -15,20 +15,6 @@ library(doParallel)
 library(magrittr)
 library(SummarizedExperiment)
 library(CHNOSZ)
-
-extractSpectraData <- function(x) {
-  if (is(x, "list")) {
-    df <- DataFrame(do.call(rbind, lapply(x, MSnbase:::.spectrum_header)))
-    df$mz <- NumericList(lapply(x, function(z) z@mz))
-    df$intensity <- NumericList(lapply(x, function(z) z@intensity))
-  } else if (inherits(x, "MSnExp")) {
-    df <- DataFrame(MSnbase::fData(x))
-    df$mz <- NumericList(MSnbase::mz(x))
-    df$intensity <- NumericList(MSnbase::intensity(x))
-  } else stop("'x' should be either a 'list' of 'Spectrum' objects or an ",
-              "object extending 'MSnExp'")
-  df
-}
 
 C_rule <- function(x){
   C <- round(c((x/1.1) - ((x/1.1)*0.1), (x/1.1) + ((x/1.1)*0.1)))
@@ -142,7 +128,15 @@ idx <- c(which.min((abs(std_info.i$mz[i] - sps2$mz) / std_info.i$mz[i])*1e6),
 sps2 <-sps2[idx,]
 masses <- sps2$mz
 intensities <- sps2$i
-molecules <- decomposeIsotopes(masses, intensities, ppm = 20)
+if(grepl("Na", std_info.i[i, which(colnames(std_info.i) == 
+                                   polarity.all[z])])){
+  molecules <- decomposeIsotopes(masses, intensities, ppm = 20,
+                                 elements = initializeElements(
+                                   c("C", "H", "N", "O", 
+                                     "P", "S", "Na")))
+}else{
+    molecules <- decomposeIsotopes(masses, intensities, ppm = 20)
+    }
 formulas <- data.frame(formula = getFormula(molecules))
 tmp <- makeup(as.character(formulas$formula))
 formulas$C <- NA
@@ -151,6 +145,7 @@ formulas$O <- NA
 formulas$N <- NA
 formulas$S <- NA
 formulas$P <- NA
+formulas$Na <- NA
 for(j in 1:nrow(formulas)){
   if(length(tmp[[j]][names(tmp[[j]]) == "C"]) == 1){
     formulas$C[j] <- tmp[[j]][names(tmp[[j]]) == "C"]  
@@ -170,6 +165,9 @@ for(j in 1:nrow(formulas)){
   if(length(tmp[[j]][names(tmp[[j]]) == "P"]) == 1){
     formulas$P[j] <- tmp[[j]][names(tmp[[j]]) == "P"]
   } else {formulas$P[j] <- 0}
+  if(length(tmp[[j]][names(tmp[[j]]) == "Na"]) == 1){
+    formulas$Na[j] <- tmp[[j]][names(tmp[[j]]) == "Na"]
+  } else {formulas$Na[j] <- 0}
 } # close formula "j"
 
 formulas$C_rule <- FALSE
@@ -181,11 +179,23 @@ formulas$N_rule <- formulas$N %% 2 == round(masses[1] - ion) %% 2
 formulas$RPU_rule <- FALSE
 formulas$RPU_rule[RPU_rule(C = formulas$C, H = formulas$H - pol, 
                            N = formulas$N, P = formulas$P) >= 0] <- TRUE
-formulas$RPU_rule[RPU_rule(C = formulas$C, H = formulas$H - pol, 
-                           N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE
-
-formulas.ok <- formulas[formulas$C_rule & formulas$H_rule & 
-                          formulas$N_rule & formulas$RPU_rule, ]
+if(grepl("Na", std_info.i[i, which(colnames(std_info.i) == 
+                                   polarity.all[z])])){
+  formulas$RPU_rule[RPU_rule(C = formulas$C, H = formulas$H, 
+                             N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE
+} else{
+  formulas$RPU_rule[RPU_rule(C = formulas$C, H = formulas$H - pol, 
+                             N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE 
+}
+if(grepl("Na", std_info.i[i, which(colnames(std_info.i) == 
+                                   polarity.all[z])])){
+  formulas.ok <- formulas[formulas$C_rule & formulas$H_rule & 
+                            formulas$N_rule & formulas$RPU_rule &
+                            formulas$Na == 1, ]
+}else{
+  formulas.ok <- formulas[formulas$C_rule & formulas$H_rule & 
+                            formulas$N_rule & formulas$RPU_rule, ]
+}
 
 ### Finish auto #######################################################
 
@@ -196,18 +206,27 @@ nrow(formulas.ok)
 formulas.ok$isodev <- NA
 for(j in 1:nrow(formulas.ok)){
   formulas.ok$isodev[j] <- mean(abs(
-    (getIsotope(getMolecule(as.character(formulas.ok$formula[j])), 
+    ((getIsotope(getMolecule(as.character(formulas.ok$formula[j])), 
                 seq(1,3))[2,] / 
        max(getIsotope(getMolecule(as.character(formulas.ok$formula[j])), 
-                      seq(1,3))[2,]))*100 - 
-      (intensities / max(intensities)*100)))
+                      seq(1,3))[2,]))*100)[2] - 
+      (intensities / max(intensities)*100)[2]))
 } # close formula "j"
 formulas.ok <- formulas.ok[order(formulas.ok$isodev), ]
 
-std_info[
-  which(std_info$name == std_info.i$name[i]),
-  which(colnames(std_info) == 
-          paste0("form_pred_", polarity.all[z]))] <- 
-  paste(formulas.ok$formula, collapse = "; ") 
+if(nrow(formulas.ok) < 6){
+  std_info[
+    which(std_info$name == std_info.i$name[i]),
+    which(colnames(std_info) == 
+            paste0("form_pred_", polarity.all[z]))] <- 
+    paste(formulas.ok$formula, collapse = "; ") 
+} else{
+  std_info[
+    which(std_info$name == std_info.i$name[i]),
+    which(colnames(std_info) == 
+            paste0("form_pred_", polarity.all[z]))] <- 
+    paste0(paste(formulas.ok$formula[1:5], collapse = "; "), "; etc.")
+}
+
 
 
