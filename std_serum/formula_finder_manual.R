@@ -220,11 +220,11 @@ nrow(formulas.ok)
 formulas.ok$isodev <- NA
 for(j in 1:nrow(formulas.ok)){
   formulas.ok$isodev[j] <- mean(abs(
-    (getIsotope(getMolecule(as.character(formulas.ok$formula[j])), 
+    ((getIsotope(getMolecule(as.character(formulas.ok$formula[j])), 
                 seq(1,3))[2,] / 
        max(getIsotope(getMolecule(as.character(formulas.ok$formula[j])), 
-                      seq(1,3))[2,]))*100 - 
-      (intensities / max(intensities)*100)))
+                      seq(1,3))[2,]))*100)[2] - 
+      (intensities / max(intensities)*100)[2]))
 } # close formula "j"
 formulas.ok <- formulas.ok[order(formulas.ok$isodev), ]
 
