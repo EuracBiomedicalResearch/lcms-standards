@@ -211,7 +211,15 @@ for(k in 1#:(length(mix.levels))
           sps2 <- sps2[idx, ]
           masses <- sps2$mz
           intensities <- sps2$i
-          molecules <- decomposeIsotopes(masses, intensities, ppm = 10)
+          if(grepl("Na", std_info.i[i, which(colnames(std_info.i) == 
+                                             polarity.all[z])])){
+            molecules <- decomposeIsotopes(masses, intensities, ppm = 20,
+                                           elements = initializeElements(
+                                             c("C", "H", "N", "O", 
+                                               "P", "S", "Na")))
+          }else{
+            molecules <- decomposeIsotopes(masses, intensities, ppm = 20)
+          }
           formulas <- data.frame(formula = getFormula(molecules))
           tmp <- makeup(as.character(formulas$formula))
           formulas$C <- NA
@@ -220,6 +228,7 @@ for(k in 1#:(length(mix.levels))
           formulas$N <- NA
           formulas$S <- NA
           formulas$P <- NA
+          formulas$Na <- NA
           for(j in 1:nrow(formulas)){
             if(length(tmp[[j]][names(tmp[[j]]) == "C"]) == 1){
               formulas$C[j] <- tmp[[j]][names(tmp[[j]]) == "C"]  
@@ -239,6 +248,9 @@ for(k in 1#:(length(mix.levels))
             if(length(tmp[[j]][names(tmp[[j]]) == "P"]) == 1){
               formulas$P[j] <- tmp[[j]][names(tmp[[j]]) == "P"]
             } else {formulas$P[j] <- 0}
+            if(length(tmp[[j]][names(tmp[[j]]) == "Na"]) == 1){
+              formulas$Na[j] <- tmp[[j]][names(tmp[[j]]) == "Na"]
+            } else {formulas$Na[j] <- 0}
           } # close formula "j"
           
           formulas$C_rule <- FALSE
@@ -250,11 +262,24 @@ for(k in 1#:(length(mix.levels))
           formulas$RPU_rule <- FALSE
           formulas$RPU_rule[RPU_rule(C = formulas$C, H = formulas$H - pol, 
                                      N = formulas$N, P = formulas$P) >= 0] <- TRUE
-          formulas$RPU_rule[RPU_rule(C = formulas$C, H = formulas$H - pol, 
-                                     N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE
+          if(grepl("Na", std_info.i[i, which(colnames(std_info.i) == 
+                                             polarity.all[z])])){
+            formulas$RPU_rule[RPU_rule(C = formulas$C, H = formulas$H, 
+                                       N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE
+          } else{
+            formulas$RPU_rule[RPU_rule(C = formulas$C, H = formulas$H - pol, 
+                                       N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE 
+          }
           
-          formulas.ok <- formulas[formulas$C_rule & formulas$H_rule & 
-                                    formulas$N_rule & formulas$RPU_rule, ]
+          if(grepl("Na", std_info.i[i, which(colnames(std_info.i) == 
+                                             polarity.all[z])])){
+            formulas.ok <- formulas[formulas$C_rule & formulas$H_rule & 
+                                      formulas$N_rule & formulas$RPU_rule &
+                                      formulas$Na == 1, ]
+          }else{
+            formulas.ok <- formulas[formulas$C_rule & formulas$H_rule & 
+                                      formulas$N_rule & formulas$RPU_rule, ]
+          }
           if(nrow(formulas.ok) > 0){
             formulas.ok$isodev <- NA
             for(j in 1:nrow(formulas.ok)){
