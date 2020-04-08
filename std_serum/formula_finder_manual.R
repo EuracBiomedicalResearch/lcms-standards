@@ -1,6 +1,6 @@
 k <- 1 # MIX nº k
 z <- 1 # POS = 1 ; NEG = 2
-cmp <- "acetylhistidine" # abbreviation
+cmp <- "dimethylglycine" # abbreviation
 
 ### Start auto #########################################################
 
@@ -31,7 +31,7 @@ extractSpectraData <- function(x) {
 }
 
 C_rule <- function(x){
-  C <- round(c((x/1.1) - (x/1.1)/10, (x/1.1) + (x/1.1)/10))
+  C <- round(c((x/1.1) - ((x/1.1)*0.1), (x/1.1) + ((x/1.1)*0.1)))
   return(C)
 }
 H_rule <- function(C, N){
@@ -132,29 +132,14 @@ which((pks$rtmin - 10) < std_info.i$RT[i] & (pks$rtmax + 10) > std_info.i$RT[i])
 pks <- pks[which((pks$rtmin - 10) < std_info.i$RT[i] & (pks$rtmax + 10) > std_info.i$RT[i]), ]
 if(nrow(pks) > 1){pks <- pks[which.max(pks$maxo), ]}
 sps <- data_raw %>%
-  filterRt(rt = pks$rt + 2.5 * c(-1, 1)) %>%
-  extractSpectraData
-sps2 <- Spectra::Spectra(sps)
-sps2 <- Spectra::combineSpectra(sps2, 
-                                 peaks = "intersect", minProp = 0.75,  
-                                 tolerance = 0.001, ppm = 10)
-# "minProp" allows to define which peaks to keep (if peaks = "intersect"), 
-# keeps only peaks present in >= minProp of input spectra
-
-# "tolerance" and "ppm" allow to define how peaks from different spectra are matched. 
-# They are considered to be the same peak if the difference in their m/z is smaller tolerance + ppm(mz)
-
-# Note that by default the mean m/z and intensity are reported. To get the maximum intensity use "intensityFun = max".
-# The trick is actually the peaks = "intersect" because the default peaks = "union" keeps all peaks from all spectra.
-
-sps2 <- data.frame(mz = sps2$mz[[1]],
-                    i = sps2$intensity[[1]])
+  filterRt(rt = pks$rt + 0.5 * c(-1,1)) %>% 
+  spectra
+sps2 <- data.frame(sps[[2]])
 sps2$i100 <- (sps2$i / max(sps2$i))*100
-sps2 <- sps2[order(-sps2$i), ]
-idx <- c(which(round(sps2$mz) == round(std_info.i$mz[i]))[1],
-         which(round(sps2$mz) == round(std_info.i$mz[i]+1))[1],
-         which(round(sps2$mz) == round(std_info.i$mz[i]+2))[1])
-sps2 <- sps2[idx, ]
+idx <- c(which.min((abs(std_info.i$mz[i] - sps2$mz) / std_info.i$mz[i])*1e6),
+         which.min((abs((std_info.i$mz[i] + 1.003355) - sps2$mz) / (std_info.i$mz[i] + 1.003355))*1e6),
+         which.min((abs((std_info.i$mz[i] + 1.003355*2) - sps2$mz) / (std_info.i$mz[i] + 1.003355*2))*1e6))
+sps2 <-sps2[idx,]
 masses <- sps2$mz
 intensities <- sps2$i
 molecules <- decomposeIsotopes(masses, intensities, ppm = 20)
