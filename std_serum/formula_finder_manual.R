@@ -1,6 +1,6 @@
 k <- 1 # MIX nº k
 z <- 1 # POS = 1 ; NEG = 2
-cmp <- "myoinositol" # abbreviation
+cmp <- "acetylhistidine" # abbreviation
 
 ### Start auto #########################################################
 
@@ -15,20 +15,6 @@ library(doParallel)
 library(magrittr)
 library(SummarizedExperiment)
 library(CHNOSZ)
-
-extractSpectraData <- function(x) {
-  if (is(x, "list")) {
-    df <- DataFrame(do.call(rbind, lapply(x, MSnbase:::.spectrum_header)))
-    df$mz <- NumericList(lapply(x, function(z) z@mz))
-    df$intensity <- NumericList(lapply(x, function(z) z@intensity))
-  } else if (inherits(x, "MSnExp")) {
-    df <- DataFrame(MSnbase::fData(x))
-    df$mz <- NumericList(MSnbase::mz(x))
-    df$intensity <- NumericList(MSnbase::intensity(x))
-  } else stop("'x' should be either a 'list' of 'Spectrum' objects or an ",
-              "object extending 'MSnExp'")
-  df
-}
 
 C_rule <- function(x){
   C <- round(c((x/1.1) - ((x/1.1)*0.1), (x/1.1) + ((x/1.1)*0.1)))
@@ -228,10 +214,19 @@ for(j in 1:nrow(formulas.ok)){
 } # close formula "j"
 formulas.ok <- formulas.ok[order(formulas.ok$isodev), ]
 
-std_info[
-  which(std_info$name == std_info.i$name[i]),
-  which(colnames(std_info) == 
-          paste0("form_pred_", polarity.all[z]))] <- 
-  paste(formulas.ok$formula, collapse = "; ") 
+if(nrow(formulas.ok) < 6){
+  std_info[
+    which(std_info$name == std_info.i$name[i]),
+    which(colnames(std_info) == 
+            paste0("form_pred_", polarity.all[z]))] <- 
+    paste(formulas.ok$formula, collapse = "; ") 
+} else{
+  std_info[
+    which(std_info$name == std_info.i$name[i]),
+    which(colnames(std_info) == 
+            paste0("form_pred_", polarity.all[z]))] <- 
+    paste0(paste(formulas.ok$formula[1:5], collapse = "; "), "; etc.")
+}
+
 
 
