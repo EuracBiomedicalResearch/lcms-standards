@@ -13,10 +13,12 @@ startpoint <- Sys.time()
 ```
 
 In this code we are going to test the efficiency of the designed code 
-to deduce the molecular formula of specific ions.  
+to deduce the molecular formula of specific ions.
 We'll do that using the data from the experiment done by Vinicius Veri on January-2020. 
 
+
 # Experiment description
+
 Three replicates of the following samples were injected in the same 
 order as they are named in the list below:  
 
@@ -32,8 +34,9 @@ order as they are named in the list below:
 ## Parameters
 
 ```{r parameters}
-MZML_PATH <- "Y:/mzML/"
-#MZML_PATH <- "C:/Users/vveri/Documents/stds_ID_files_trial/"
+## MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+## MZML_PATH <- "C:/Users/vveri/Documents/stds_ID_files_trial/"
+MZML_PATH <- "/data/massspec/mzML/"
 
 polarity.all <- c("POS", "NEG") 
 ```
@@ -50,8 +53,8 @@ library(SummarizedExperiment)
 library(CHNOSZ)
 library(kableExtra)
 
-C_rule <- function(x){
-  C <- round(c((x/1.1) - ((x/1.1)*0.1), (x/1.1) + ((x/1.1)*0.1)))
+C_rule <- function(x, error = 0.1){
+  C <- round(c((x/1.1) - ((x/1.1)*error), (x/1.1) + ((x/1.1)*error)))
   return(C)
 }
 H_rule <- function(C, N){
@@ -67,10 +70,11 @@ RPU_rule <- function(C=0, H=0, N=0, P=0, Si=0, Cl=0, Fl=0, I=0){
 
 ## Parallel processing
 
-```{r}
-ncores <- detectCores()-1
-registerDoParallel(ncores)
-register(DoparParam(), default = TRUE)
+```{r parallel-proc}
+## ncores <- detectCores()-1
+## registerDoParallel(ncores)
+## register(DoparParam(), default = TRUE)
+register(SerialParam())
 ```
 
 
@@ -79,7 +83,7 @@ register(DoparParam(), default = TRUE)
 
 ## Theoretical info
 
-```{r}
+```{r std-info}
 std_info <- read.table(
   "../data/standards_dilution.txt",
   sep = "\t", header = TRUE, as.is = TRUE)
@@ -103,7 +107,7 @@ mix.levels <- levels(factor(std_info$mix))
 
 ## Experimental info
 
-```{r}
+```{r injections}
 # Import table with file names:
 injections <- read.table("../data/std_serum_files.txt", 
                          sep = "\t", header = TRUE, as.is = TRUE)
@@ -120,7 +124,7 @@ injections <- injections[grep("_2_", injections$mzML), ]
 
 # Output
 
-```{r, warning=FALSE}
+```{r output, warning = FALSE, echo = FALSE, message = FALSE}
 cwp <- CentWaveParam(
   ppm = 50,
   peakwidth = c(2, 20),
@@ -130,7 +134,7 @@ cwp <- CentWaveParam(
   noise = 100,
   integrate = 2)
 
-for(k in 1#:(length(mix.levels))
+for(k in 3#:(length(mix.levels))
 ){
   
   # Select STDs used in mix "k"
@@ -146,11 +150,11 @@ for(k in 1#:(length(mix.levels))
                                "3-Hydroxy-DL-kynurenine", ]
   }
   
-  for(z in 1:length(polarity.all)){
-    if(polarity.all[z] == "NEG"){ 
+  for (polarity in polarity.all) {
+    if(polarity == "NEG"){ 
       pol <- -1
       ion <- -1.007276 
-    } else if(polarity.all[z] == "POS"){ 
+    } else if(polarity == "POS"){ 
       pol <- 1
       ion <- 1.007276 
     }
@@ -159,55 +163,59 @@ for(k in 1#:(length(mix.levels))
       sprintf(paste0("%0", ceiling(log10(10 + 1L)), "d"), 1:20)[k])
     filename <- paste0(injections$folder[idx], "/", injections$mzML[idx])
     #filename <- injections$mzML[idx]
-    filename <- filename[grep(polarity.all[z], filename)]
+    filename <- filename[grep(polarity, filename)]
     data_raw <- readMSData(paste0(MZML_PATH, filename),
                            mode = "onDisk")
-    std_info.i$mz <- std_info.i[, which(colnames(std_info.i) == 
-                                          paste0("mz_",polarity.all[z]))]
+    std_info.i$mz <- std_info.i[, paste0("mz_", polarity)]
     for(i in 1:(nrow(std_info.i))){
       if(!is.na(std_info.i$mz[i])){
         eic <- chromatogram(data_raw, aggregationFun = "max", 
                             mz = std_info.i$mz[i] + 0.01 * c(-1, 1))
         pks <- data.frame(chromPeaks(findChromPeaks(eic, param = cwp)))
         if(any(which((pks$rtmin - 10) < std_info.i$RT[i] & 
-                     (pks$rtmax + 10) > std_info.i$RT[i]) ==  
-               which.max(pks$maxo))){
-          if(which((pks$rtmin - 10) < std_info.i$RT[i] & 
-                   (pks$rtmax + 10) > std_info.i$RT[i]) ==  
-             which.max(pks$maxo)){
-            pks <- pks[which((pks$rtmin - 10) < std_info.i$RT[i] & 
-                               (pks$rtmax + 10) > std_info.i$RT[i]), ]
-            if(nrow(pks) > 1){
-              pks <- pks[which.max(pks$maxo), ]
-            }
-            sps <- data_raw %>%
-              filterRt(rt = pks$rt + 0.5 * c(-1,1)) %>%
-              spectra
-            sps2 <- data.frame(sps[[2]])
-            sps2$i100 <- (sps2$i / max(sps2$i))*100
-            
-            idx <- c(which.min((abs(std_info.i$mz[i] - sps2$mz) / 
-                                  std_info.i$mz[i])*1e6),
-                     which.min((abs((std_info.i$mz[i] + 1.003355) - 
-                                      sps2$mz) / 
-                                  (std_info.i$mz[i] + 1.003355))*1e6),
-                     which.min((abs((std_info.i$mz[i] + 1.003355*2) - 
-                                      sps2$mz) / 
-                                  (std_info.i$mz[i] + 1.003355*2))*1e6))
-            sps2 <- sps2[idx, ]
-            masses <- sps2$mz
-            intensities <- sps2$i
-            if(grepl("Na", std_info.i[i, which(colnames(std_info.i) == 
-                                               polarity.all[z])])){
-              molecules <- decomposeIsotopes(masses, intensities, ppm = 20,
-                                             elements = initializeElements(
-                                               c("C", "H", "N", "O", 
-                                                 "P", "S", "Na")))
-            }else{
-              molecules <- decomposeIsotopes(masses, intensities, ppm = 20)
-            }
-            formulas <- data.frame(formula = getFormula(molecules))
-            tmp <- makeup(as.character(formulas$formula))
+                     (pks$rtmax + 10) > std_info.i$RT[i]))){
+          pks <- pks[which((pks$rtmin - 10) < std_info.i$RT[i] & 
+                             (pks$rtmax + 10) > std_info.i$RT[i]), ]
+          if(nrow(pks) > 1){
+            pks <- pks[which.max(pks$maxo), ]
+          }
+          sps <- data_raw %>%
+            filterRt(rt = pks$rt + 0.5 * c(-1,1)) %>%
+            spectra
+          sps2 <- data.frame(sps[[2]])
+          sps2$i100 <- (sps2$i / max(sps2$i))*100
+          
+          idx <- c(which.min((abs(std_info.i$mz[i] - sps2$mz) / 
+                                std_info.i$mz[i])*1e6),
+                   which.min((abs((std_info.i$mz[i] + 1.003355) - 
+                                    sps2$mz) / 
+                                (std_info.i$mz[i] + 1.003355))*1e6),
+                   which.min((abs((std_info.i$mz[i] + 1.003355*2) - 
+                                    sps2$mz) / 
+                                (std_info.i$mz[i] + 1.003355*2))*1e6))
+          sps2 <- sps2[idx, ]
+          masses <- sps2$mz
+          intensities <- sps2$i
+          if(grepl("Na", std_info.i[i, polarity])){
+            molecules <- decomposeIsotopes(masses, intensities, ppm = 20,
+                                           elements = initializeElements(
+                                             c("C", "H", "N", "O", 
+                                               "P", "S", "Na")))
+          }else{
+            molecules <- decomposeIsotopes(masses, intensities, ppm = 20)
+          }
+          formulas <- data.frame(formula = getFormula(molecules))
+          tmp <- makeup(as.character(formulas$formula))
+          if(class(tmp) == "numeric"){
+            formulas$C <- tmp["C"]
+            formulas$H <- tmp["H"]
+            formulas$O <- tmp["O"]
+            formulas$N <- tmp["N"]
+            formulas$S <- tmp["S"]
+            formulas$P <- tmp["P"]
+            formulas$Na <- tmp["Na"]
+            formulas[is.na(formulas)] <- 0
+          } else{
             formulas$C <- NA
             formulas$H <- NA
             formulas$O <- NA
@@ -238,65 +246,68 @@ for(k in 1#:(length(mix.levels))
                 formulas$Na[j] <- tmp[[j]][names(tmp[[j]]) == "Na"]
               } else {formulas$Na[j] <- 0}
             } # close formula "j"
-            
-            formulas$C_rule <- FALSE
-            tmp <- C_rule((intensities[2] / intensities[1])*100)
-            formulas$C_rule[formulas$C >= tmp[1] & formulas$C <= tmp[2]] <- TRUE
-            formulas$H_rule <- FALSE
-            formulas$H_rule[formulas$H <= H_rule(formulas$C, formulas$N)] <- TRUE
-            formulas$N_rule <- formulas$N %% 2 == round(masses[1] - ion) %% 2
-            formulas$RPU_rule <- FALSE
-            formulas$RPU_rule[RPU_rule(C = formulas$C, H = formulas$H - pol, 
-                                       N = formulas$N, P = formulas$P) >= 0] <- TRUE
-            if(grepl("Na", std_info.i[i, which(colnames(std_info.i) == 
-                                               polarity.all[z])])){
-              formulas$RPU_rule[RPU_rule(C = formulas$C, H = formulas$H, 
-                                         N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE
-            } else{
-              formulas$RPU_rule[RPU_rule(C = formulas$C, H = formulas$H - pol, 
-                                         N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE 
-            }
-            
-            if(grepl("Na", std_info.i[i, which(colnames(std_info.i) == 
-                                               polarity.all[z])])){
-              formulas.ok <- formulas[formulas$C_rule & formulas$H_rule & 
-                                        formulas$N_rule & formulas$RPU_rule &
-                                        formulas$Na == 1, ]
-            }else{
-              formulas.ok <- formulas[formulas$C_rule & formulas$H_rule & 
-                                        formulas$N_rule & formulas$RPU_rule, ]
-            }
-            if(nrow(formulas.ok) > 0){
-              formulas.ok$isodev <- NA
-              for(j in 1:nrow(formulas.ok)){
-                formulas.ok$isodev[j] <- mean(abs(
-                  ((getIsotope(getMolecule(as.character(formulas.ok$formula[j])), 
-                               seq(1,3))[2,] / 
-                      max(getIsotope(getMolecule(as.character(formulas.ok$formula[j])), 
-                                     seq(1,3))[2,]))*100)[2] - 
-                    (intensities / max(intensities)*100)[2]))
-              } # close formula "j"
-              formulas.ok <- formulas.ok[order(formulas.ok$isodev), ]
-              
-              if(nrow(formulas.ok) < 6){
-                std_info[
-                  which(std_info$name == std_info.i$name[i]),
-                  which(colnames(std_info) == 
-                          paste0("form_pred_", polarity.all[z]))] <- 
-                  paste(formulas.ok$formula, collapse = "; ") 
-              } else{
-                std_info[
-                  which(std_info$name == std_info.i$name[i]),
-                  which(colnames(std_info) == 
-                          paste0("form_pred_", polarity.all[z]))] <- 
-                  paste0(paste(formulas.ok$formula[1:5], collapse = "; "), "; etc.")
-              }
-              
-            } # close: if(nrow(formulas.ok) > 0)
-          } else {
-            print(paste0("Mix-",k,", ", std_info.i$name[i], 
-                         ": Check which chromatographic peak is used!!" ))
           }
+          
+          formulas$C_rule <- FALSE
+          if(intensities[1] < 1e6){
+            tmp.error <- 0.4} else {tmp.error <- 1.0}
+          tmp <- C_rule((intensities[2] / intensities[1])*100, tmp.error)
+          formulas$C_rule[formulas$C >= tmp[1] & 
+                            formulas$C <= tmp[2]] <- TRUE
+          formulas$H_rule <- FALSE
+          formulas$H_rule[formulas$H <= 
+                            H_rule(formulas$C, formulas$N)] <- TRUE
+          formulas$N_rule <- 
+            formulas$N %% 2 == round(masses[1] - ion) %% 2
+          formulas$RPU_rule <- FALSE
+          formulas$RPU_rule[RPU_rule(
+            C = formulas$C, H = formulas$H - pol, 
+            N = formulas$N, P = formulas$P) >= 0] <- TRUE
+          if(grepl("Na", std_info.i[i, polarity])){
+            formulas$RPU_rule[RPU_rule(
+              C = formulas$C, H = formulas$H, 
+              N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE
+          } else{
+            formulas$RPU_rule[RPU_rule(
+              C = formulas$C, H = formulas$H - pol, 
+              N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE 
+          }
+          
+          if(grepl("Na", std_info.i[i, polarity])){
+            formulas.ok <- 
+              formulas[formulas$C_rule & formulas$H_rule & 
+                         formulas$N_rule & formulas$RPU_rule &
+                         formulas$Na == 1, ]
+          }else{
+            formulas.ok <- 
+              formulas[formulas$C_rule & formulas$H_rule & 
+                         formulas$N_rule & formulas$RPU_rule, ]
+          }
+          if(nrow(formulas.ok) > 0){
+            formulas.ok$isodev <- NA
+            for(j in 1:nrow(formulas.ok)){
+              formulas.ok$isodev[j] <- mean(abs(
+                ((getIsotope(getMolecule(as.character(
+                  formulas.ok$formula[j])), seq(1,3))[2,] / 
+                    max(getIsotope(getMolecule(as.character(
+                      formulas.ok$formula[j])), seq(1,3))[2,]))*100)[2] - 
+                  (intensities / max(intensities)*100)[2]))
+            } # close formula "j"
+            formulas.ok <- formulas.ok[order(formulas.ok$isodev), ]
+            
+            if(nrow(formulas.ok) < 6){
+              std_info[
+                which(std_info$name == std_info.i$name[i]),
+                paste0("form_pred_", polarity)] <- 
+                paste(formulas.ok$formula, collapse = "; ") 
+            } else{
+              std_info[
+                which(std_info$name == std_info.i$name[i]),
+                paste0("form_pred_", polarity)] <- 
+                paste0(paste(formulas.ok$formula[1:5], 
+                             collapse = "; "), "; etc.")
+            }
+          } # close: if(nrow(formulas.ok) > 0)
           rm(pks)
         } # close if any pks
       } # close: if(!is.na(std_info.i$mz[i]))
@@ -308,7 +319,7 @@ for(k in 1#:(length(mix.levels))
 
 # Table
 
-```{r, warning=FALSE}
+```{r table, warning=FALSE}
 kable(std_info[,c(1:3,5:8,13,14,17,18)]) %>%
   kable_styling(bootstrap_options = c("striped", "hover", 
                                       "condensed", "responsive"))
