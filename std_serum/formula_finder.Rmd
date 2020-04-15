@@ -16,7 +16,9 @@ In this code we are going to test the efficiency of the designed code
 to deduce the molecular formula of specific ions.  
 We'll do that using the data from the experiment done by Vinicius Veri on January-2020. 
 
+
 # Experiment description
+
 Three replicates of the following samples were injected in the same 
 order as they are named in the list below:  
 
@@ -50,8 +52,8 @@ library(SummarizedExperiment)
 library(CHNOSZ)
 library(kableExtra)
 
-C_rule <- function(x){
-  C <- round(c((x/1.1) - ((x/1.1)*0.4), (x/1.1) + ((x/1.1)*0.4)))
+C_rule <- function(x, error = 0.1){
+  C <- round(c((x/1.1) - ((x/1.1)*error), (x/1.1) + ((x/1.1)*error)))
   return(C)
 }
 H_rule <- function(C, N){
@@ -131,7 +133,7 @@ cwp <- CentWaveParam(
   noise = 100,
   integrate = 2)
 
-for(k in 3#:(length(mix.levels))
+for(k in 1#:(length(mix.levels))
 ){
   
   # Select STDs used in mix "k"
@@ -148,7 +150,7 @@ for(k in 3#:(length(mix.levels))
   }
   
   for(z in 1:length(polarity.all)
-      ){
+  ){
     if(polarity.all[z] == "NEG"){ 
       pol <- -1
       ion <- -1.007276 
@@ -166,14 +168,13 @@ for(k in 3#:(length(mix.levels))
                            mode = "onDisk")
     std_info.i$mz <- std_info.i[, which(colnames(std_info.i) == 
                                           paste0("mz_",polarity.all[z]))]
-    for(i in 5:10#:(nrow(std_info.i))
-        ){
+    for(i in 1:(nrow(std_info.i))){
       if(!is.na(std_info.i$mz[i])){
         eic <- chromatogram(data_raw, aggregationFun = "max", 
                             mz = std_info.i$mz[i] + 0.01 * c(-1, 1))
         pks <- data.frame(chromPeaks(findChromPeaks(eic, param = cwp)))
         if(any(which((pks$rtmin - 10) < std_info.i$RT[i] & 
-                     (pks$rtmax + 10) > std_info.i$RT[i]) )){
+                     (pks$rtmax + 10) > std_info.i$RT[i]))){
           pks <- pks[which((pks$rtmin - 10) < std_info.i$RT[i] & 
                              (pks$rtmax + 10) > std_info.i$RT[i]), ]
           if(nrow(pks) > 1){
@@ -250,40 +251,50 @@ for(k in 3#:(length(mix.levels))
           }
           
           formulas$C_rule <- FALSE
-          tmp <- C_rule((intensities[2] / intensities[1])*100)
-          formulas$C_rule[formulas$C >= tmp[1] & formulas$C <= tmp[2]] <- TRUE
+          if(intensities[1] < 1e6){
+            tmp.error <- 0.4} else {tmp.error <- 1.0}
+          tmp <- C_rule((intensities[2] / intensities[1])*100, tmp.error)
+          formulas$C_rule[formulas$C >= tmp[1] & 
+                            formulas$C <= tmp[2]] <- TRUE
           formulas$H_rule <- FALSE
-          formulas$H_rule[formulas$H <= H_rule(formulas$C, formulas$N)] <- TRUE
-          formulas$N_rule <- formulas$N %% 2 == round(masses[1] - ion) %% 2
+          formulas$H_rule[formulas$H <= 
+                            H_rule(formulas$C, formulas$N)] <- TRUE
+          formulas$N_rule <- 
+            formulas$N %% 2 == round(masses[1] - ion) %% 2
           formulas$RPU_rule <- FALSE
-          formulas$RPU_rule[RPU_rule(C = formulas$C, H = formulas$H - pol, 
-                                     N = formulas$N, P = formulas$P) >= 0] <- TRUE
+          formulas$RPU_rule[RPU_rule(
+            C = formulas$C, H = formulas$H - pol, 
+            N = formulas$N, P = formulas$P) >= 0] <- TRUE
           if(grepl("Na", std_info.i[i, which(colnames(std_info.i) == 
                                              polarity.all[z])])){
-            formulas$RPU_rule[RPU_rule(C = formulas$C, H = formulas$H, 
-                                       N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE
+            formulas$RPU_rule[RPU_rule(
+              C = formulas$C, H = formulas$H, 
+              N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE
           } else{
-            formulas$RPU_rule[RPU_rule(C = formulas$C, H = formulas$H - pol, 
-                                       N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE 
+            formulas$RPU_rule[RPU_rule(
+              C = formulas$C, H = formulas$H - pol, 
+              N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE 
           }
           
           if(grepl("Na", std_info.i[i, which(colnames(std_info.i) == 
                                              polarity.all[z])])){
-            formulas.ok <- formulas[formulas$C_rule & formulas$H_rule & 
-                                      formulas$N_rule & formulas$RPU_rule &
-                                      formulas$Na == 1, ]
+            formulas.ok <- 
+              formulas[formulas$C_rule & formulas$H_rule & 
+                         formulas$N_rule & formulas$RPU_rule &
+                         formulas$Na == 1, ]
           }else{
-            formulas.ok <- formulas[formulas$C_rule & formulas$H_rule & 
-                                      formulas$N_rule & formulas$RPU_rule, ]
+            formulas.ok <- 
+              formulas[formulas$C_rule & formulas$H_rule & 
+                         formulas$N_rule & formulas$RPU_rule, ]
           }
           if(nrow(formulas.ok) > 0){
             formulas.ok$isodev <- NA
             for(j in 1:nrow(formulas.ok)){
               formulas.ok$isodev[j] <- mean(abs(
-                ((getIsotope(getMolecule(as.character(formulas.ok$formula[j])), 
-                             seq(1,3))[2,] / 
-                    max(getIsotope(getMolecule(as.character(formulas.ok$formula[j])), 
-                                   seq(1,3))[2,]))*100)[2] - 
+                ((getIsotope(getMolecule(as.character(
+                  formulas.ok$formula[j])), seq(1,3))[2,] / 
+                    max(getIsotope(getMolecule(as.character(
+                      formulas.ok$formula[j])), seq(1,3))[2,]))*100)[2] - 
                   (intensities / max(intensities)*100)[2]))
             } # close formula "j"
             formulas.ok <- formulas.ok[order(formulas.ok$isodev), ]
@@ -299,7 +310,8 @@ for(k in 3#:(length(mix.levels))
                 which(std_info$name == std_info.i$name[i]),
                 which(colnames(std_info) == 
                         paste0("form_pred_", polarity.all[z]))] <- 
-                paste0(paste(formulas.ok$formula[1:5], collapse = "; "), "; etc.")
+                paste0(paste(formulas.ok$formula[1:5], 
+                             collapse = "; "), "; etc.")
             }
           } # close: if(nrow(formulas.ok) > 0)
           rm(pks)
