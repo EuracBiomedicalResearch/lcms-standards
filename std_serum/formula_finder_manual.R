@@ -16,8 +16,8 @@ library(magrittr)
 library(SummarizedExperiment)
 library(CHNOSZ)
 
-C_rule <- function(x){
-  C <- round(c((x/1.1) - ((x/1.1)*0.4), (x/1.1) + ((x/1.1)*0.4)))
+C_rule <- function(x, error = 0.1){
+  C <- round(c((x/1.1) - ((x/1.1)*error), (x/1.1) + ((x/1.1)*error)))
   return(C)
 }
 H_rule <- function(C, N){
@@ -182,7 +182,8 @@ if(class(tmp) == "numeric"){
 }
 
 formulas$C_rule <- FALSE
-tmp <- C_rule((intensities[2] / intensities[1])*100)
+if(intensities[1] < 1e6){tmp.error <- 0.4} else {tmp.error <- 1.0}
+tmp <- C_rule((intensities[2] / intensities[1])*100, tmp.error)
 formulas$C_rule[formulas$C >= tmp[1] & formulas$C <= tmp[2]] <- TRUE
 formulas$H_rule <- FALSE
 formulas$H_rule[formulas$H <= H_rule(formulas$C, formulas$N)] <- TRUE
