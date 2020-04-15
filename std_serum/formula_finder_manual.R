@@ -1,10 +1,10 @@
-k <- 1 # MIX nº k
+k <- 2 # MIX nº k
 z <- 1 # POS = 1 ; NEG = 2
-cmp <- "acetylhistidine" # abbreviation
+cmp <- "histidine" # abbreviation
 
 ### Start auto #########################################################
 
-MZML_PATH <- "Y:/mzML/"
+MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 #MZML_PATH <- "C:/Users/vveri/Documents/stds_ID_files_trial/"
 polarity.all <- c("POS", "NEG") 
 
@@ -17,7 +17,7 @@ library(SummarizedExperiment)
 library(CHNOSZ)
 
 C_rule <- function(x){
-  C <- round(c((x/1.1) - ((x/1.1)*0.1), (x/1.1) + ((x/1.1)*0.1)))
+  C <- round(c((x/1.1) - ((x/1.1)*0.4), (x/1.1) + ((x/1.1)*0.4)))
   return(C)
 }
 H_rule <- function(C, N){
@@ -139,36 +139,47 @@ if(grepl("Na", std_info.i[i, which(colnames(std_info.i) ==
     }
 formulas <- data.frame(formula = getFormula(molecules))
 tmp <- makeup(as.character(formulas$formula))
-formulas$C <- NA
-formulas$H <- NA
-formulas$O <- NA
-formulas$N <- NA
-formulas$S <- NA
-formulas$P <- NA
-formulas$Na <- NA
-for(j in 1:nrow(formulas)){
-  if(length(tmp[[j]][names(tmp[[j]]) == "C"]) == 1){
-    formulas$C[j] <- tmp[[j]][names(tmp[[j]]) == "C"]  
-  } else {formulas$C[j] <- 0}
-  if(length(tmp[[j]][names(tmp[[j]]) == "H"]) == 1){
-    formulas$H[j] <- tmp[[j]][names(tmp[[j]]) == "H"]
-  } else {formulas$H[j] <- 0}
-  if(length(tmp[[j]][names(tmp[[j]]) == "O"]) == 1){
-    formulas$O[j] <- tmp[[j]][names(tmp[[j]]) == "O"]
-  } else {formulas$O[j] <- 0}
-  if(length(tmp[[j]][names(tmp[[j]]) == "N"]) == 1){
-    formulas$N[j] <- tmp[[j]][names(tmp[[j]]) == "N"]
-  } else {formulas$N[j] <- 0}
-  if(length(tmp[[j]][names(tmp[[j]]) == "S"]) == 1){
-    formulas$S[j] <- tmp[[j]][names(tmp[[j]]) == "S"]
-  } else {formulas$S[j] <- 0}
-  if(length(tmp[[j]][names(tmp[[j]]) == "P"]) == 1){
-    formulas$P[j] <- tmp[[j]][names(tmp[[j]]) == "P"]
-  } else {formulas$P[j] <- 0}
-  if(length(tmp[[j]][names(tmp[[j]]) == "Na"]) == 1){
-    formulas$Na[j] <- tmp[[j]][names(tmp[[j]]) == "Na"]
-  } else {formulas$Na[j] <- 0}
-} # close formula "j"
+if(class(tmp) == "numeric"){
+  formulas$C <- tmp["C"]
+  formulas$H <- tmp["H"]
+  formulas$O <- tmp["O"]
+  formulas$N <- tmp["N"]
+  formulas$S <- tmp["S"]
+  formulas$P <- tmp["P"]
+  formulas$Na <- tmp["Na"]
+  formulas[is.na(formulas)] <- 0
+} else{
+  formulas$C <- NA
+  formulas$H <- NA
+  formulas$O <- NA
+  formulas$N <- NA
+  formulas$S <- NA
+  formulas$P <- NA
+  formulas$Na <- NA
+  for(j in 1:nrow(formulas)){
+    if(length(tmp[[j]][names(tmp[[j]]) == "C"]) == 1){
+      formulas$C[j] <- tmp[[j]][names(tmp[[j]]) == "C"]  
+    } else {formulas$C[j] <- 0}
+    if(length(tmp[[j]][names(tmp[[j]]) == "H"]) == 1){
+      formulas$H[j] <- tmp[[j]][names(tmp[[j]]) == "H"]
+    } else {formulas$H[j] <- 0}
+    if(length(tmp[[j]][names(tmp[[j]]) == "O"]) == 1){
+      formulas$O[j] <- tmp[[j]][names(tmp[[j]]) == "O"]
+    } else {formulas$O[j] <- 0}
+    if(length(tmp[[j]][names(tmp[[j]]) == "N"]) == 1){
+      formulas$N[j] <- tmp[[j]][names(tmp[[j]]) == "N"]
+    } else {formulas$N[j] <- 0}
+    if(length(tmp[[j]][names(tmp[[j]]) == "S"]) == 1){
+      formulas$S[j] <- tmp[[j]][names(tmp[[j]]) == "S"]
+    } else {formulas$S[j] <- 0}
+    if(length(tmp[[j]][names(tmp[[j]]) == "P"]) == 1){
+      formulas$P[j] <- tmp[[j]][names(tmp[[j]]) == "P"]
+    } else {formulas$P[j] <- 0}
+    if(length(tmp[[j]][names(tmp[[j]]) == "Na"]) == 1){
+      formulas$Na[j] <- tmp[[j]][names(tmp[[j]]) == "Na"]
+    } else {formulas$Na[j] <- 0}
+  } # close formula "j"
+}
 
 formulas$C_rule <- FALSE
 tmp <- C_rule((intensities[2] / intensities[1])*100)
