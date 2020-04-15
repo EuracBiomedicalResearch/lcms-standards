@@ -13,7 +13,7 @@ startpoint <- Sys.time()
 ```
 
 In this code we are going to test the efficiency of the designed code 
-to deduce the molecular formula of specific ions.  
+to deduce the molecular formula of specific ions.
 We'll do that using the data from the experiment done by Vinicius Veri on January-2020. 
 
 
@@ -34,8 +34,9 @@ order as they are named in the list below:
 ## Parameters
 
 ```{r parameters}
-MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
-#MZML_PATH <- "C:/Users/vveri/Documents/stds_ID_files_trial/"
+## MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+## MZML_PATH <- "C:/Users/vveri/Documents/stds_ID_files_trial/"
+MZML_PATH <- "/data/massspec/mzML/"
 
 polarity.all <- c("POS", "NEG") 
 ```
@@ -70,9 +71,9 @@ RPU_rule <- function(C=0, H=0, N=0, P=0, Si=0, Cl=0, Fl=0, I=0){
 ## Parallel processing
 
 ```{r parallel-proc}
-ncores <- detectCores()-1
-registerDoParallel(ncores)
-register(DoparParam(), default = TRUE)
+## ncores <- detectCores()-1
+## registerDoParallel(ncores)
+## register(DoparParam(), default = TRUE)
 register(SerialParam())
 ```
 
@@ -123,7 +124,7 @@ injections <- injections[grep("_2_", injections$mzML), ]
 
 # Output
 
-```{r output, warning=FALSE}
+```{r output, warning = FALSE, echo = FALSE, message = FALSE}
 cwp <- CentWaveParam(
   ppm = 50,
   peakwidth = c(2, 20),
@@ -133,7 +134,7 @@ cwp <- CentWaveParam(
   noise = 100,
   integrate = 2)
 
-for(k in 1#:(length(mix.levels))
+for(k in 3#:(length(mix.levels))
 ){
   
   # Select STDs used in mix "k"
@@ -149,12 +150,11 @@ for(k in 1#:(length(mix.levels))
                                "3-Hydroxy-DL-kynurenine", ]
   }
   
-  for(z in 1:length(polarity.all)
-  ){
-    if(polarity.all[z] == "NEG"){ 
+  for (polarity in polarity.all) {
+    if(polarity == "NEG"){ 
       pol <- -1
       ion <- -1.007276 
-    } else if(polarity.all[z] == "POS"){ 
+    } else if(polarity == "POS"){ 
       pol <- 1
       ion <- 1.007276 
     }
@@ -163,11 +163,10 @@ for(k in 1#:(length(mix.levels))
       sprintf(paste0("%0", ceiling(log10(10 + 1L)), "d"), 1:20)[k])
     filename <- paste0(injections$folder[idx], "/", injections$mzML[idx])
     #filename <- injections$mzML[idx]
-    filename <- filename[grep(polarity.all[z], filename)]
+    filename <- filename[grep(polarity, filename)]
     data_raw <- readMSData(paste0(MZML_PATH, filename),
                            mode = "onDisk")
-    std_info.i$mz <- std_info.i[, which(colnames(std_info.i) == 
-                                          paste0("mz_",polarity.all[z]))]
+    std_info.i$mz <- std_info.i[, paste0("mz_", polarity)]
     for(i in 1:(nrow(std_info.i))){
       if(!is.na(std_info.i$mz[i])){
         eic <- chromatogram(data_raw, aggregationFun = "max", 
@@ -197,8 +196,7 @@ for(k in 1#:(length(mix.levels))
           sps2 <- sps2[idx, ]
           masses <- sps2$mz
           intensities <- sps2$i
-          if(grepl("Na", std_info.i[i, which(colnames(std_info.i) == 
-                                             polarity.all[z])])){
+          if(grepl("Na", std_info.i[i, polarity])){
             molecules <- decomposeIsotopes(masses, intensities, ppm = 20,
                                            elements = initializeElements(
                                              c("C", "H", "N", "O", 
@@ -265,8 +263,7 @@ for(k in 1#:(length(mix.levels))
           formulas$RPU_rule[RPU_rule(
             C = formulas$C, H = formulas$H - pol, 
             N = formulas$N, P = formulas$P) >= 0] <- TRUE
-          if(grepl("Na", std_info.i[i, which(colnames(std_info.i) == 
-                                             polarity.all[z])])){
+          if(grepl("Na", std_info.i[i, polarity])){
             formulas$RPU_rule[RPU_rule(
               C = formulas$C, H = formulas$H, 
               N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE
@@ -276,8 +273,7 @@ for(k in 1#:(length(mix.levels))
               N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE 
           }
           
-          if(grepl("Na", std_info.i[i, which(colnames(std_info.i) == 
-                                             polarity.all[z])])){
+          if(grepl("Na", std_info.i[i, polarity])){
             formulas.ok <- 
               formulas[formulas$C_rule & formulas$H_rule & 
                          formulas$N_rule & formulas$RPU_rule &
@@ -302,14 +298,12 @@ for(k in 1#:(length(mix.levels))
             if(nrow(formulas.ok) < 6){
               std_info[
                 which(std_info$name == std_info.i$name[i]),
-                which(colnames(std_info) == 
-                        paste0("form_pred_", polarity.all[z]))] <- 
+                paste0("form_pred_", polarity)] <- 
                 paste(formulas.ok$formula, collapse = "; ") 
             } else{
               std_info[
                 which(std_info$name == std_info.i$name[i]),
-                which(colnames(std_info) == 
-                        paste0("form_pred_", polarity.all[z]))] <- 
+                paste0("form_pred_", polarity)] <- 
                 paste0(paste(formulas.ok$formula[1:5], 
                              collapse = "; "), "; etc.")
             }
