@@ -1,6 +1,6 @@
-k <- 3 # MIX nº k
-z <- 2 # POS = 1 ; NEG = 2
-cmp <- "UDP" # abbreviation
+k <- 1 # MIX nº k
+z <- 1 # POS = 1 ; NEG = 2
+cmp <- "betaine" # abbreviation
 
 ### Start auto #########################################################
 
@@ -53,7 +53,7 @@ injections <- read.table("../data/std_serum_files.txt",
                          sep = "\t", header = TRUE, as.is = TRUE)
 injections <- injections[injections$mode == "FS", ]
 injections <- injections[grep("Water_Mix", injections$class), ]
-injections <- injections[grep("_Low", injections$class), ]
+injections <- injections[grep("_High", injections$class), ]
 injections <- injections[grep("_2_", injections$mzML), ]
 
 cwp <- CentWaveParam(
@@ -182,11 +182,31 @@ if(class(tmp) == "numeric"){
   } # close formula "j"
 }
 
-formulas$C_rule <- FALSE
-#if(intensities[1] < 1e6){tmp.error <- 0.4} else {tmp.error <- 1.0}
-if(as.data.frame(sps)$i[as.data.frame(sps)$mz == sps2$mz[1]] < 1e6){tmp.error <- 0.4} else {tmp.error <- 1.0}
-tmp <- C_rule((intensities[2] / intensities[1])*100, tmp.error)
-formulas$C_rule[formulas$C >= tmp[1] & formulas$C <= tmp[2]] <- TRUE
+
+formulas$C_cntrb <- (formulas$C * 1.07) / ((formulas$C * 1.07) + (formulas$H * 0.012) + 
+  (formulas$O * 0.038) + (formulas$N * 0.37) + (formulas$S * 0.76))
+formulas$C_exp <- (((intensities[2] / intensities[1])*100) * formulas$C_cntrb) / 1.1
+C_error <- 0.1
+formulas$C_min <- formulas$C_exp - (formulas$C_exp * C_error)
+formulas$C_max <- formulas$C_exp + (formulas$C_exp * C_error)
+formulas$C_rule <- (formulas$C > formulas$C_min) & (formulas$C < formulas$C_max)
+
+formulas$A1 <- ((formulas$C * 1.07) + (formulas$H * 0.012) + 
+                        (formulas$O * 0.038) + (formulas$N * 0.37) + (formulas$S * 0.76))
+formulas$A1_min <- formulas$A1 - (formulas$A1 * C_error)
+formulas$A1_max <- formulas$A1 + (formulas$A1 * C_error)
+A1_x100 <- ((intensities[2] / intensities[1])*100)
+formulas$A1_rule <- (A1_x100 > formulas$A1_min) & (A1_x100 < formulas$A1_max)
+
+formulas$S_cntrb <- (formulas$S * 4.295776) / (
+  (formulas$C * 0.011449) + (formulas$H * 1.44e-06) + 
+    (formulas$O * 1.444e-05) + (formulas$N * 0.001369) + (formulas$S * 4.295776))
+formulas$S_exp <- (((intensities[3] / intensities[1])*100) * formulas$S_cntrb) / 4.295776
+S_error <- 0.5
+formulas$S_min <- formulas$S_exp - (formulas$S_exp * S_error)
+formulas$S_max <- formulas$S_exp + (formulas$S_exp * S_error)
+formulas$S_rule <- (formulas$S >= formulas$S_min) & (formulas$S <= formulas$S_max)
+
 formulas$H_rule <- FALSE
 formulas$H_rule[formulas$H <= H_rule(formulas$C, formulas$N)] <- TRUE
 formulas$N_rule <- formulas$N %% 2 == round(masses[1] - ion) %% 2
@@ -204,12 +224,15 @@ if(grepl("Na", std_info.i[i, which(colnames(std_info.i) ==
 if(grepl("Na", std_info.i[i, which(colnames(std_info.i) == 
                                    polarity.all[z])])){
   formulas.ok <- formulas[formulas$C_rule & formulas$H_rule & 
-                            formulas$N_rule & formulas$RPU_rule &
+                            formulas$N_rule & formulas$RPU_rule & 
+                            formulas$A1_rule & formulas$S_rule & 
                             formulas$Na == 1, ]
 }else{
   formulas.ok <- formulas[formulas$C_rule & formulas$H_rule & 
-                            formulas$N_rule & formulas$RPU_rule, ]
+                            formulas$N_rule & formulas$RPU_rule & 
+                            formulas$A1_rule & formulas$S_rule, ]
 }
+
 
 ### Finish auto #######################################################
 
