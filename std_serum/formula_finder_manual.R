@@ -1,6 +1,6 @@
-k <- 2 # MIX nº k
-z <- 1 # POS = 1 ; NEG = 2
-cmp <- "histidine" # abbreviation
+k <- 3 # MIX nº k
+z <- 2 # POS = 1 ; NEG = 2
+cmp <- "UDP" # abbreviation
 
 ### Start auto #########################################################
 
@@ -14,7 +14,8 @@ library(CompoundDb)
 library(doParallel)
 library(magrittr)
 library(SummarizedExperiment)
-library(CHNOSZ)
+library(MsCoreUtils)
+library(MetaboCoreUtils)
 
 C_rule <- function(x, error = 0.1){
   C <- round(c((x/1.1) - ((x/1.1)*error), (x/1.1) + ((x/1.1)*error)))
@@ -37,10 +38,10 @@ std_info$mz_POS <- NA
 std_info$mz_NEG <- NA
 for(i in 1:nrow(std_info)){
   std_info$mz_POS[i] <- unlist(
-    mass2mz(getMolecule(as.character(std_info$formula[i]))$exactmass, 
+    CompoundDb::mass2mz(getMolecule(as.character(std_info$formula[i]))$exactmass, 
             adduct = as.character(std_info$POS[i])))
   std_info$mz_NEG[i] <- unlist(
-    mass2mz(getMolecule(as.character(std_info$formula[i]))$exactmass, 
+    CompoundDb::mass2mz(getMolecule(as.character(std_info$formula[i]))$exactmass, 
             adduct = as.character(std_info$NEG[i])))
 }
 std_info$form_pred_POS <- NA
@@ -52,7 +53,7 @@ injections <- read.table("../data/std_serum_files.txt",
                          sep = "\t", header = TRUE, as.is = TRUE)
 injections <- injections[injections$mode == "FS", ]
 injections <- injections[grep("Water_Mix", injections$class), ]
-injections <- injections[grep("_High", injections$class), ]
+injections <- injections[grep("_Low", injections$class), ]
 injections <- injections[grep("_2_", injections$mzML), ]
 
 cwp <- CentWaveParam(
@@ -115,12 +116,11 @@ which((pks$rtmin - 10) < std_info.i$RT[i] & (pks$rtmax + 10) > std_info.i$RT[i])
 
 ### Start auto #########################################################
 
-pks <- pks[which((pks$rtmin - 10) < std_info.i$RT[i] & (pks$rtmax + 10) > std_info.i$RT[i]), ]
+pks <- pks[which((pks$rtmin - 30) < std_info.i$RT[i] & (pks$rtmax + 30) > std_info.i$RT[i]), ]
 if(nrow(pks) > 1){pks <- pks[which.max(pks$maxo), ]}
-sps <- data_raw %>%
-  filterRt(rt = pks$rt + 0.5 * c(-1,1)) %>% 
-  spectra
-sps2 <- data.frame(sps[[2]])
+sps <- data_raw[[closest(pks$rt, rtime(data_raw),
+                         duplicates = "closest")]]
+sps2 <- as.data.frame(sps)
 sps2$i100 <- (sps2$i / max(sps2$i))*100
 idx <- c(which.min((abs(std_info.i$mz[i] - sps2$mz) / std_info.i$mz[i])*1e6),
          which.min((abs((std_info.i$mz[i] + 1.003355) - sps2$mz) / (std_info.i$mz[i] + 1.003355))*1e6),
@@ -128,6 +128,7 @@ idx <- c(which.min((abs(std_info.i$mz[i] - sps2$mz) / std_info.i$mz[i])*1e6),
 sps2 <-sps2[idx,]
 masses <- sps2$mz
 intensities <- sps2$i
+
 if(grepl("Na", std_info.i[i, which(colnames(std_info.i) == 
                                    polarity.all[z])])){
   molecules <- decomposeIsotopes(masses, intensities, ppm = 20,
@@ -138,7 +139,7 @@ if(grepl("Na", std_info.i[i, which(colnames(std_info.i) ==
     molecules <- decomposeIsotopes(masses, intensities, ppm = 20)
     }
 formulas <- data.frame(formula = getFormula(molecules))
-tmp <- makeup(as.character(formulas$formula))
+tmp <- lapply(as.character(formulas$formula), countElements)
 if(class(tmp) == "numeric"){
   formulas$C <- tmp["C"]
   formulas$H <- tmp["H"]
@@ -182,7 +183,8 @@ if(class(tmp) == "numeric"){
 }
 
 formulas$C_rule <- FALSE
-if(intensities[1] < 1e6){tmp.error <- 0.4} else {tmp.error <- 1.0}
+#if(intensities[1] < 1e6){tmp.error <- 0.4} else {tmp.error <- 1.0}
+if(as.data.frame(sps)$i[as.data.frame(sps)$mz == sps2$mz[1]] < 1e6){tmp.error <- 0.4} else {tmp.error <- 1.0}
 tmp <- C_rule((intensities[2] / intensities[1])*100, tmp.error)
 formulas$C_rule[formulas$C >= tmp[1] & formulas$C <= tmp[2]] <- TRUE
 formulas$H_rule <- FALSE
