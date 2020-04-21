@@ -1,6 +1,6 @@
 k <- 1 # MIX nº k
 z <- 1 # POS = 1 ; NEG = 2
-cmp <- "betaine" # abbreviation
+cmp <- "dimethylglycine" # abbreviation
 
 ### Start auto #########################################################
 
@@ -186,7 +186,7 @@ if(class(tmp) == "numeric"){
 formulas$C_cntrb <- (formulas$C * 1.07) / ((formulas$C * 1.07) + (formulas$H * 0.012) + 
   (formulas$O * 0.038) + (formulas$N * 0.37) + (formulas$S * 0.76))
 formulas$C_exp <- (((intensities[2] / intensities[1])*100) * formulas$C_cntrb) / 1.1
-C_error <- 0.1
+C_error <- 0.25
 formulas$C_min <- formulas$C_exp - (formulas$C_exp * C_error)
 formulas$C_max <- formulas$C_exp + (formulas$C_exp * C_error)
 formulas$C_rule <- (formulas$C > formulas$C_min) & (formulas$C < formulas$C_max)
