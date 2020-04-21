@@ -257,7 +257,7 @@ for(k in 1#:(length(mix.levels))
           formulas$C_exp <- ((
             (intensities[2] / 
                intensities[1])*100) * formulas$C_cntrb) / 1.1
-          C_error <- 0.1
+          C_error <- 0.25
           formulas$C_min <- formulas$C_exp - (formulas$C_exp * C_error)
           formulas$C_max <- formulas$C_exp + (formulas$C_exp * C_error)
           formulas$C_rule <- (formulas$C > formulas$C_min) & 
