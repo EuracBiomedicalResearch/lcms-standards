@@ -64,6 +64,13 @@ std_info <- read.table(
   "../data/standards_dilution.txt",
   sep = "\t", header = TRUE, as.is = TRUE)
 
+idx <- which(std_info$name == "3-Hydroxy-DL-kynurenine" & 
+               std_info$mix == 17)
+std_info <- std_info[-idx, ]
+std_info <- std_info[-which(std_info$name == "Eplerone"), ]
+idx <- which(std_info$name == "Glycerophospho-inositol")
+std_info <- std_info[-idx, ]
+
 std_info$mz_POS <- NA
 std_info$mz_NEG <- NA
 for(i in 1:nrow(std_info)){
@@ -142,16 +149,7 @@ for (polarity in polarity.all) {
           
           # Select STDs used in mix "k"
           std_info.i <- std_info[std_info$mix == mix.levels[k], ]
-          if(mix.levels[k] == 5){
-            std_info.i <- std_info.i[std_info.i$name != 
-                                       "Glycerophospho-inositol", ]
-          } else if(mix.levels[k] == 9){
-            std_info.i <- std_info.i[std_info.i$name != 
-                                       "Eplerone", ]
-          } else if(mix.levels[k] == 17){
-            std_info.i <- std_info.i[std_info.i$name != 
-                                       "3-Hydroxy-DL-kynurenine", ]
-          }
+          
           if(nrow(std_info.i) > 0){
             filename <- inj.rep[
               which(inj.rep$type == 
@@ -176,12 +174,24 @@ for (polarity in polarity.all) {
                   sps <- data_raw[[closest(pks$rt, rtime(data_raw),
                                            duplicates = "closest")]]
                   sps2 <- as.data.frame(sps)
-                  idx <- c(
-                    which(abs(sps2$mz - std_info.i$mz[i]) < 0.01),
-                    which(abs(sps2$mz - (std_info.i$mz[i] + 1.003355)) 
-                          < 0.01),
-                    which(abs(sps2$mz - (std_info.i$mz[i] + 1.003355*2)) 
-                          < 0.01))
+                  
+                  idx <- rep(NA, 3)
+                  if(any(which(abs(sps2$mz - std_info.i$mz[i]) < 0.01))){
+                    idx[1] <- 
+                      which(abs(sps2$mz - std_info.i$mz[i]) < 0.01)
+                  }
+                  if(any(which(abs(
+                    sps2$mz - (std_info.i$mz[i] + 1.003355)) < 0.01))){
+                    idx[2] <- 
+                      which(abs(
+                        sps2$mz - (std_info.i$mz[i] + 1.003355)) < 0.01)
+                  }
+                  if(any(which(abs(
+                    sps2$mz - (std_info.i$mz[i] + 1.003355*2)) < 0.01))){
+                    idx[3] <- 
+                      which(abs(
+                        sps2$mz - (std_info.i$mz[i] + 1.003355*2)) <0.01)
+                  }
                   
                   sps2 <- sps2[idx, ]
                   idx <- which(tmp$abrv == std_info.i$abbreviation[i])
