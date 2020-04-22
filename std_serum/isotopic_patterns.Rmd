@@ -152,49 +152,50 @@ for (polarity in polarity.all) {
             std_info.i <- std_info.i[std_info.i$name != 
                                        "3-Hydroxy-DL-kynurenine", ]
           }
-          
-          filename <- inj.rep[
-            which(inj.rep$type == 
-                    paste0("Mix", 
-                           sprintf(paste0("%0", 
-                                          ceiling(log10(10 + 1L)), "d"), 
-                                   1:20)[k])), ]
-          filename <- paste0(filename$folder, "/", filename$mzML)
-          data_raw <- readMSData(paste0(MZML_PATH, filename),
-                                 mode = "onDisk")
-          std_info.i$mz <- std_info.i[, paste0("mz_", polarity)]
-          for(i in 1:nrow(std_info.i)){
-            if(!is.na(std_info.i$mz[i])){
-              eic <- chromatogram(data_raw, aggregationFun = "max", 
-                                  mz = std_info.i$mz[i] + 0.01 * c(-1, 1))
-              pks <- data.frame(chromPeaks(findChromPeaks(eic, param = cwp)))
-              if(any(which((pks$rtmin - 30) < std_info.i$RT[i] & 
-                           (pks$rtmax + 30) > std_info.i$RT[i]))){
-                pks <- pks[which((pks$rtmin - 30) < std_info.i$RT[i] & 
-                                   (pks$rtmax + 30) > std_info.i$RT[i]), ]
-                if(nrow(pks) > 1){pks <- pks[which.max(pks$maxo), ]}
-                sps <- data_raw[[closest(pks$rt, rtime(data_raw),
-                                         duplicates = "closest")]]
-                sps2 <- as.data.frame(sps)
-                idx <- c(
-                  which(abs(sps2$mz - std_info.i$mz[i]) < 0.01),
-                  which(abs(sps2$mz - (std_info.i$mz[i] + 1.003355)) 
-                        < 0.01),
-                  which(abs(sps2$mz - (std_info.i$mz[i] + 1.003355*2)) 
-                        < 0.01))
-                
-                sps2 <- sps2[idx, ]
-                idx <- which(tmp$abrv == std_info.i$abbreviation[i])
-                tmp$mz1[idx] <- sps2[1, 1]
-                tmp$i1[idx]  <- sps2[1, 2]
-                tmp$mz2[idx] <- sps2[2, 1]
-                tmp$i2[idx]  <- sps2[2, 2]
-                tmp$mz3[idx] <- sps2[3, 1]
-                tmp$i3[idx]  <- sps2[3, 2]
-                save.image("tmp.RData")
-              } # close 'if there is any peak within the RT range'
-            } # close 'if mz of std "i" IS NOT missing'
-          } # close std "i"
+          if(nrow(std_info.i) > 0){
+            filename <- inj.rep[
+              which(inj.rep$type == 
+                      paste0("Mix", 
+                             sprintf(paste0("%0", 
+                                            ceiling(log10(10 + 1L)), "d"), 
+                                     1:20)[k])), ]
+            filename <- paste0(filename$folder, "/", filename$mzML)
+            data_raw <- readMSData(paste0(MZML_PATH, filename),
+                                   mode = "onDisk")
+            std_info.i$mz <- std_info.i[, paste0("mz_", polarity)]
+            for(i in 1:nrow(std_info.i)){
+              if(!is.na(std_info.i$mz[i])){
+                eic <- chromatogram(data_raw, aggregationFun = "max", 
+                                    mz = std_info.i$mz[i] + 0.01 * c(-1, 1))
+                pks <- data.frame(chromPeaks(findChromPeaks(eic, param = cwp)))
+                if(any(which((pks$rtmin - 30) < std_info.i$RT[i] & 
+                             (pks$rtmax + 30) > std_info.i$RT[i]))){
+                  pks <- pks[which((pks$rtmin - 30) < std_info.i$RT[i] & 
+                                     (pks$rtmax + 30) > std_info.i$RT[i]), ]
+                  if(nrow(pks) > 1){pks <- pks[which.max(pks$maxo), ]}
+                  sps <- data_raw[[closest(pks$rt, rtime(data_raw),
+                                           duplicates = "closest")]]
+                  sps2 <- as.data.frame(sps)
+                  idx <- c(
+                    which(abs(sps2$mz - std_info.i$mz[i]) < 0.01),
+                    which(abs(sps2$mz - (std_info.i$mz[i] + 1.003355)) 
+                          < 0.01),
+                    which(abs(sps2$mz - (std_info.i$mz[i] + 1.003355*2)) 
+                          < 0.01))
+                  
+                  sps2 <- sps2[idx, ]
+                  idx <- which(tmp$abrv == std_info.i$abbreviation[i])
+                  tmp$mz1[idx] <- sps2[1, 1]
+                  tmp$i1[idx]  <- sps2[1, 2]
+                  tmp$mz2[idx] <- sps2[2, 1]
+                  tmp$i2[idx]  <- sps2[2, 2]
+                  tmp$mz3[idx] <- sps2[3, 1]
+                  tmp$i3[idx]  <- sps2[3, 2]
+                  #save.image("tmp.RData")
+                } # close 'if there is any peak within the RT range'
+              } # close 'if mz of std "i" IS NOT missing'
+            } # close std "i"
+          } # close 'if nrow(std_info.i) > 0'
         } # end mix "k"
         if(QC){s <- "S"} else {s <- "W"}
         assign(paste0(substring(polarity, 1, 1), 
