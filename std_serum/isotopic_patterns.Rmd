@@ -1,0 +1,223 @@
+---
+title: "Isotopic patterns"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+```{r startpoint, include = FALSE}
+startpoint <- Sys.time()
+```
+
+In this document I'm going to  check what's happening with the isotopic 
+patterns of samples injected by Vinicius Veri on January-2020.   
+These samples were different analytical standards injected (in triplicate) 
+at 2 different concentrations in water and in serum matrices.
+
+
+# Experiment description
+
+Three replicates of the following samples were injected in the same 
+order as they are named in the list below:  
+
+- **`LowIS_Mix`**: Mix of standards prepared in Water/ACN (50:50) at 5ppm.     
+- **`HighIS_Mix`**: Mix of standards prepared in Water/ACN (50:50) at 50ppm.  
+- **`QC`**: QC samples (serum) without STD.  
+- **`QC_LowIS_Mix`**: QC samples (serum) spicked with LowIS_Mix solution.  
+- **`QC_HighIS_Mix`**: QC samples (serum) spicked with HighIS_Mix solution.  
+
+
+# Preliminaries
+
+## Parameters
+
+```{r parameters}
+## MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+## MZML_PATH <- "C:/Users/vveri/Documents/stds_ID_files_trial/"
+MZML_PATH <- "/data/massspec/mzML/"
+
+polarity.all <- c("POS", "NEG") 
+conc.all <- c("Low", "High")
+water.serum <- c(FALSE, TRUE)
+rep.all <- c(1, 2, 3)
+```
+
+
+## Libraries
+
+```{r}
+library(Rdisop)
+library(xcms)
+library(MsCoreUtils)
+```
+
+
+# Data import
+
+## Theoretical info
+
+```{r std-info}
+std_info <- read.table(
+  "../data/standards_dilution.txt",
+  sep = "\t", header = TRUE, as.is = TRUE)
+
+std_info$mz_POS <- NA
+std_info$mz_NEG <- NA
+for(i in 1:nrow(std_info)){
+  std_info$mz_POS[i] <- unlist(
+    CompoundDb::mass2mz(getMolecule(as.character(std_info$formula[i]))$exactmass, 
+                        adduct = as.character(std_info$POS[i])))
+  std_info$mz_NEG[i] <- unlist(
+    CompoundDb::mass2mz(getMolecule(as.character(std_info$formula[i]))$exactmass, 
+                        adduct = as.character(std_info$NEG[i])))
+}
+
+std_info <- std_info[!is.na(std_info$quality_POS), ]
+std_info <- std_info[std_info$quality_POS == "0_perfect" | 
+                       std_info$quality_POS == "1_good", ]
+std_info <- std_info[std_info$quality_NEG == "0_perfect" | 
+                       std_info$quality_NEG == "1_good", ]
+std_info <- std_info[std_info$POS == "[M+H]+" & 
+                       std_info$NEG == "[M-H]-", ]
+
+mix.levels <- levels(factor(std_info$mix))
+```
+
+
+## Experimental info
+
+```{r injections}
+# Import table with file names:
+injections <- read.table("../data/std_serum_files.txt", 
+                         sep = "\t", header = TRUE, as.is = TRUE)
+
+# Select files adquired in MS1:
+injections <- injections[injections$mode == "FS", ]
+```
+
+
+# Output
+
+```{r output, warning = FALSE, echo = FALSE, message = FALSE}
+cwp <- CentWaveParam(
+  ppm = 50,
+  peakwidth = c(2, 20),
+  snthresh = 10,
+  mzdiff = 0.001,
+  prefilter = c(3, 500),
+  noise = 100,
+  integrate = 2)
+
+for (polarity in polarity.all) {
+  if(polarity == "NEG"){ 
+    pol <- -1
+    ion <- -1.007276 
+  } else if(polarity == "POS"){ 
+    pol <- 1
+    ion <- 1.007276 
+  }
+  
+  inj.pol <- injections[injections$polarity == polarity, ]
+  
+  for (conc in conc.all){
+    inj.conc <- inj.pol[grep(conc, inj.pol$mzML), ]
+    
+    for(QC in water.serum){
+      inj.QC <- inj.conc[grepl("QC", inj.conc$mzML) == QC, ]
+      
+      for(rep in rep.all){
+        inj.rep <- inj.QC[grep(paste0("_", rep, "_"), inj.QC$mzML), ]
+        
+        tmp <- data.frame(matrix(nrow = nrow(std_info), ncol = 9))
+        colnames(tmp) <- c("mix", "name", "abrv",
+                           "mz1", "i1", "mz2", "i2", "mz3", "i3")
+        tmp$mix <- std_info$mix
+        tmp$name <- std_info$name
+        tmp$abrv <- std_info$abbreviation
+        
+        for(k in 1:(length(mix.levels))){
+          
+          # Select STDs used in mix "k"
+          std_info.i <- std_info[std_info$mix == mix.levels[k], ]
+          if(mix.levels[k] == 5){
+            std_info.i <- std_info.i[std_info.i$name != 
+                                       "Glycerophospho-inositol", ]
+          } else if(mix.levels[k] == 9){
+            std_info.i <- std_info.i[std_info.i$name != 
+                                       "Eplerone", ]
+          } else if(mix.levels[k] == 17){
+            std_info.i <- std_info.i[std_info.i$name != 
+                                       "3-Hydroxy-DL-kynurenine", ]
+          }
+          
+          filename <- inj.rep[
+            which(inj.rep$type == 
+                    paste0("Mix", 
+                           sprintf(paste0("%0", 
+                                          ceiling(log10(10 + 1L)), "d"), 
+                                   1:20)[k])), ]
+          filename <- paste0(filename$folder, "/", filename$mzML)
+          data_raw <- readMSData(paste0(MZML_PATH, filename),
+                                 mode = "onDisk")
+          std_info.i$mz <- std_info.i[, paste0("mz_", polarity)]
+          for(i in 1:(nrow(std_info.i))){
+            if(!is.na(std_info.i$mz[i])){
+              eic <- chromatogram(data_raw, aggregationFun = "max", 
+                                  mz = std_info.i$mz[i] + 0.01 * c(-1, 1))
+              pks <- data.frame(chromPeaks(findChromPeaks(eic, param = cwp)))
+              if(any(which((pks$rtmin - 30) < std_info.i$RT[i] & 
+                           (pks$rtmax + 30) > std_info.i$RT[i]))){
+                pks <- pks[which((pks$rtmin - 30) < std_info.i$RT[i] & 
+                                   (pks$rtmax + 30) > std_info.i$RT[i]), ]
+                if(nrow(pks) > 1){pks <- pks[which.max(pks$maxo), ]}
+                sps <- data_raw[[closest(pks$rt, rtime(data_raw),
+                                         duplicates = "closest")]]
+                sps2 <- as.data.frame(sps)
+                idx <- c(
+                  which(abs(sps2$mz - std_info.i$mz[i]) < 0.01),
+                  which(abs(sps2$mz - (std_info.i$mz[i] + 1.003355)) 
+                        < 0.01),
+                  which(abs(sps2$mz - (std_info.i$mz[i] + 1.003355*2)) 
+                        < 0.01))
+                
+                sps2 <- sps2[idx, ]
+                idx <- which(tmp$abrv == std_info.i$abbreviation[i])
+                tmp$mz1[idx] <- sps2[1, 1]
+                tmp$i1[idx]  <- sps2[1, 2]
+                tmp$mz2[idx] <- sps2[2, 1]
+                tmp$i2[idx]  <- sps2[2, 2]
+                tmp$mz3[idx] <- sps2[3, 1]
+                tmp$i3[idx]  <- sps2[3, 2]
+              } # close 'if there is any peak within the RT range'
+            } # close 'if mz of std "i" IS NOT missing'
+          } # close std "i"
+        } # end mix "k"
+        if(QC){s <- "S"} else {s <- "W"}
+        assign(paste0(substring(polarity, 1, 1), 
+                      substring(conc, 1, 1), 
+                      s, 
+                      rep), tmp)
+      } # end replicate X
+    } # end sample X (ie, water or serum)
+  } # end concentration X
+} # end polarity X
+
+rm(cwp, data_raw, eic, injections, pks, sps, sps2, std_info, std_info.i, 
+   tmp, conc, filename, i, idx, ion, k, mix.levels, MZML_PATH, pol, 
+   polarity, QC, rep, s, inj.conc, inj.pol, inj.QC, inj.rep, 
+   conc.all, polarity.all, rep.all, water.serum)
+
+save.image("isotopic_patterns_tables.RData")
+```
+
+
+# Session information
+
+```{r session}
+Sys.time()-startpoint
+
+devtools::session_info()
+```
