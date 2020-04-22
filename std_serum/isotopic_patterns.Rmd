@@ -163,7 +163,7 @@ for (polarity in polarity.all) {
           data_raw <- readMSData(paste0(MZML_PATH, filename),
                                  mode = "onDisk")
           std_info.i$mz <- std_info.i[, paste0("mz_", polarity)]
-          for(i in 1:(nrow(std_info.i))){
+          for(i in 1:nrow(std_info.i)){
             if(!is.na(std_info.i$mz[i])){
               eic <- chromatogram(data_raw, aggregationFun = "max", 
                                   mz = std_info.i$mz[i] + 0.01 * c(-1, 1))
