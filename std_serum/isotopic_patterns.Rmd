@@ -191,7 +191,7 @@ for (polarity in polarity.all) {
                   tmp$i2[idx]  <- sps2[2, 2]
                   tmp$mz3[idx] <- sps2[3, 1]
                   tmp$i3[idx]  <- sps2[3, 2]
-                  #save.image("tmp.RData")
+                  save.image("tmp.RData")
                 } # close 'if there is any peak within the RT range'
               } # close 'if mz of std "i" IS NOT missing'
             } # close std "i"
