@@ -35,9 +35,9 @@ order as they are named in the list below:
 ## Parameters
 
 ```{r parameters}
-## MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+ MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 ## MZML_PATH <- "C:/Users/vveri/Documents/stds_ID_files_trial/"
-MZML_PATH <- "/data/massspec/mzML/"
+##MZML_PATH <- "/data/massspec/mzML/"
 
 polarity.all <- c("POS", "NEG") 
 conc.all <- c("Low", "High")
@@ -90,7 +90,7 @@ std_info <- std_info[std_info$quality_NEG == "0_perfect" |
 std_info <- std_info[std_info$POS == "[M+H]+" & 
                        std_info$NEG == "[M-H]-", ]
 
-mix.levels <- levels(factor(std_info$mix))
+mix.levels <- 1:20
 ```
 
 
