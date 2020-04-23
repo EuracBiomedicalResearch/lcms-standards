@@ -35,9 +35,9 @@ order as they are named in the list below:
 ## Parameters
 
 ```{r parameters}
- MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+## MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 ## MZML_PATH <- "C:/Users/vveri/Documents/stds_ID_files_trial/"
-##MZML_PATH <- "/data/massspec/mzML/"
+MZML_PATH <- "/data/massspec/mzML/"
 
 polarity.all <- c("POS", "NEG") 
 conc.all <- c("Low", "High")
