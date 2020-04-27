@@ -82,7 +82,17 @@ for(z in 1:nrow(std_info)
     }
     
     #tmp$mz1[z]
-    tmp.frm1 <- data.frame(formula = decomposeMass(tmp$mz1[z], ppm = myppm)$formula) 
+    if(grepl("Cl", std_info$formula[z])){
+      tmp.frm1 <- data.frame(
+        formula = decomposeMass(tmp$mz1[z], ppm = myppm,
+                                elements = initializeElements(
+                                             c("C", "H", "N", "O", 
+                                               "P", "S", "Cl"))
+                                )$formula) 
+    } else{
+      tmp.frm1 <- data.frame(
+        formula = decomposeMass(tmp$mz1[z], ppm = myppm)$formula) 
+    }
     tmp.frm1 <- cbind(
       tmp.frm1, 
       do.call(dplyr::bind_rows, 
