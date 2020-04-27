@@ -69,95 +69,101 @@ colnames(formula_finder) <- c("start", "thr_filters", "A1_filter", "C1_filter", 
 
 for(z in 1:nrow(std_info)
 ){
-  if(tmp$mz1[z] <= 250){myppm <- 40
-  } else if(tmp$mz1[z] > 250 & tmp$mz1[z] < 600){myppm <- 25
-  } else if(tmp$mz1[z] >= 600){myppm<- 15}
-  if(tmp$i1[z] < 5e5){
-    myerror_A1 <- 0.4
-    myerror_A2 <- 2
-  } else {
-    myerror_A1 <- 1.5
-    myerror_A2 <- 5
-  }
-  
-  #tmp$mz1[z]
-  tmp.frm1 <- data.frame(formula = decomposeMass(tmp$mz1[z], ppm = myppm)$formula) 
-  tmp.frm1 <- cbind(
-    tmp.frm1, 
-    do.call(dplyr::bind_rows, 
-            lapply(as.character(tmp.frm1$formula), countElements)))
-  tmp.frm1[is.na(tmp.frm1)] <- 0
-  
-  ### Theoretical rules
-  tmp.frm1$H_rule <- tmp.frm1$H <= tmp.frm1$C*2 + tmp.frm1$N + 2
-  tmp.frm1$N_rule <- tmp.frm1$N %% 2 == round(tmp$mz1[z] - 1.007276) %% 2
-  tmp.frm1$RPU_rule <- # RPU <- (C+Si) - (H+Cl+Fl+I)/2 + (N+P)/2 + 1
-    tmp.frm1$C - 
-    (tmp.frm1$H - 1)/2 + 
-    (tmp.frm1$N + tmp.frm1$P)/2  >= 0 
-  
-  ### Experimental rules
-  tmp.frm1$formula <- as.character(tmp.frm1$formula)
-  tmp.frm1$A1 <- NA
-  tmp.frm1$A2 <- NA
-  for(i in 1:nrow(tmp.frm1)){
-    tmpx <- getMolecule(tmp.frm1$formula[i])$isotopes[[1]]
-    tmp.frm1$A1[i] <- (tmpx[2,2]/tmpx[2,1])*100
-    tmp.frm1$A2[i] <- (tmpx[2,3]/tmpx[2,1])*100
-  }
-
-  tmp.A1 <- (tmp$i2[z] / tmp$i1[z]) * 100
-  (A1_range <- tmp.A1 + (tmp.A1 * myerror_A1 * c(-1, 1)))
-  tmp.frm1$A1_rule <- tmp.frm1$A1 >= A1_range[1] & tmp.frm1$A1 <= A1_range[2]
-  
-  tmp.frm1$C_cntrb <- (tmp.frm1$C * 1.07) / tmp.frm1$A1
-  tmp.frm1$C_thr <- (tmp.A1*tmp.frm1$C_cntrb)/1.07
-  tmp.frm1$C_thr_min <- tmp.frm1$C_thr - (tmp.frm1$C_thr * myerror_A1)
-  tmp.frm1$C_thr_max <- tmp.frm1$C_thr + (tmp.frm1$C_thr * myerror_A1)
-  tmp.frm1$C_rule <- 
-    tmp.frm1$C >= tmp.frm1$C_thr_min & 
-    tmp.frm1$C <= tmp.frm1$C_thr_max
-  
-  tmp.A2 <- (tmp$i3[z] / tmp$i1[z]) * 100
-  (A2_range <- tmp.A2 + (tmp.A2 * myerror_A2 * c(-1, 1)))
-  if(A2_range[1] < 0){A2_range[1] <- 0}
-  tmp.frm1$A2_rule <- tmp.frm1$A2 >= A2_range[1] & tmp.frm1$A2 <= A2_range[2]
-  
-  
-  formula_finder[z, "start"] <- nrow(tmp.frm1)
-  formula_finder[z, "thr_filters"] <- sum(tmp.frm1$H_rule & tmp.frm1$N_rule & tmp.frm1$RPU_rule)
-  formula_finder[z, "A1_filter"] <- sum(tmp.frm1$H_rule & tmp.frm1$N_rule & tmp.frm1$RPU_rule & tmp.frm1$A1_rule)
-  formula_finder[z, "C1_filter"] <- sum(tmp.frm1$H_rule & tmp.frm1$N_rule & tmp.frm1$RPU_rule & tmp.frm1$A1_rule & tmp.frm1$C_rule)
-  formula_finder[z, "A2_filter"] <- 
-    sum(tmp.frm1$H_rule & tmp.frm1$N_rule & tmp.frm1$RPU_rule & 
-          tmp.frm1$A1_rule & tmp.frm1$C_rule & tmp.frm1$A2_rule)
-  
-  tmpx <- tmp.frm1[tmp.frm1$H_rule & tmp.frm1$N_rule & tmp.frm1$RPU_rule & 
-                     tmp.frm1$A1_rule & tmp.frm1$C_rule & tmp.frm1$A2_rule,]
-  tmpx$A1x <- abs(tmpx$A1 - tmp.A1)
-  tmpx$A2x <- abs(tmpx$A2 - tmp.A2)
-  tmpx$A <- NA
-  #tmpx$Aw <- NA
-  for(i in 1:nrow(tmpx)){
-    tmpx$A[i] <- mean(c(tmpx$A1x[i], tmpx$A2x[i]))
-    #tmpx$Aw[i] <- weighted.mean(c(tmpx$A1x[i], tmpx$A2x[i]), c(2,1))
-  }
-  tmpx <- tmpx[order(tmpx$A),]
-  tmpx$H <- tmpx$H - 1
-  tmpx$fml <- NA
-  tmpx$A1p <- NA
-  tmpx$A2p <- NA
-  tmpx$Ap <- NA
-  for(i in 1:nrow(tmpx)){
-    tmpx$fml[i] <- pasteElements(tmpx[i,2:7])
-    tmpx$A1p[i] <- abs(100 - ((tmp.A1*100)/tmpx$A1[i]))
-    tmpx$A2p[i] <- abs(100 - ((tmp.A2*100)/tmpx$A2[i]))
-    tmpx$Ap[i] <- mean(c(tmpx$A1p[i], tmpx$A2p[i]))
-  }
-  tmpx <- tmpx[order(tmpx$A), ]
-  formula_finder[z, "rank"] <- which(tmpx$fml == std_info$formula[z])
-  tmpx <- tmpx[order(tmpx$Ap),]
-  formula_finder[z, "rankp"] <- which(tmpx$fml == std_info$formula[z])
+  if(!is.na(tmp$mz1[z])){
+    if(tmp$mz1[z] <= 250){myppm <- 40
+    } else if(tmp$mz1[z] > 250 & tmp$mz1[z] < 600){myppm <- 25
+    } else if(tmp$mz1[z] >= 600){myppm<- 15}
+    if(tmp$i1[z] < 5e5){
+      myerror_A1 <- 0.4
+      myerror_A2 <- 2
+    } else {
+      myerror_A1 <- 1.5
+      myerror_A2 <- 5
+    }
+    
+    #tmp$mz1[z]
+    tmp.frm1 <- data.frame(formula = decomposeMass(tmp$mz1[z], ppm = myppm)$formula) 
+    tmp.frm1 <- cbind(
+      tmp.frm1, 
+      do.call(dplyr::bind_rows, 
+              lapply(as.character(tmp.frm1$formula), countElements)))
+    tmp.frm1[is.na(tmp.frm1)] <- 0
+    
+    ### Theoretical rules
+    tmp.frm1$H_rule <- tmp.frm1$H <= tmp.frm1$C*2 + tmp.frm1$N + 2
+    tmp.frm1$N_rule <- tmp.frm1$N %% 2 == round(tmp$mz1[z] - 1.007276) %% 2
+    tmp.frm1$RPU_rule <- # RPU <- (C+Si) - (H+Cl+Fl+I)/2 + (N+P)/2 + 1
+      tmp.frm1$C - 
+      (tmp.frm1$H - 1)/2 + 
+      (tmp.frm1$N + tmp.frm1$P)/2  >= 0 
+    
+    ### Experimental rules
+    tmp.frm1$formula <- as.character(tmp.frm1$formula)
+    tmp.frm1$A1 <- NA
+    tmp.frm1$A2 <- NA
+    for(i in 1:nrow(tmp.frm1)){
+      tmpx <- getMolecule(tmp.frm1$formula[i])$isotopes[[1]]
+      tmp.frm1$A1[i] <- (tmpx[2,2]/tmpx[2,1])*100
+      tmp.frm1$A2[i] <- (tmpx[2,3]/tmpx[2,1])*100
+    }
+    
+    tmp.A1 <- (tmp$i2[z] / tmp$i1[z]) * 100
+    (A1_range <- tmp.A1 + (tmp.A1 * myerror_A1 * c(-1, 1)))
+    tmp.frm1$A1_rule <- tmp.frm1$A1 >= A1_range[1] & tmp.frm1$A1 <= A1_range[2]
+    
+    tmp.frm1$C_cntrb <- (tmp.frm1$C * 1.07) / tmp.frm1$A1
+    tmp.frm1$C_thr <- (tmp.A1*tmp.frm1$C_cntrb)/1.07
+    tmp.frm1$C_thr_min <- tmp.frm1$C_thr - (tmp.frm1$C_thr * myerror_A1)
+    tmp.frm1$C_thr_max <- tmp.frm1$C_thr + (tmp.frm1$C_thr * myerror_A1)
+    tmp.frm1$C_rule <- 
+      tmp.frm1$C >= tmp.frm1$C_thr_min & 
+      tmp.frm1$C <= tmp.frm1$C_thr_max
+    
+    if(!is.na(tmp$i3[z])){
+      tmp.A2 <- (tmp$i3[z] / tmp$i1[z]) * 100
+      (A2_range <- tmp.A2 + (tmp.A2 * myerror_A2 * c(-1, 1)))
+      if(A2_range[1] < 0){A2_range[1] <- 0}
+      tmp.frm1$A2_rule <- tmp.frm1$A2 >= A2_range[1] & tmp.frm1$A2 <= A2_range[2]
+    } else { # end if A+2 is NOT missing 
+      tmp.frm1$A2_rule <- TRUE
+    } 
+    
+    
+    formula_finder[z, "start"] <- nrow(tmp.frm1)
+    formula_finder[z, "thr_filters"] <- sum(tmp.frm1$H_rule & tmp.frm1$N_rule & tmp.frm1$RPU_rule)
+    formula_finder[z, "A1_filter"] <- sum(tmp.frm1$H_rule & tmp.frm1$N_rule & tmp.frm1$RPU_rule & tmp.frm1$A1_rule)
+    formula_finder[z, "C1_filter"] <- sum(tmp.frm1$H_rule & tmp.frm1$N_rule & tmp.frm1$RPU_rule & tmp.frm1$A1_rule & tmp.frm1$C_rule)
+    formula_finder[z, "A2_filter"] <- 
+      sum(tmp.frm1$H_rule & tmp.frm1$N_rule & tmp.frm1$RPU_rule & 
+            tmp.frm1$A1_rule & tmp.frm1$C_rule & tmp.frm1$A2_rule)
+    
+    tmpx <- tmp.frm1[tmp.frm1$H_rule & tmp.frm1$N_rule & tmp.frm1$RPU_rule & 
+                       tmp.frm1$A1_rule & tmp.frm1$C_rule & tmp.frm1$A2_rule,]
+    tmpx$A1x <- abs(tmpx$A1 - tmp.A1)
+    if(!is.na(tmp$i3[z])){tmpx$A2x <- abs(tmpx$A2 - tmp.A2)} else {tmpx$A2x <- 0}
+    tmpx$A <- NA
+    #tmpx$Aw <- NA
+    for(i in 1:nrow(tmpx)){
+      tmpx$A[i] <- mean(c(tmpx$A1x[i], tmpx$A2x[i]))
+      #tmpx$Aw[i] <- weighted.mean(c(tmpx$A1x[i], tmpx$A2x[i]), c(2,1))
+    }
+    tmpx <- tmpx[order(tmpx$A),]
+    tmpx$H <- tmpx$H - 1
+    tmpx$fml <- NA
+    tmpx$A1p <- NA
+    tmpx$A2p <- NA
+    tmpx$Ap <- NA
+    for(i in 1:nrow(tmpx)){
+      tmpx$fml[i] <- pasteElements(tmpx[i,2:7])
+      tmpx$A1p[i] <- abs(100 - ((tmp.A1*100)/tmpx$A1[i]))
+      if(!is.na(tmp$i3[z])){tmpx$A2p[i] <- abs(100 - ((tmp.A2*100)/tmpx$A2[i]))} else {tmpx$A2p[i] <- 0}
+      tmpx$Ap[i] <- mean(c(tmpx$A1p[i], tmpx$A2p[i]))
+    }
+    tmpx <- tmpx[order(tmpx$A), ]
+    formula_finder[z, "rank"] <- which(tmpx$fml == std_info$formula[z])
+    tmpx <- tmpx[order(tmpx$Ap),]
+    formula_finder[z, "rankp"] <- which(tmpx$fml == std_info$formula[z])
+  } # close if A+0 is NOT missing
   save.image("tmp.RData")
 }
 
