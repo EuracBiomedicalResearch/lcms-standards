@@ -36,6 +36,10 @@ std_info <- std_info[-idx, ]
 std_info <- std_info[-which(std_info$name == "Eplerone"), ]
 idx <- which(std_info$name == "Glycerophospho-inositol")
 std_info <- std_info[-idx, ]
+std_info$formula[std_info$abbreviation == "chlorotrifluoromethylpyrindol"] <- "C6H3NOClF3"
+std_info$formula[std_info$abbreviation == "dichlorohydroxypyridine"] <- "C5H3NOCl2"
+std_info$formula[std_info$abbreviation == "trichloropyrinidol"] <- "C5H2NOCl3"
+
 std_info <- std_info[!is.na(std_info$quality_POS), ]
 std_info <- std_info[std_info$quality_POS == "0_perfect" | 
                        std_info$quality_POS == "1_good", ]
@@ -65,7 +69,8 @@ colnames(formula_finder) <- samples
 
 formula_finder <- matrix(nrow=nrow(std_info), ncol = 7)
 rownames(formula_finder) <- std_info$abbreviation
-colnames(formula_finder) <- c("start", "thr_filters", "A1_filter", "C1_filter", "A2_filter", "rank", "rankp")
+colnames(formula_finder) <- c("start", "thr_filters", "A1_filter", 
+                              "C1_filter", "A2_filter", "rank", "rankp")
 
 for(z in 1:nrow(std_info)
 ){
@@ -87,7 +92,7 @@ for(z in 1:nrow(std_info)
         formula = decomposeMass(tmp$mz1[z], ppm = myppm,
                                 elements = initializeElements(
                                              c("C", "H", "N", "O", 
-                                               "P", "S", "Cl"))
+                                               "P", "S", "Cl", "F"))
                                 )$formula) 
     } else{
       tmp.frm1 <- data.frame(
@@ -164,7 +169,8 @@ for(z in 1:nrow(std_info)
       tmpx$A2p <- NA
       tmpx$Ap <- NA
       for(i in 1:nrow(tmpx)){
-        tmpx$fml[i] <- pasteElements(tmpx[i,2:7])
+        tmpx$fml[i] <- pasteElements(
+          tmpx[i, 2:(which(colnames(tmpx) == "H_rule")-1)])
         tmpx$A1p[i] <- abs(100 - ((tmp.A1*100)/tmpx$A1[i]))
         if(!is.na(tmp$i3[z])){tmpx$A2p[i] <- abs(100 - ((tmp.A2*100)/tmpx$A2[i]))} else {tmpx$A2p[i] <- 0}
         tmpx$Ap[i] <- mean(c(tmpx$A1p[i], tmpx$A2p[i]))
