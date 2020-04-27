@@ -158,6 +158,7 @@ for(z in 1:nrow(std_info)
   formula_finder[z, "rank"] <- which(tmpx$fml == std_info$formula[z])
   tmpx <- tmpx[order(tmpx$Ap),]
   formula_finder[z, "rankp"] <- which(tmpx$fml == std_info$formula[z])
+  save.image("tmp.RData")
 }
 
 formula_finder %>%
