@@ -137,32 +137,34 @@ for(z in 1:nrow(std_info)
       sum(tmp.frm1$H_rule & tmp.frm1$N_rule & tmp.frm1$RPU_rule & 
             tmp.frm1$A1_rule & tmp.frm1$C_rule & tmp.frm1$A2_rule)
     
-    tmpx <- tmp.frm1[tmp.frm1$H_rule & tmp.frm1$N_rule & tmp.frm1$RPU_rule & 
-                       tmp.frm1$A1_rule & tmp.frm1$C_rule & tmp.frm1$A2_rule,]
-    tmpx$A1x <- abs(tmpx$A1 - tmp.A1)
-    if(!is.na(tmp$i3[z])){tmpx$A2x <- abs(tmpx$A2 - tmp.A2)} else {tmpx$A2x <- 0}
-    tmpx$A <- NA
-    #tmpx$Aw <- NA
-    for(i in 1:nrow(tmpx)){
-      tmpx$A[i] <- mean(c(tmpx$A1x[i], tmpx$A2x[i]))
-      #tmpx$Aw[i] <- weighted.mean(c(tmpx$A1x[i], tmpx$A2x[i]), c(2,1))
-    }
-    tmpx <- tmpx[order(tmpx$A),]
-    tmpx$H <- tmpx$H - 1
-    tmpx$fml <- NA
-    tmpx$A1p <- NA
-    tmpx$A2p <- NA
-    tmpx$Ap <- NA
-    for(i in 1:nrow(tmpx)){
-      tmpx$fml[i] <- pasteElements(tmpx[i,2:7])
-      tmpx$A1p[i] <- abs(100 - ((tmp.A1*100)/tmpx$A1[i]))
-      if(!is.na(tmp$i3[z])){tmpx$A2p[i] <- abs(100 - ((tmp.A2*100)/tmpx$A2[i]))} else {tmpx$A2p[i] <- 0}
-      tmpx$Ap[i] <- mean(c(tmpx$A1p[i], tmpx$A2p[i]))
-    }
-    tmpx <- tmpx[order(tmpx$A), ]
-    formula_finder[z, "rank"] <- which(tmpx$fml == std_info$formula[z])
-    tmpx <- tmpx[order(tmpx$Ap),]
-    formula_finder[z, "rankp"] <- which(tmpx$fml == std_info$formula[z])
+    if(nrow(tmpx) > 0){
+      tmpx <- tmp.frm1[tmp.frm1$H_rule & tmp.frm1$N_rule & tmp.frm1$RPU_rule & 
+                         tmp.frm1$A1_rule & tmp.frm1$C_rule & tmp.frm1$A2_rule,]
+      tmpx$A1x <- abs(tmpx$A1 - tmp.A1)
+      if(!is.na(tmp$i3[z])){tmpx$A2x <- abs(tmpx$A2 - tmp.A2)} else {tmpx$A2x <- 0}
+      tmpx$A <- NA
+      #tmpx$Aw <- NA
+      for(i in 1:nrow(tmpx)){
+        tmpx$A[i] <- mean(c(tmpx$A1x[i], tmpx$A2x[i]))
+        #tmpx$Aw[i] <- weighted.mean(c(tmpx$A1x[i], tmpx$A2x[i]), c(2,1))
+      }
+      tmpx <- tmpx[order(tmpx$A),]
+      tmpx$H <- tmpx$H - 1
+      tmpx$fml <- NA
+      tmpx$A1p <- NA
+      tmpx$A2p <- NA
+      tmpx$Ap <- NA
+      for(i in 1:nrow(tmpx)){
+        tmpx$fml[i] <- pasteElements(tmpx[i,2:7])
+        tmpx$A1p[i] <- abs(100 - ((tmp.A1*100)/tmpx$A1[i]))
+        if(!is.na(tmp$i3[z])){tmpx$A2p[i] <- abs(100 - ((tmp.A2*100)/tmpx$A2[i]))} else {tmpx$A2p[i] <- 0}
+        tmpx$Ap[i] <- mean(c(tmpx$A1p[i], tmpx$A2p[i]))
+      }
+      tmpx <- tmpx[order(tmpx$A), ]
+      formula_finder[z, "rank"] <- which(tmpx$fml == std_info$formula[z])
+      tmpx <- tmpx[order(tmpx$Ap),]
+      formula_finder[z, "rankp"] <- which(tmpx$fml == std_info$formula[z])
+    }# end if nrow(tmpx) > 0
   } # close if A+0 is NOT missing
   save.image("tmp.RData")
 }
