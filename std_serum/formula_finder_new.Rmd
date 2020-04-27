@@ -136,10 +136,9 @@ for(z in 1:nrow(std_info)
     formula_finder[z, "A2_filter"] <- 
       sum(tmp.frm1$H_rule & tmp.frm1$N_rule & tmp.frm1$RPU_rule & 
             tmp.frm1$A1_rule & tmp.frm1$C_rule & tmp.frm1$A2_rule)
-    
+    tmpx <- tmp.frm1[tmp.frm1$H_rule & tmp.frm1$N_rule & tmp.frm1$RPU_rule & 
+                       tmp.frm1$A1_rule & tmp.frm1$C_rule & tmp.frm1$A2_rule,]
     if(nrow(tmpx) > 0){
-      tmpx <- tmp.frm1[tmp.frm1$H_rule & tmp.frm1$N_rule & tmp.frm1$RPU_rule & 
-                         tmp.frm1$A1_rule & tmp.frm1$C_rule & tmp.frm1$A2_rule,]
       tmpx$A1x <- abs(tmpx$A1 - tmp.A1)
       if(!is.na(tmp$i3[z])){tmpx$A2x <- abs(tmpx$A2 - tmp.A2)} else {tmpx$A2x <- 0}
       tmpx$A <- NA
