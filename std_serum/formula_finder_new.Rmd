@@ -14,7 +14,7 @@ startpoint <- Sys.time()
 
 # Preliminaries
 
-```{r}
+```{r preliminaries}
 library(MetaboCoreUtils)
 library(Rdisop)
 library(RColorBrewer)
@@ -56,7 +56,7 @@ std_info <- cbind(std_info, tmp)
 
 # Formula finder
 
-```{r}
+```{r main-code}
 tmp <- PLW2
 
 formula_finder <- matrix(nrow=nrow(std_info), ncol = length(samples))
@@ -67,7 +67,7 @@ formula_finder <- matrix(nrow=nrow(std_info), ncol = 7)
 rownames(formula_finder) <- std_info$abbreviation
 colnames(formula_finder) <- c("start", "thr_filters", "A1_filter", "C1_filter", "A2_filter", "rank", "rankp")
 
-for(z in 1::nrow(std_info)
+for(z in 1:nrow(std_info)
 ){
   if(tmp$mz1[z] <= 250){myppm <- 40
   } else if(tmp$mz1[z] > 250 & tmp$mz1[z] < 600){myppm <- 25
