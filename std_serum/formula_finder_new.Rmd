@@ -70,8 +70,8 @@ for(y in 1:length(mysamples)){
   
   if(substring(samples[mysamples[y]], 1, 1) == "P"){
     ion <- 1.007276
-    } else if(substring(samples[mysamples[y]], 1, 1) == "N"){
-      ion <- -1.007276}
+  } else if(substring(samples[mysamples[y]], 1, 1) == "N"){
+    ion <- -1.007276}
   
   tmp <- get(samples[mysamples[y]])
   
@@ -209,12 +209,18 @@ for(y in 1:length(mysamples)){
           } else {tmpx$A2p[i] <- 0}
           tmpx$Ap[i] <- mean(c(tmpx$A1p[i], tmpx$A2p[i]))
         }
-        tmpx <- tmpx[order(tmpx$A), ]
-        formula_finder[z, "rank"] <- 
-          which(tmpx$fml == std_info$formula[z])
-        tmpx <- tmpx[order(tmpx$Ap),]
-        formula_finder[z, "rankp"] <- 
-          which(tmpx$fml ==std_info$formula[z])
+        if(any(which(tmpx$fml == std_info$formula[z]))){
+          tmpx <- tmpx[order(tmpx$A), ]
+          formula_finder[z, "rank"] <- 
+            which(tmpx$fml == std_info$formula[z])
+          tmpx <- tmpx[order(tmpx$Ap),]
+          formula_finder[z, "rankp"] <- 
+            which(tmpx$fml ==std_info$formula[z])
+        } else {
+          formula_finder[z, "rank"] <- 9999
+          formula_finder[z, "rankp"] <- 9999
+        }
+        
       }# end if nrow(tmpx) > 0
     } # close if A+0 is NOT missing
     save.image("tmp.RData")
