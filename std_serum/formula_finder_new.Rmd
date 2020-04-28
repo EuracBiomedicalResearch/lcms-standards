@@ -103,6 +103,9 @@ for(y in 1:length(mysamples)){
         tmp.frm1 <- data.frame(
           formula = decomposeMass(mzval, ppm = myppm)$formula) 
       }
+      tmp.frm1$formula <- as.character(tmp.frm1$formula)
+      tmp.frm1 <- rbind(tmp.frm1,
+                        "CHNOPSClF")
       tmp.frm1 <- cbind(
         tmp.frm1, 
         do.call(dplyr::bind_rows, 
@@ -114,8 +117,9 @@ for(y in 1:length(mysamples)){
       tmp.frm1$N_rule <- tmp.frm1$N %% 2 == round(mzval) %% 2
       tmp.frm1$RPU_rule <- # RPU <- (C+Si) - (H+Cl+Fl+I)/2 + (N+P)/2 + 1
         (tmp.frm1$C - 
-           ((tmp.frm1$H)/2) + 
+           ((tmp.frm1$H + tmp.frm1$Cl)/2) + 
            ((tmp.frm1$N + tmp.frm1$P)/2) + 1)  >= 0 
+      tmp.frm1 <- tmp.frm1[-nrow(tmp.frm1),]
       
       ### Experimental rules
       tmp.frm1$formula <- as.character(tmp.frm1$formula)
