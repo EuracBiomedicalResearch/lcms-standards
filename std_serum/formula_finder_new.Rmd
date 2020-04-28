@@ -65,9 +65,10 @@ std_info <- cbind(std_info, tmp)
 # Formula finder
 
 ```{r main-code}
-for(y in 22:length(samples)){
+mysamples <- c(16:18,22:24)
+for(y in 1:length(mysamples)){
   
-  tmp <- get(samples[y])
+  tmp <- get(samples[mysamples[y]])
   
   formula_finder <- matrix(nrow=nrow(std_info), ncol = 7)
   rownames(formula_finder) <- std_info$abbreviation
@@ -203,7 +204,7 @@ for(y in 22:length(samples)){
     } # close if A+0 is NOT missing
     save.image("tmp.RData")
   }
-  assign(paste0(samples[y], "_formfind"), formula_finder)
+  assign(paste0(samples[mysamples[y]], "_formfind"), formula_finder)
 } # end sample Y
 
 rm(tmp, tmp.frm1, tmpx, A1_range, A2_range, i, idx, 
@@ -215,9 +216,9 @@ rm(tmp, tmp.frm1, tmpx, A1_range, A2_range, i, idx,
 
 ```{r}
 formula_finder <- c()
-for(i in 22:length(samples)){
-  formula_finder[[i-21]] <- get(paste0(samples[i], "_formfind"))
-  names(formula_finder)[[i-21]] <- samples[i]
+for(i in 1:length(mysamples)){
+  formula_finder[[i]] <- get(paste0(samples[mysamples[i]], "_formfind"))
+  names(formula_finder)[[i]] <- samples[mysamples[i]]
 }
 
 formfind <-  matrix(nrow=nrow(std_info), ncol = 7)
