@@ -258,8 +258,11 @@ for(i in 1:nrow(formfind)){
       formfind[i, j] <- NA
     } else if(range(tmp)[1] == range(tmp)[2]){
       formfind[i, j] <- range(tmp)[1]
-    } else {
+    } else if(max(tmp) == 9999){
+      tmp <- tmp[tmp != 9999]
       formfind[i, j] <- paste(range(tmp)[1], range(tmp)[2], sep="-")
+    }else {
+      formfind[i, j] <- paste0(range(tmp)[1], "-", range(tmp)[2], " (*)")
     }
   } # close parameter "j"
 } # end std "i"
