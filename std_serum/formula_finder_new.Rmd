@@ -1,0 +1,141 @@
+---
+title: "Formula finder"
+author: "Mar Garcia-Aloy"
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+---
+
+```{r startpoint, include = FALSE}
+startpoint <- Sys.time()
+```
+
+# Preliminaries
+
+```{r preliminaries}
+library(MetaboCoreUtils)
+library(Rdisop)
+library(RColorBrewer)
+library(kableExtra)
+
+source("formula_finder_functions.R")
+
+load("isotopic_patterns_tables.RData")
+rm(startpoint)
+samples <- ls()
+startpoint <- Sys.time()
+
+std_info <- read.table(
+  "../data/standards_dilution.txt",
+  sep = "\t", header = TRUE, as.is = TRUE)
+std_info <- std_info[, c("mix", "name", "abbreviation", "formula",
+                         "POS", "NEG", "quality_POS", "quality_NEG")]
+idx <- which(std_info$name == "3-Hydroxy-DL-kynurenine" & 
+               std_info$mix == 17)
+std_info <- std_info[-idx, ]
+std_info <- std_info[-which(std_info$name == "Eplerone"), ]
+idx <- which(std_info$name == "Glycerophospho-inositol")
+std_info <- std_info[-idx, ]
+std_info$formula[std_info$abbreviation == 
+                   "chlorotrifluoromethylpyrindol"] <- "C6H3NOClF3"
+std_info$formula[std_info$abbreviation == 
+                   "dichlorohydroxypyridine"] <- "C5H3NOCl2"
+std_info$formula[std_info$abbreviation == 
+                   "trichloropyrinidol"] <- "C5H2NOCl3"
+
+std_info <- std_info[!is.na(std_info$quality_POS), ]
+std_info <- std_info[std_info$quality_POS == "0_perfect" | 
+                       std_info$quality_POS == "1_good", ]
+std_info <- std_info[std_info$quality_NEG == "0_perfect" | 
+                       std_info$quality_NEG == "1_good", ]
+std_info <- std_info[std_info$POS == "[M+H]+" & 
+                       std_info$NEG == "[M-H]-", ]
+std_info$mzneut <- NA
+for(i in 1:nrow(std_info)){
+  std_info$mzneut[i] <- 
+    getMolecule(as.character(std_info$formula[i]))$exactmass
+}
+tmp <- lapply(as.character(std_info$formula), countElements)
+tmp <- do.call(dplyr::bind_rows, tmp)
+tmp[is.na(tmp)] <- 0
+std_info <- cbind(std_info, tmp)
+```
+
+
+# Formula finder
+
+```{r main-code}
+mysamples <- c(4:6,10:24)
+for(y in 1:length(mysamples)){
+  
+  if(substring(samples[mysamples[y]], 1, 1) == "P"){
+    ion <- 1.007276
+  } else if(substring(samples[mysamples[y]], 1, 1) == "N"){
+    ion <- -1.007276}
+  
+  tmp <- get(samples[mysamples[y]])
+  
+  formula_finder <- matrix(nrow=nrow(std_info), ncol = 5)
+  rownames(formula_finder) <- std_info$abbreviation
+  colnames(formula_finder) <- c("start", "thr_filters", "A1_filter", 
+                                "A2_filter", "rank")
+  
+  for(z in 1:nrow(std_info)){
+    
+    if(!is.na(tmp$mz1[z])){
+      
+      mymz <- tmp$mz1[z] - ion
+      myA1 <- (tmp$i2[z] / tmp$i1[z]) * 100
+      myA2 <- (tmp$i3[z] / tmp$i1[z]) * 100
+      if(tmp$i1[z] < 5e5){
+        myerror_A1 <- 0.4
+        myerror_A2 <- 2
+      } else {
+        myerror_A1 <- 1.5
+        myerror_A2 <- 5
+      }
+      
+      if(grepl("Cl", std_info$formula[z])){
+        myform <- getform(mzval = mymz,
+                        ppm = 10,
+                        elements = "CHNOPSClF")
+      } else {
+        myform <- getform(mzval = mymz,
+                        ppm = 10,
+                        elements = "CHNOPS")
+      }
+      formula_finder[z, "start"] <- length(myform)
+      
+      myform <- H_rule(myform)
+      myform <- N_rule(mymz, myform)
+      myform <- RPU_rule(myform)
+      formula_finder[z, "thr_filters"] <- length(myform)
+      
+      myform <- isotope_rule(myform, myA1, myerror_A1, 1)
+      formula_finder[z, "A1_filter"] <- length(myform)
+      
+      myform <- isotope_rule(myform, myA2, myerror_A2, 2)
+      formula_finder[z, "A2_filter"] <- length(myform)
+    
+      myform <- rank_form(myform, i1 = myA1, i2 = myA2)
+      
+      formula_finder[z, "rank"] <- myform$rank[myform$formula == 
+                                                 std_info$formula[z]]
+    } # end if IS NOT NA mz1
+    save.image("tmp.RData")
+  } # end std "z"
+  assign(paste0(samples[mysamples[y]], "_formfind"), formula_finder)
+} # end sample Y
+```
+
+
+
+# Session information
+
+```{r session}
+Sys.time()-startpoint
+
+devtools::session_info()
+```
