@@ -128,18 +128,23 @@ for(y in 22:length(samples)){
         tmp.frm1$A2[i] <- (tmpx[2,3]/tmpx[2,1])*100
       }
       
-      tmp.A1 <- (tmp$i2[z] / tmp$i1[z]) * 100
-      (A1_range <- tmp.A1 + (tmp.A1 * myerror_A1 * c(-1, 1)))
-      tmp.frm1$A1_rule <- tmp.frm1$A1 >= A1_range[1] & 
-        tmp.frm1$A1 <= A1_range[2]
-      
-      tmp.frm1$C_cntrb <- (tmp.frm1$C * 1.07) / tmp.frm1$A1
-      tmp.frm1$C_thr <- (tmp.A1*tmp.frm1$C_cntrb)/1.07
-      tmp.frm1$C_thr_min <- tmp.frm1$C_thr - (tmp.frm1$C_thr * myerror_A1)
-      tmp.frm1$C_thr_max <- tmp.frm1$C_thr + (tmp.frm1$C_thr * myerror_A1)
-      tmp.frm1$C_rule <- 
-        tmp.frm1$C >= tmp.frm1$C_thr_min & 
-        tmp.frm1$C <= tmp.frm1$C_thr_max
+      if(!is.na(tmp$i2[z])){
+        tmp.A1 <- (tmp$i2[z] / tmp$i1[z]) * 100
+        (A1_range <- tmp.A1 + (tmp.A1 * myerror_A1 * c(-1, 1)))
+        tmp.frm1$A1_rule <- tmp.frm1$A1 >= A1_range[1] & 
+          tmp.frm1$A1 <= A1_range[2]
+        
+        tmp.frm1$C_cntrb <- (tmp.frm1$C * 1.07) / tmp.frm1$A1
+        tmp.frm1$C_thr <- (tmp.A1*tmp.frm1$C_cntrb)/1.07
+        tmp.frm1$C_thr_min <- tmp.frm1$C_thr - (tmp.frm1$C_thr * myerror_A1)
+        tmp.frm1$C_thr_max <- tmp.frm1$C_thr + (tmp.frm1$C_thr * myerror_A1)
+        tmp.frm1$C_rule <- 
+          tmp.frm1$C >= tmp.frm1$C_thr_min & 
+          tmp.frm1$C <= tmp.frm1$C_thr_max
+      }else { # end if A+1 is NOT missing 
+        tmp.frm1$A1_rule <- TRUE
+        tmp.frm1$C_rule <- TRUE
+      } 
       
       if(!is.na(tmp$i3[z])){
         tmp.A2 <- (tmp$i3[z] / tmp$i1[z]) * 100
@@ -199,9 +204,9 @@ for(y in 22:length(samples)){
         formula_finder[z, "rankp"] <- which(tmpx$fml ==std_info$formula[z])
       }# end if nrow(tmpx) > 0
     } # close if A+0 is NOT missing
-    assign(paste0(samples[y], "_formfind"), formula_finder)
     save.image("tmp.RData")
   }
+  assign(paste0(samples[y], "_formfind"), formula_finder)
 } # end sample Y
 
 rm(formula_finder, tmp, tmp.frm1, tmpx, A1_range, A2_range, i, idx, 
