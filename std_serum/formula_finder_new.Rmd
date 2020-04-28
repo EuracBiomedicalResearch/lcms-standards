@@ -79,9 +79,10 @@ for(y in 1:length(mysamples)){
   ){
     if(!is.na(tmp$mz1[z])){
       mzval <- tmp$mz1[z] - 1.007276
-      if(mzval <= 250){myppm <- 40
-      } else if(mzval > 250 & mzval < 600){myppm <- 25
-      } else if(mzval >= 600){myppm<- 15}
+      #if(mzval <= 250){myppm <- 40
+      #} else if(mzval > 250 & mzval < 600){myppm <- 25
+      #} else if(mzval >= 600){myppm<- 15}
+      myppm <- 10
       if(tmp$i1[z] < 5e5){
         myerror_A1 <- 0.4
         myerror_A2 <- 2
