@@ -109,10 +109,14 @@ for(y in 1:length(mysamples)){
       myform <- RPU_rule(myform)
       formula_finder[z, "thr_filters"] <- length(myform)
       
-      myform <- isotope_rule(myform, myA1, myerror_A1, 1)
+      if(!is.na(myA1)){
+        myform <- isotope_rule(myform, myA1, myerror_A1, 1)
+      }
       formula_finder[z, "A1_filter"] <- length(myform)
       
-      myform <- isotope_rule(myform, myA2, myerror_A2, 2)
+      if(!is.na(myA2)){
+        myform <- isotope_rule(myform, myA2, myerror_A2, 2)
+      }
       formula_finder[z, "A2_filter"] <- length(myform)
     
       myform <- rank_form(myform, i1 = myA1, i2 = myA2)
