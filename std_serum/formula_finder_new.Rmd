@@ -95,11 +95,11 @@ for(y in 1:length(mysamples)){
       
       if(grepl("Cl", std_info$formula[z])){
         myform <- getform(mzval = mymz,
-                        ppm = 10,
+                        ppm = 15,
                         elements = "CHNOPSClF")
       } else {
         myform <- getform(mzval = mymz,
-                        ppm = 10,
+                        ppm = 15,
                         elements = "CHNOPS")
       }
       formula_finder[z, "start"] <- length(myform)
