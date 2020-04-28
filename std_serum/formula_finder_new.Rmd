@@ -95,12 +95,12 @@ for(y in 1:length(mysamples)){
       
       if(grepl("Cl", std_info$formula[z])){
         myform <- getform(mzval = mymz,
-                        ppm = 15,
-                        elements = "CHNOPSClF")
+                          ppm = 15,
+                          elements = "CHNOPSClF")
       } else {
         myform <- getform(mzval = mymz,
-                        ppm = 15,
-                        elements = "CHNOPS")
+                          ppm = 15,
+                          elements = "CHNOPS")
       }
       formula_finder[z, "start"] <- length(myform)
       
@@ -110,15 +110,17 @@ for(y in 1:length(mysamples)){
       formula_finder[z, "thr_filters"] <- length(myform)
       
       if(!is.na(myA1)){
-        myform <- isotope_rule(myform, myA1, myerror_A1, 1)
-      }
+        if(tmp$i2[z] > 100){
+          myform <- isotope_rule(myform, myA1, myerror_A1, 1)
+        }}
       formula_finder[z, "A1_filter"] <- length(myform)
       
       if(!is.na(myA2)){
-        myform <- isotope_rule(myform, myA2, myerror_A2, 2)
-      }
+        if(tmp$i3[z] > 100){
+          myform <- isotope_rule(myform, myA2, myerror_A2, 2)
+        }}
       formula_finder[z, "A2_filter"] <- length(myform)
-    
+      
       myform <- rank_form(myform, i1 = myA1, i2 = myA2)
       
       formula_finder[z, "rank"] <- myform$rank[myform$formula == 
