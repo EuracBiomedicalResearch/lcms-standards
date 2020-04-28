@@ -156,6 +156,47 @@ for(y in 1:length(mysamples)){
 ```
 
 
+# Table
+
+```{r}
+formula_finder <- c()
+for(i in 1:length(mysamples)){
+  formula_finder[[i]] <- get(paste0(samples[mysamples[i]], "_formfind"))
+  names(formula_finder)[[i]] <- samples[mysamples[i]]
+}
+
+formfind <-  matrix(nrow=nrow(std_info), ncol = 5)
+rownames(formfind) <- std_info$abbreviation
+colnames(formfind) <- c("start", "thr_filters", "A1_filter", 
+                        "A2_filter", "rank")
+
+for(i in 1:nrow(formfind)){
+  for(j in 1:ncol(formfind)){
+    tmp <- c()
+    for(k in 1:length(formula_finder)){
+      tmp <- c(tmp, formula_finder[[k]][i,j])
+    }
+    tmp <- tmp[!is.na(tmp)]
+    if(is.na(tmp[1])){
+      formfind[i, j] <- NA
+    } else if(range(tmp)[1] == range(tmp)[2]){
+      formfind[i, j] <- range(tmp)[1]
+    } else if(max(tmp) == 9999){
+      tmp <- tmp[tmp != 9999]
+      formfind[i, j] <- paste0(range(tmp)[1], "-", range(tmp)[2], " (*)")
+    }else {
+      formfind[i, j] <- paste(range(tmp)[1], range(tmp)[2], sep="-")
+    }
+  } # close parameter "j"
+} # end std "i"
+
+formfind %>%
+  kable() %>%
+  kable_styling()
+
+save.image("formfind_data.RData")
+```
+
 
 # Session information
 
