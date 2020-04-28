@@ -65,8 +65,13 @@ std_info <- cbind(std_info, tmp)
 # Formula finder
 
 ```{r main-code}
-mysamples <- c(16:18,22:24)
+mysamples <- c(4:6,10:24)
 for(y in 1:length(mysamples)){
+  
+  if(substring(samples[mysamples[y]], 1, 1) == "P"){
+    ion <- 1.007276
+    } else if(substring(samples[mysamples[y]], 1, 1) == "N"){
+      ion <- -1.007276}
   
   tmp <- get(samples[mysamples[y]])
   
@@ -78,7 +83,7 @@ for(y in 1:length(mysamples)){
   for(z in 1:nrow(std_info)
   ){
     if(!is.na(tmp$mz1[z])){
-      mzval <- tmp$mz1[z] - 1.007276
+      mzval <- tmp$mz1[z] - ion
       #if(mzval <= 250){myppm <- 40
       #} else if(mzval > 250 & mzval < 600){myppm <- 25
       #} else if(mzval >= 600){myppm<- 15}
@@ -139,8 +144,10 @@ for(y in 1:length(mysamples)){
         
         tmp.frm1$C_cntrb <- (tmp.frm1$C * 1.07) / tmp.frm1$A1
         tmp.frm1$C_thr <- (tmp.A1*tmp.frm1$C_cntrb)/1.07
-        tmp.frm1$C_thr_min <- tmp.frm1$C_thr - (tmp.frm1$C_thr * myerror_A1)
-        tmp.frm1$C_thr_max <- tmp.frm1$C_thr + (tmp.frm1$C_thr * myerror_A1)
+        tmp.frm1$C_thr_min <- 
+          tmp.frm1$C_thr - (tmp.frm1$C_thr * myerror_A1)
+        tmp.frm1$C_thr_max <- 
+          tmp.frm1$C_thr + (tmp.frm1$C_thr * myerror_A1)
         tmp.frm1$C_rule <- 
           tmp.frm1$C >= tmp.frm1$C_thr_min & 
           tmp.frm1$C <= tmp.frm1$C_thr_max
@@ -174,7 +181,8 @@ for(y in 1:length(mysamples)){
       
       tmpx <- 
         tmp.frm1[tmp.frm1$H_rule & tmp.frm1$N_rule & tmp.frm1$RPU_rule & 
-                   tmp.frm1$A1_rule & tmp.frm1$C_rule & tmp.frm1$A2_rule,]
+                   tmp.frm1$A1_rule & tmp.frm1$C_rule & 
+                   tmp.frm1$A2_rule, ]
       
       if(nrow(tmpx) > 0){
         tmpx$A1x <- abs(tmpx$A1 - tmp.A1)
@@ -202,9 +210,11 @@ for(y in 1:length(mysamples)){
           tmpx$Ap[i] <- mean(c(tmpx$A1p[i], tmpx$A2p[i]))
         }
         tmpx <- tmpx[order(tmpx$A), ]
-        formula_finder[z, "rank"] <- which(tmpx$fml == std_info$formula[z])
+        formula_finder[z, "rank"] <- 
+          which(tmpx$fml == std_info$formula[z])
         tmpx <- tmpx[order(tmpx$Ap),]
-        formula_finder[z, "rankp"] <- which(tmpx$fml ==std_info$formula[z])
+        formula_finder[z, "rankp"] <- 
+          which(tmpx$fml ==std_info$formula[z])
       }# end if nrow(tmpx) > 0
     } # close if A+0 is NOT missing
     save.image("tmp.RData")
