@@ -8,10 +8,6 @@ output:
     toc_float: true
 ---
 
-```{r startpoint, include = FALSE}
-startpoint <- Sys.time()
-```
-
 # Preliminaries
 
 ```{r preliminaries}
@@ -20,12 +16,12 @@ library(Rdisop)
 library(RColorBrewer)
 library(kableExtra)
 
-source("formula_finder_functions.R")
-
 load("isotopic_patterns_tables.RData")
 rm(startpoint)
 samples <- ls()
 startpoint <- Sys.time()
+
+source("formula_finder_functions.R")
 
 std_info <- read.table(
   "../data/standards_dilution.txt",
