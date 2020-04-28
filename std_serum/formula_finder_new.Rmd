@@ -124,13 +124,13 @@ for(y in 1:length(mysamples)){
       formula_finder[z, "thr_filters"] <- length(myform)
       
       if(!is.na(myA1)){
-        if(tmp$i2[z] > 100){
+        if(tmp$i2[z] > 150){
           myform <- isotope_rule(myform, myA1, myerror_A1, 1)
         }}
       formula_finder[z, "A1_filter"] <- length(myform)
       
       if(!is.na(myA2)){
-        if(tmp$i3[z] > 100){
+        if(tmp$i3[z] > 150){
           myform <- isotope_rule(myform, myA2, myerror_A2, 2)
         }}
       formula_finder[z, "A2_filter"] <- length(myform)
