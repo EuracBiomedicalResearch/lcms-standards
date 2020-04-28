@@ -142,8 +142,12 @@ for(y in 1:length(mysamples)){
       
       myform <- rank_form(myform, i1 = myA1, i2 = myA2)
       
-      formula_finder[z, "rank"] <- myform$rank[myform$formula == 
+      if(any(myform$rank[myform$formula == std_info$formula[z]])){
+        formula_finder[z, "rank"] <- myform$rank[myform$formula == 
                                                  std_info$formula[z]]
+      } else {
+        formula_finder[z, "rank"] <- 9999
+      }
     } # end if IS NOT NA mz1
     save.image("tmp.RData")
   } # end std "z"
