@@ -231,7 +231,7 @@ for(i in 1:nrow(formfind)){
     for(k in 1:length(formula_finder)){
       tmp <- c(tmp, formula_finder[[k]][i,j])
     }
-    if(is.na(tmp)){
+    if(is.na(tmp[1])){
       formfind[i, j] <- NA
     } else if(range(tmp)[1] == range(tmp)[2]){
       formfind[i, j] <- range(tmp)[1]
