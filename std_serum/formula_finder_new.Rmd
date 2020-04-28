@@ -63,6 +63,11 @@ std_info <- cbind(std_info, tmp)
 # Problematic samples
 
 ```{r}
+#### Paracetamol in sample PLS3: we've seen that the real A+1 ion is 
+#### 153.1060, which mz deviation is 0.028
+PLS3$i2[which(PLS3$abrv == "paracetamol")] <- NA
+PLS3$mz2[which(PLS3$abrv == "paracetamol")] <- NA
+
 ##### 3-Hydroxykynurenine
 PLS1$i2[which(PLS1$abrv == "hydroxykynurenine_3")] <- NA
 PLS1$mz2[which(PLS1$abrv == "hydroxykynurenine_3")] <- NA
