@@ -68,9 +68,6 @@ std_info <- cbind(std_info, tmp)
 for(y in 22:length(samples)){
   
   tmp <- get(samples[y])
-  formula_finder <- matrix(nrow=nrow(std_info), ncol = length(samples))
-  rownames(formula_finder) <- std_info$abbreviation
-  colnames(formula_finder) <- samples
   
   formula_finder <- matrix(nrow=nrow(std_info), ncol = 7)
   rownames(formula_finder) <- std_info$abbreviation
@@ -209,14 +206,40 @@ for(y in 22:length(samples)){
   assign(paste0(samples[y], "_formfind"), formula_finder)
 } # end sample Y
 
-rm(formula_finder, tmp, tmp.frm1, tmpx, A1_range, A2_range, i, idx, 
+rm(tmp, tmp.frm1, tmpx, A1_range, A2_range, i, idx, 
    myerror_A1, myerror_A2, myppm, mzval, tmp.A1, tmp.A2, z)
+```
 
-save.image("formfind_data.RData")
 
-formula_finder %>%
+# Table
+
+```{r}
+formula_finder <- c()
+for(i in 22:length(samples)){
+  formula_finder[[i-21]] <- get(paste0(samples[i], "_formfind"))
+  names(formula_finder)[[i-21]] <- samples[i]
+}
+
+formfind <-  matrix(nrow=nrow(std_info), ncol = 7)
+rownames(formfind) <- std_info$abbreviation
+colnames(formfind) <- c("start", "thr_filters", "A1_filter", 
+                        "C1_filter", "A2_filter", "rank", "rankp")
+
+for(i in 1:nrow(formfind)){
+  for(j in 1:ncol(formfind)){
+    tmp <- c()
+    for(k in 1:length(formula_finder)){
+      tmp <- c(tmp, formula_finder[[k]][i,j])
+    }
+    formfind[i, j] <- paste(range(tmp)[1], range(tmp)[2], sep="-")
+  } # close parameter "j"
+} # end std "i"
+
+formfind %>%
   kable() %>%
   kable_styling()
+
+save.image("formfind_data.RData")
 ```
 
 
