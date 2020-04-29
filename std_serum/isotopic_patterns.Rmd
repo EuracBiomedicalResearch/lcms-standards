@@ -48,7 +48,7 @@ rep.all <- c(1, 2, 3)
 
 ## Libraries
 
-```{r}
+```{r libraries}
 library(Rdisop)
 library(xcms)
 library(MsCoreUtils)
@@ -86,13 +86,12 @@ for(i in 1:nrow(std_info)){
 }
 
 std_info <- std_info[!is.na(std_info$quality_POS), ]
-std_info <- std_info[std_info$quality_POS == "0_perfect" | 
-                       std_info$quality_POS == "1_good", ]
-std_info <- std_info[std_info$quality_NEG == "0_perfect" | 
-                       std_info$quality_NEG == "1_good", ]
-std_infox <- std_info[std_info$POS == "[M+H]+" & 
-                       std_info$NEG == "[M-H]-", ]
-std_info <- std_info[!std_info$abbreviation %in% std_infox$abbreviation, ]
+#std_info <- std_info[std_info$quality_POS == "0_perfect" | 
+#                       std_info$quality_POS == "1_good", ]
+#std_info <- std_info[std_info$quality_NEG == "0_perfect" | 
+#                       std_info$quality_NEG == "1_good", ]
+#std_info <- std_info[std_info$POS == "[M+H]+" & 
+#                       std_info$NEG == "[M-H]-", ]
 
 mix.levels <- 1:20
 ```
