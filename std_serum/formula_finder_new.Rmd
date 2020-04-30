@@ -189,11 +189,18 @@ for(i in 1:length(mysamples)){
   names(formula_finder)[[i]] <- samples[mysamples[i]]
 }
 
-formfind <-  matrix(nrow=nrow(std_info), ncol = 9)
+formfind <-  matrix(nrow=nrow(std_info), ncol = 14)
 rownames(formfind) <- std_info$abbreviation
-colnames(formfind) <- c("start", "adduct", "H_rule", "H2_rule", 
+colnames(formfind) <- c("formula", "POS", "quality_POS", 
+                        "NEG", "quality_NEG", 
+                        "start", "adduct", "H_rule", "H2_rule", 
                         "N_rule", "RPU_rule", 
                         "A1_filter", "A2_filter", "rank")
+formfind[, "formula"] <- std_info$formula
+formfind[, "POS"] <- std_info$POS
+formfind[, "quality_POS"] <- std_info$quality_POS
+formfind[, "NEG"] <- std_info$NEG
+formfind[, "quality_NEG"] <- std_info$quality_NEG
 
 for(i in 1:nrow(formfind)){
   for(j in 1:ncol(formfind)){
