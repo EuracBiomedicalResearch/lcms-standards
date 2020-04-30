@@ -153,8 +153,8 @@ adduct_filter <- function(formulas = character(0),
   } else {
     for(i in 2:ncol(tmp.frm1)){
       tmp.frm1 <- tmp.frm1[tmp.frm1[,i] >= tmp.frm1[1,i] , ]
-      tmp.frm1 <- tmp.frm1[-1,]
     }
+    tmp.frm1 <- tmp.frm1[-1,]
   }
   tmp.frm1$formulas
 }
