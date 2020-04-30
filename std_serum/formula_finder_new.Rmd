@@ -89,9 +89,10 @@ for(y in 1:length(mysamples)){
   
   tmp <- get(samples[mysamples[y]])
   
-  formula_finder <- matrix(nrow=nrow(std_info), ncol = 6)
+  formula_finder <- matrix(nrow=nrow(std_info), ncol = 9)
   rownames(formula_finder) <- std_info$abbreviation
-  colnames(formula_finder) <- c("start", "adduct", "thr_filters", 
+  colnames(formula_finder) <- c("start", "adduct", "H_rule", "H2_rule", 
+                                "N_rule", "RPU_rule", 
                                 "A1_filter", "A2_filter", "rank")
   add <- std_info[, c("POS", "NEG")]
   add <- add[, grep(substring(samples[mysamples[y]], 1, 1), 
@@ -137,9 +138,13 @@ for(y in 1:length(mysamples)){
       formula_finder[z, "adduct"] <- length(myform)
       
       myform <- update_form(H_rule(update_form(myform, myadd, "remove")), myadd, "add")
+      formula_finder[z, "H_rule"] <- length(myform)
+      myform <- update_form(H_rule2(mymzneut, update_form(myform, myadd, "remove")), myadd, "add")
+      formula_finder[z, "H2_rule"] <- length(myform)
       myform <- update_form(N_rule(mymzneut, update_form(myform, myadd, "remove")), myadd, "add")
+      formula_finder[z, "N_rule"] <- length(myform)
       myform <- update_form(RPU_rule(update_form(myform, myadd, "remove")), myadd, "add")
-      formula_finder[z, "thr_filters"] <- length(myform)
+      formula_finder[z, "RPU_rule"] <- length(myform)
       
       if(!is.na(myA1)){
         if(tmp$i2[z] > 150){
@@ -178,10 +183,11 @@ for(i in 1:length(mysamples)){
   names(formula_finder)[[i]] <- samples[mysamples[i]]
 }
 
-formfind <-  matrix(nrow=nrow(std_info), ncol = 6)
+formfind <-  matrix(nrow=nrow(std_info), ncol = 9)
 rownames(formfind) <- std_info$abbreviation
-colnames(formfind) <- c("start", "adduct", "thr_filters", "A1_filter", 
-                        "A2_filter", "rank")
+colnames(formfind) <- c("start", "adduct", "H_rule", "H2_rule", 
+                        "N_rule", "RPU_rule", 
+                        "A1_filter", "A2_filter", "rank")
 
 for(i in 1:nrow(formfind)){
   for(j in 1:ncol(formfind)){
