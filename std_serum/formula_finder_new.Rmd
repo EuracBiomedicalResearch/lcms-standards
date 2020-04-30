@@ -48,7 +48,7 @@ std_info <- std_info[!is.na(std_info$quality_POS), ]
 #                       std_info$quality_NEG == "1_good", ]
 #std_infox <- std_info[std_info$POS == "[M+H]+" & 
 #                        std_info$NEG == "[M-H]-", ]
-#std_info <- std_info[!std_info$abbreviation %in% std_infox$abbreviation, ]
+#std_info <- std_info[!std_info$abbreviation %in% std_infox$abbreviation,]
 
 std_info$mzneut <- NA
 for(i in 1:nrow(std_info)){
@@ -137,13 +137,19 @@ for(y in 1:length(mysamples)){
       myform <- adduct_filter(myform, myadd)
       formula_finder[z, "adduct"] <- length(myform)
       
-      myform <- update_form(H_rule(update_form(myform, myadd, "remove")), myadd, "add")
+      myform <- update_form(H_rule(update_form(
+        myform, myadd, "remove")), myadd, "add")
       formula_finder[z, "H_rule"] <- length(myform)
-      myform <- update_form(H_rule2(mymzneut, update_form(myform, myadd, "remove")), myadd, "add")
+      myform <- update_form(H_rule2(mymzneut, update_form(
+        myform, myadd, "remove")), myadd, "add")
       formula_finder[z, "H2_rule"] <- length(myform)
-      myform <- update_form(N_rule(mymzneut, update_form(myform, myadd, "remove")), myadd, "add")
+      if(mymzneut < 500){
+        myform <- update_form(N_rule(mymzneut, update_form(
+          myform, myadd, "remove")), myadd, "add")
+      }
       formula_finder[z, "N_rule"] <- length(myform)
-      myform <- update_form(RPU_rule(update_form(myform, myadd, "remove")), myadd, "add")
+      myform <- update_form(RPU_rule(update_form(
+        myform, myadd, "remove")), myadd, "add")
       formula_finder[z, "RPU_rule"] <- length(myform)
       
       if(!is.na(myA1)){
