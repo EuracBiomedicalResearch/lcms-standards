@@ -171,7 +171,27 @@ H_rule <- function(formulas = character(0)){
   tmp.frm1[is.na(tmp.frm1)] <- 0
   
   tmp.frm1$rule <- tmp.frm1$H <= tmp.frm1$C*2 + tmp.frm1$N + 2
-  tmp.frm1$rule[tmp.frm1$P > 0 | tmp.frm1$S > 0] <- TRUE
+  tmp.frm1$rule[tmp.frm1$P > 0] <- TRUE
+  tmp.frm1$formula[tmp.frm1$rule]
+}
+
+
+
+H_rule2 <- function(mzval = numeric(0),
+                   formulas = character(0)){
+  tmp.frm1 <- data.frame(formula = formulas)
+  tmp.frm1$formula <- as.character(tmp.frm1$formula)
+  tmp.frm1 <- rbind(tmp.frm1, "H")
+  tmp.frm1 <- cbind(
+    tmp.frm1, 
+    do.call(dplyr::bind_rows, 
+            lapply(as.character(tmp.frm1$formula), 
+                   MetaboCoreUtils::countElements)))
+  tmp.frm1[is.na(tmp.frm1)] <- 0
+  tmp.frm1 <- tmp.frm1[-nrow(tmp.frm1),]
+  
+  tmp.frm1$rule <- (trunc(mzval) + tmp.frm1$H) %% 4 == 0
+  tmp.frm1$rule[tmp.frm1$P > 0] <- TRUE
   tmp.frm1$formula[tmp.frm1$rule]
 }
 
@@ -179,18 +199,24 @@ H_rule <- function(formulas = character(0)){
 
 N_rule <- function(mzval = numeric(0),
                    formulas = character(0)){
-  tmp.frm1 <- data.frame(formula = formulas)
-  tmp.frm1$formula <- as.character(tmp.frm1$formula)
-  tmp.frm1 <- cbind(
-    tmp.frm1, 
-    do.call(dplyr::bind_rows, 
-            lapply(as.character(tmp.frm1$formula), 
-                   MetaboCoreUtils::countElements)))
-  tmp.frm1[is.na(tmp.frm1)] <- 0
-  
-  tmp.frm1$formula[tmp.frm1$N %% 2 == round(mzval) %% 2]
+  if(mzval < 500){
+    tmp.frm1 <- data.frame(formula = formulas)
+    tmp.frm1$formula <- as.character(tmp.frm1$formula)
+    tmp.frm1 <- rbind(tmp.frm1, "N")
+    tmp.frm1 <- cbind(
+      tmp.frm1, 
+      do.call(dplyr::bind_rows, 
+              lapply(as.character(tmp.frm1$formula), 
+                     MetaboCoreUtils::countElements)))
+    tmp.frm1[is.na(tmp.frm1)] <- 0
+    tmp.frm1 <- tmp.frm1[-nrow(tmp.frm1),]
+    
+    tmp.frm1$formula[tmp.frm1$N %% 2 == round(mzval) %% 2]
+  } else{
+    #return(formulas)
+    print("Warning! Rule not applied because mzval > 500 Da! :P")
+  }
 }
-
 
 
 RPU_rule <- function(formulas = character(0)){
