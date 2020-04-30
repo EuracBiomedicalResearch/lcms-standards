@@ -46,8 +46,10 @@ std_info <- std_info[std_info$quality_POS == "0_perfect" |
                        std_info$quality_POS == "1_good", ]
 std_info <- std_info[std_info$quality_NEG == "0_perfect" | 
                        std_info$quality_NEG == "1_good", ]
-std_info <- std_info[std_info$POS == "[M+H]+" & 
-                       std_info$NEG == "[M-H]-", ]
+std_infox <- std_info[std_info$POS == "[M+H]+" & 
+                        std_info$NEG == "[M-H]-", ]
+std_info <- std_info[!std_info$abbreviation %in% std_infox$abbreviation, ]
+
 std_info$mzneut <- NA
 for(i in 1:nrow(std_info)){
   std_info$mzneut[i] <- 
@@ -85,23 +87,27 @@ PLS3$mz2[which(PLS3$abrv == "hydroxykynurenine_3")] <- NA
 mysamples <- c(4:6,10:24)
 for(y in 1:length(mysamples)){
   
-  if(substring(samples[mysamples[y]], 1, 1) == "P"){
-    ion <- 1.007276
-  } else if(substring(samples[mysamples[y]], 1, 1) == "N"){
-    ion <- -1.007276}
-  
   tmp <- get(samples[mysamples[y]])
   
-  formula_finder <- matrix(nrow=nrow(std_info), ncol = 5)
+  formula_finder <- matrix(nrow=nrow(std_info), ncol = 6)
   rownames(formula_finder) <- std_info$abbreviation
-  colnames(formula_finder) <- c("start", "thr_filters", "A1_filter", 
-                                "A2_filter", "rank")
+  colnames(formula_finder) <- c("start", "adduct", "thr_filters", 
+                                "A1_filter", "A2_filter", "rank")
+  add <- std_info[, c("POS", "NEG")]
+  add <- add[, grep(substring(samples[mysamples[y]], 1, 1), 
+                    colnames(add))]
   
   for(z in 1:nrow(std_info)){
     
     if(!is.na(tmp$mz1[z])){
       
-      mymz <- tmp$mz1[z] - ion
+      myadd <- add[z]
+      mymzion <- tmp$mz1[z]
+      mymzneut <- getmzneut(mymzion, myadd)
+      
+      myformok <- std_info$formula[z]
+      myformion <- update_form(myformok, myadd, "add")
+      
       myA1 <- (tmp$i2[z] / tmp$i1[z]) * 100
       myA2 <- (tmp$i3[z] / tmp$i1[z]) * 100
       if(tmp$i1[z] < 5e5){
@@ -112,20 +118,27 @@ for(y in 1:length(mysamples)){
         myerror_A2 <- 5
       }
       
-      if(grepl("Cl", std_info$formula[z])){
-        myform <- getform(mzval = mymz,
+      if(grepl("Cl", myformion)){
+        myform <- getform(mzval = mymzion,
                           ppm = 15,
-                          elements = "CHNOPSClF")
+                          elements = "CHNOPSCl")
+      } else if(grepl("Na", myformion)){
+        myform <- getform(mzval = mymzion,
+                          ppm = 15,
+                          elements = "CHNOPSNa")
       } else {
-        myform <- getform(mzval = mymz,
+        myform <- getform(mzval = mymzion,
                           ppm = 15,
                           elements = "CHNOPS")
       }
       formula_finder[z, "start"] <- length(myform)
       
-      myform <- H_rule(myform)
-      myform <- N_rule(mymz, myform)
-      myform <- RPU_rule(myform)
+      myform <- adduct_filter(myform, myadd)
+      formula_finder[z, "adduct"] <- length(myform)
+      
+      myform <- update_form(H_rule(update_form(myform, myadd, "remove")), myadd, "add")
+      myform <- update_form(N_rule(mymzneut, update_form(myform, myadd, "remove")), myadd, "add")
+      myform <- update_form(RPU_rule(update_form(myform, myadd, "remove")), myadd, "add")
       formula_finder[z, "thr_filters"] <- length(myform)
       
       if(!is.na(myA1)){
@@ -142,9 +155,9 @@ for(y in 1:length(mysamples)){
       
       myform <- rank_form(myform, i1 = myA1, i2 = myA2)
       
-      if(any(myform$rank[myform$formula == std_info$formula[z]])){
+      if(any(myform$rank[myform$formula == myformion])){
         formula_finder[z, "rank"] <- myform$rank[myform$formula == 
-                                                 std_info$formula[z]]
+                                                   myformion]
       } else {
         formula_finder[z, "rank"] <- 9999
       }
@@ -165,9 +178,9 @@ for(i in 1:length(mysamples)){
   names(formula_finder)[[i]] <- samples[mysamples[i]]
 }
 
-formfind <-  matrix(nrow=nrow(std_info), ncol = 5)
+formfind <-  matrix(nrow=nrow(std_info), ncol = 6)
 rownames(formfind) <- std_info$abbreviation
-colnames(formfind) <- c("start", "thr_filters", "A1_filter", 
+colnames(formfind) <- c("start", "adduct", "thr_filters", "A1_filter", 
                         "A2_filter", "rank")
 
 for(i in 1:nrow(formfind)){
