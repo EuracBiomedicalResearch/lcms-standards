@@ -134,47 +134,49 @@ for(y in 1:length(mysamples)){
       }
       formula_finder[z, "start"] <- length(myform)
       
-      myform <- adduct_filter(myform, myadd)
-      formula_finder[z, "adduct"] <- length(myform)
-      
-      myform <- update_form(H_rule(update_form(
-        myform, myadd, "remove")), myadd, "add")
-      formula_finder[z, "H_rule"] <- length(myform)
-      if(length(H_rule2(mymzneut, update_form(myform, myadd, "remove")))>0){
-        myform <- update_form(H_rule2(mymzneut, update_form(
+      if(length(myform) > 0){
+        myform <- adduct_filter(myform, myadd)
+        formula_finder[z, "adduct"] <- length(myform)
+        
+        myform <- update_form(H_rule(update_form(
           myform, myadd, "remove")), myadd, "add")
-        if(mymzneut < 500){
-          myform <- update_form(N_rule(mymzneut, update_form(
+        formula_finder[z, "H_rule"] <- length(myform)
+        if(length(H_rule2(mymzneut, update_form(myform, myadd, "remove")))>0){
+          myform <- update_form(H_rule2(mymzneut, update_form(
             myform, myadd, "remove")), myadd, "add")
-        }
-        formula_finder[z, "N_rule"] <- length(myform)
-        myform <- update_form(RPU_rule(update_form(
-          myform, myadd, "remove")), myadd, "add")
-        formula_finder[z, "RPU_rule"] <- length(myform)
-        
-        if(!is.na(myA1)){
-          if(tmp$i2[z] > 150){
-            myform <- isotope_rule(myform, myA1, myerror_A1, 1)
-          }}
-        formula_finder[z, "A1_filter"] <- length(myform)
-        
-        if(!is.na(myA2)){
-          if(tmp$i3[z] > 150){
-            myform <- isotope_rule(myform, myA2, myerror_A2, 2)
-          }}
-        formula_finder[z, "A2_filter"] <- length(myform)
-        
-        if(length(myform) > 0){
-          myform <- rank_form(myform, i1 = myA1, i2 = myA2)
-          
-          if(any(myform$rank[myform$formula == myformion])){
-            formula_finder[z, "rank"] <- myform$rank[myform$formula == 
-                                                       myformion]
-          } else {
-            formula_finder[z, "rank"] <- 9999
+          if(mymzneut < 500){
+            myform <- update_form(N_rule(mymzneut, update_form(
+              myform, myadd, "remove")), myadd, "add")
           }
-        } # end if length(myform) > 0
-      } # end if(any) H_rule2()
+          formula_finder[z, "N_rule"] <- length(myform)
+          myform <- update_form(RPU_rule(update_form(
+            myform, myadd, "remove")), myadd, "add")
+          formula_finder[z, "RPU_rule"] <- length(myform)
+          
+          if(!is.na(myA1)){
+            if(tmp$i2[z] > 150){
+              myform <- isotope_rule(myform, myA1, myerror_A1, 1)
+            }}
+          formula_finder[z, "A1_filter"] <- length(myform)
+          
+          if(!is.na(myA2)){
+            if(tmp$i3[z] > 150){
+              myform <- isotope_rule(myform, myA2, myerror_A2, 2)
+            }}
+          formula_finder[z, "A2_filter"] <- length(myform)
+          
+          if(length(myform) > 0){
+            myform <- rank_form(myform, i1 = myA1, i2 = myA2)
+            
+            if(any(myform$rank[myform$formula == myformion])){
+              formula_finder[z, "rank"] <- myform$rank[myform$formula == 
+                                                         myformion]
+            } else {
+              formula_finder[z, "rank"] <- 9999
+            }
+          } # end if length(myform) > 0 after isotope_rule 2
+        } # end if(any) H_rule2()
+      }# end if 'length(myform) > 0' after getform()
     } # end if IS NOT NA mz1
     save.image("tmp.RData")
   } # end std "z"
