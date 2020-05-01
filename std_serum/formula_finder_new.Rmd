@@ -158,23 +158,24 @@ for(y in 1:length(mysamples)){
               myform <- isotope_rule(myform, myA1, myerror_A1, 1)
             }}
           formula_finder[z, "A1_filter"] <- length(myform)
-          
-          if(!is.na(myA2)){
-            if(tmp$i3[z] > 150){
-              myform <- isotope_rule(myform, myA2, myerror_A2, 2)
-            }}
-          formula_finder[z, "A2_filter"] <- length(myform)
-          
-          if(length(myform) > 0){
-            myform <- rank_form(myform, i1 = myA1, i2 = myA2)
+          if(length(myform) > 0){ 
+            if(!is.na(myA2)){
+              if(tmp$i3[z] > 150){
+                myform <- isotope_rule(myform, myA2, myerror_A2, 2)
+              }}
+            formula_finder[z, "A2_filter"] <- length(myform)
             
-            if(any(myform$rank[myform$formula == myformion])){
-              formula_finder[z, "rank"] <- myform$rank[myform$formula == 
-                                                         myformion]
-            } else {
-              formula_finder[z, "rank"] <- 9999
-            }
-          } # end if length(myform) > 0 after isotope_rule 2
+            if(length(myform) > 0){
+              myform <- rank_form(myform, i1 = myA1, i2 = myA2)
+              
+              if(any(myform$rank[myform$formula == myformion])){
+                formula_finder[z, "rank"] <- myform$rank[myform$formula == 
+                                                           myformion]
+              } else {
+                formula_finder[z, "rank"] <- 9999
+              }
+            } # end if length(myform) > 0 after isotope_rule 2
+          }# end if length(myform) > 0 after isotope_rule 1
         } # end if(any) H_rule2()
       }# end if 'length(myform) > 0' after getform()
     } # end if IS NOT NA mz1
