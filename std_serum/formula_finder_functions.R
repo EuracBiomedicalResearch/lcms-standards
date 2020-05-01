@@ -5,7 +5,7 @@ getmzneut <- function(mz = numeric(0),
                       adduct = c("[M+H]+", "[M+Na]+", 
                                  "[M-H]-", "[M-H+HCOOH]-", "[M+Cl]-", "[M-H+HCOONa]-",
                                  "[2M-H]-", "[2M+H]+",
-                                 "[M+H-H2O]+")){
+                                 "[M+H-H2O]+", "[M+H-NH3]+")){
   addtb <- rbind(
     c("[M+H]+", 1.007276),
     c("[M+Na]+", 22.98980),
@@ -15,7 +15,8 @@ getmzneut <- function(mz = numeric(0),
     c("[M-H+HCOONa]-", 66.98017),
     c("[2M+H]+", 1.007276),
     c("[2M-H]-", -1.007276),
-    c("[M+H-H2O]+", -17.00328)
+    c("[M+H-H2O]+", -17.00328),
+    c("[M+H-NH3]+", -16.01927)
   )
   if(grepl("2M", adduct)){
     (mz - as.numeric(addtb[addtb[,1] == adduct,2]))/2
@@ -43,7 +44,7 @@ update_form <- function(formulas = character(0),
                         adduct = c("[M+H]+", "[M+Na]+", 
                                    "[M-H]-", "[M-H+HCOOH]-", "[M+Cl]-", "[M-H+HCOONa]-",
                                    "[2M-H]-", "[2M+H]+",
-                                   "[M+H-H2O]+"),
+                                   "[M+H-H2O]+", "[M+H-NH3]+"),
                         action = c("add", "remove")){
   addtb <- data.frame(rbind(
     c("[M+H]+", "H"),
@@ -54,7 +55,8 @@ update_form <- function(formulas = character(0),
     c("[M-H+HCOONa]-", "CHO2Na"),
     c("[2M+H]+", "H"),
     c("[2M-H]-", "H"),
-    c("[M+H-H2O]+", "H2O")
+    c("[M+H-H2O]+", "H2O"),
+    c("[M+H-NH3]+", "NH3")
   ))
   colnames(addtb) <- c("adduct", "formulas")
   addtb <- cbind(
@@ -68,6 +70,8 @@ update_form <- function(formulas = character(0),
   addtb$H[addtb$adduct == "[2M-H]-"] <- -1
   addtb$H[addtb$adduct == "[M+H-H2O]+"] <- -1
   addtb$O[addtb$adduct == "[M+H-H2O]+"] <- -1
+  addtb$H[addtb$adduct == "[M+H-NH3]+"] <- -2
+  addtb$N[addtb$adduct == "[M+H-NH3]+"] <- -1
   
   tmp.frm1 <- data.frame(formulas)
   tmp.frm1$formulas <- as.character(tmp.frm1$formulas)
@@ -116,7 +120,7 @@ adduct_filter <- function(formulas = character(0),
                           adduct = c("[M+H]+", "[M+Na]+", 
                                      "[M-H]-", "[M-H+HCOOH]-", "[M+Cl]-", "[M-H+HCOONa]-",
                                      "[2M-H]-", "[2M+H]+",
-                                     "[M+H-H2O]+")
+                                     "[M+H-H2O]+", "[M+H-NH3]+")
                           ){
   addtb <- rbind(
     c("[M+H]+", "H"),
@@ -127,7 +131,8 @@ adduct_filter <- function(formulas = character(0),
     c("[M-H+HCOONa]-", "CHO2Na"),
     c("[2M+H]+", "H"),
     c("[2M-H]-", "H"),
-    c("[M+H-H2O]+", "H")
+    c("[M+H-H2O]+", "H"),
+    c("[M+H-NH3]+", "H")
   )
   tmp.frm1 <- data.frame(formulas)
   tmp.frm1$formulas <- as.character(tmp.frm1$formulas)
