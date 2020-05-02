@@ -8,6 +8,12 @@ output:
     toc_float: true
 ---
 
+
+```{r include = FALSE}
+startpoint <- Sys.time()
+```
+
+
 # Preliminaries
 
 ```{r preliminaries}
