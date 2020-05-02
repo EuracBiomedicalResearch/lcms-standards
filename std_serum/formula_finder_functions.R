@@ -3,9 +3,11 @@ library(MetaboCoreUtils)
 
 getmzneut <- function(mz = numeric(0),
                       adduct = c("[M+H]+", "[M+Na]+", 
-                                 "[M-H]-", "[M-H+HCOOH]-", "[M+Cl]-", "[M-H+HCOONa]-",
+                                 "[M-H]-", "[M-H+HCOOH]-", "[M+Cl]-", 
+                                 "[M-H+HCOONa]-",
                                  "[2M-H]-", "[2M+H]+",
-                                 "[M+H-H2O]+", "[M+H-NH3]+", "[M+H-HCOOH]+", "[M+H-Hexose-H2O]+")){
+                                 "[M+H-H2O]+", "[M+H-NH3]+", 
+                                 "[M+H-HCOOH]+", "[M+H-Hexose-H2O]+")){
   addtb <- rbind(
     c("[M+H]+", 1.007276),
     c("[M+Na]+", 22.98980),
@@ -44,9 +46,11 @@ getform <- function(mzval = numeric(0),
 
 update_form <- function(formulas = character(0),
                         adduct = c("[M+H]+", "[M+Na]+", 
-                                   "[M-H]-", "[M-H+HCOOH]-", "[M+Cl]-", "[M-H+HCOONa]-",
+                                   "[M-H]-", "[M-H+HCOOH]-", 
+                                   "[M+Cl]-", "[M-H+HCOONa]-",
                                    "[2M-H]-", "[2M+H]+",
-                                   "[M+H-H2O]+", "[M+H-NH3]+", "[M+H-HCOOH]+", "[M+H-Hexose-H2O]+"),
+                                   "[M+H-H2O]+", "[M+H-NH3]+", 
+                                   "[M+H-HCOOH]+", "[M+H-Hexose-H2O]+"),
                         action = c("add", "remove")){
   addtb <- data.frame(rbind(
     c("[M+H]+", "H"),
@@ -121,16 +125,18 @@ update_form <- function(formulas = character(0),
       for(i in 2:nrow(tmp.frm1)){
         tmp.frm1$formok[i] <- pasteElements(tmp.frm1[i, 2:idx])
       }
-    }
+    } # close "remove"
   tmp.frm1$formok[-1]
 }
 
 
 adduct_filter <- function(formulas = character(0),
                           adduct = c("[M+H]+", "[M+Na]+", 
-                                     "[M-H]-", "[M-H+HCOOH]-", "[M+Cl]-", "[M-H+HCOONa]-",
+                                     "[M-H]-", "[M-H+HCOOH]-", 
+                                     "[M+Cl]-", "[M-H+HCOONa]-",
                                      "[2M-H]-", "[2M+H]+",
-                                     "[M+H-H2O]+", "[M+H-NH3]+", "[M+H-HCOOH]+", "[M+H-Hexose-H2O]+")
+                                     "[M+H-H2O]+", "[M+H-NH3]+", 
+                                     "[M+H-HCOOH]+", "[M+H-Hexose-H2O]+")
                           ){
   addtb <- rbind(
     c("[M+H]+", "H"),
