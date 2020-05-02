@@ -85,7 +85,7 @@ PLS3$mz2[which(PLS3$abrv == "hydroxykynurenine_3")] <- NA
 
 ```{r main-code}
 mysamples <- c(4:6,10:24)
-for(y in 1:length(mysamples)){
+for(y in 7:length(mysamples)){
   
   tmp <- get(samples[mysamples[y]])
   
