@@ -2,7 +2,7 @@ library(Rdisop)
 library(MetaboCoreUtils)
 
 getmzneut <- function(mz = numeric(0),
-                      adduct = c("[M+H]+", "[M+Na]+", 
+                      adduct = c("[M+H]+", "[M+NH4]+", "[M+Na]+", 
                                  "[M-H]-", "[M-H+HCOOH]-", "[M+Cl]-", 
                                  "[M-H+HCOONa]-",
                                  "[2M-H]-", "[2M+H]+",
@@ -10,6 +10,7 @@ getmzneut <- function(mz = numeric(0),
                                  "[M+H-HCOOH]+", "[M+H-Hexose-H2O]+")){
   addtb <- rbind(
     c("[M+H]+", 1.007276),
+    c("[M+NH4]+", 18.03437),
     c("[M+Na]+", 22.98980),
     c("[M-H]-", -1.007276),
     c("[M-H+HCOOH]-", 44.99820),
@@ -45,7 +46,7 @@ getform <- function(mzval = numeric(0),
 
 
 update_form <- function(formulas = character(0),
-                        adduct = c("[M+H]+", "[M+Na]+", 
+                        adduct = c("[M+H]+", "[M+NH4]+", "[M+Na]+", 
                                    "[M-H]-", "[M-H+HCOOH]-", 
                                    "[M+Cl]-", "[M-H+HCOONa]-",
                                    "[2M-H]-", "[2M+H]+",
@@ -54,6 +55,7 @@ update_form <- function(formulas = character(0),
                         action = c("add", "remove")){
   addtb <- data.frame(rbind(
     c("[M+H]+", "H"),
+    c("[M+NH4]+", "NH4"),
     c("[M+Na]+", "Na"),
     c("[M-H]-", "H"),
     c("[M-H+HCOOH]-", "CH2O2"),
@@ -131,7 +133,7 @@ update_form <- function(formulas = character(0),
 
 
 adduct_filter <- function(formulas = character(0),
-                          adduct = c("[M+H]+", "[M+Na]+", 
+                          adduct = c("[M+H]+", "[M+NH4]+", "[M+Na]+", 
                                      "[M-H]-", "[M-H+HCOOH]-", 
                                      "[M+Cl]-", "[M-H+HCOONa]-",
                                      "[2M-H]-", "[2M+H]+",
@@ -140,6 +142,7 @@ adduct_filter <- function(formulas = character(0),
                           ){
   addtb <- rbind(
     c("[M+H]+", "H"),
+    c("[M+NH4]+", "NH4"),
     c("[M+Na]+", "Na"),
     c("[M-H]-", "H"),
     c("[M-H+HCOOH]-", "CH2O2"),
