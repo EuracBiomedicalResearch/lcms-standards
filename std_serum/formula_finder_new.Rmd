@@ -200,8 +200,8 @@ for(i in 1:length(mysamples)){
 
 formfind <-  matrix(nrow=nrow(std_info), ncol = 14)
 rownames(formfind) <- std_info$abbreviation
-colnames(formfind) <- c("formula", "POS", "quality_POS", 
-                        "NEG", "quality_NEG", 
+colnames(formfind) <- c("formula", "POS", "NEG", 
+                        "quality_NEG", "quality_POS", 
                         "start", "adduct", "H_rule", "H2_rule", 
                         "N_rule", "RPU_rule", 
                         "A1_filter", "A2_filter", "rank")
@@ -212,10 +212,10 @@ formfind[, "NEG"] <- std_info$NEG
 formfind[, "quality_NEG"] <- std_info$quality_NEG
 
 for(i in 1:nrow(formfind)){
-  for(j in 1:ncol(formfind)){
+  for(j in 6:ncol(formfind)){
     tmp <- c()
     for(k in 1:length(formula_finder)){
-      tmp <- c(tmp, formula_finder[[k]][i,j])
+      tmp <- c(tmp, formula_finder[[k]][i,(j-5)])
     }
     tmp <- tmp[!is.na(tmp)]
     if(is.na(tmp[1])){
