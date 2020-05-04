@@ -90,7 +90,7 @@ for(y in 1:length(mysamples)){
   
   formula_finder <- matrix(nrow=nrow(std_info), ncol = 9)
   rownames(formula_finder) <- std_info$abbreviation
-  colnames(formula_finder) <- c("start", "adduct", "H_rule", "H2_rule", 
+  colnames(formula_finder) <- c("start", "adduct", "H_rule", "H_rule2", 
                                 "N_rule", "RPU_rule", 
                                 "A1_filter", "A2_filter", "rank")
   add <- std_info[, c("POS", "NEG")]
@@ -144,6 +144,7 @@ for(y in 1:length(mysamples)){
                           update_form(myform, myadd, "remove"))) > 0){
           myform <- update_form(H_rule2(mymzneut, update_form(
             myform, myadd, "remove")), myadd, "add")
+          formula_finder[z, "H_rule2"] <- length(myform)
           if(length(N_rule(
             mymzneut, update_form(myform, myadd, "remove"))) > 0){
             if(mymzneut < 500){
@@ -202,7 +203,7 @@ formfind <-  matrix(nrow=nrow(std_info), ncol = 14)
 rownames(formfind) <- std_info$abbreviation
 colnames(formfind) <- c("formula", "POS", "NEG", 
                         "quality_NEG", "quality_POS", 
-                        "start", "adduct", "H_rule", "H2_rule", 
+                        "start", "adduct", "H_rule", "H_rule2", 
                         "N_rule", "RPU_rule", 
                         "A1_filter", "A2_filter", "rank")
 formfind[, "formula"] <- std_info$formula
