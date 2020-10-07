@@ -154,7 +154,7 @@ for(k in 1#:(length(mix.levels))
   for (polarity in polarity.all) {
     if(polarity == "NEG"){ 
       pol <- -1
-      ion <- -1.007276 
+      ion <- -1.007276 # Assuming a protonated ion? always?
     } else if(polarity == "POS"){ 
       pol <- 1
       ion <- 1.007276 
@@ -186,6 +186,10 @@ for(k in 1#:(length(mix.levels))
           sps2 <- as.data.frame(sps)
           sps2$i100 <- (sps2$i / max(sps2$i))*100
           
+          sps2$i100 <- (sps2$i / max(sps2$i))*100
+
+          ## Have a function to get isotope pattern from a spectrum providing
+          ## a starting m/z: isotopeIndex - could simply use closest for that?
           idx <- c(which.min((abs(std_info.i$mz[i] - sps2$mz) / 
                                 std_info.i$mz[i])*1e6),
                    which.min((abs((std_info.i$mz[i] + 1.003355) - 
@@ -197,6 +201,11 @@ for(k in 1#:(length(mix.levels))
           sps2 <- sps2[idx, ]
           masses <- sps2$mz
           intensities <- sps2$i
+          ## <- stops here.
+
+          ## This below assumes we know already the formula?
+          ## How could we do this if we don't know the formula yet? Run it
+          ## with all elements initialized?
           if(grepl("Na", std_info.i[i, polarity])){
             molecules <- decomposeIsotopes(masses, intensities, ppm = 20,
                                            elements = initializeElements(
@@ -205,6 +214,8 @@ for(k in 1#:(length(mix.levels))
           }else{
             molecules <- decomposeIsotopes(masses, intensities, ppm = 20)
           }
+
+          ## Function that takes a formula as input and returns element counts.
           formulas <- data.frame(formula = getFormula(molecules))
           tmp <- lapply(as.character(formulas$formula), countElements)
           if(class(tmp) == "numeric"){
@@ -304,7 +315,8 @@ for(k in 1#:(length(mix.levels))
               C = formulas$C, H = formulas$H - pol, 
               N = formulas$N, P = formulas$P) %% 1 > 0] <- FALSE 
           }
-          
+
+          ## Also here: what if we don't have the formula already???
           if(grepl("Na", std_info.i[i, polarity])){
             formulas.ok <- 
               formulas[formulas$C_rule & formulas$H_rule & 
@@ -317,6 +329,8 @@ for(k in 1#:(length(mix.levels))
                          formulas$N_rule & formulas$RPU_rule &
                          formulas$A1_rule & formulas$S_rule, ]
           }
+          ## end here.
+          
           if(nrow(formulas.ok) > 0){
             formulas.ok$isodev <- NA
             for(j in 1:nrow(formulas.ok)){
@@ -350,6 +364,18 @@ for(k in 1#:(length(mix.levels))
     } # close std "i"
   } # close polarity "z"
 } # close mix "k"
+```
+
+```{r}
+#' @param x `numeric` with m/z values.
+#' 
+#' @param mz `numeric` with the m/z value of the main ion for which isotope
+#'     peaks should be searched for.
+#'
+#' @return `integer` with the index of the main ion peak and its isotope peaks.
+isotopeIndex <- function(x, mz = numeric()) {
+}
+
 ```
 
 
