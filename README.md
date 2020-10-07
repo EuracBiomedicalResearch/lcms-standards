@@ -24,7 +24,15 @@ specific configurations. The aim is to provide approximate retention times
 - [exclusion_mz.txt](data/exclusion_mz.txt): table containing the 
   (exact) masses of mz values that probaly are noise / backgroun ions. 
   This is a "dynamic" table that is being updated along the time.
-
+- [std_serum_files.txt](data/std_serum_files.txt): table containing the mzML
+  files from the re-measurement of the standard mixes in January 2020. This
+  contains:
+  - measurement of standard mixes in water.
+  - measurement of standard mixes in serum (QC CHRIS Pool samples).
+  All mixes are added in a *low* and *high* concentration, for the high
+  concentrations also DDA MS2 data was measured with two different collision
+  energies.
+  
 
 ## R files
 
