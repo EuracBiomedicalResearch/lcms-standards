@@ -34,9 +34,9 @@ order as they are named in the list below:
 ## Parameters
 
 ```{r parameters}
-## MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
+MZML_PATH <- "C:/Users/mgarciaaloy/Documents/mzML/"
 ## MZML_PATH <- "C:/Users/vveri/Documents/stds_ID_files_trial/"
-MZML_PATH <- "/data/massspec/mzML/"
+## MZML_PATH <- "/data/massspec/mzML/"
 
 polarity.all <- c("POS", "NEG") 
 ```
@@ -50,8 +50,9 @@ library(CompoundDb)
 library(doParallel)
 library(magrittr)
 library(SummarizedExperiment)
-library(CHNOSZ)
 library(kableExtra)
+library(MsCoreUtils)
+library(MetaboCoreUtils)
 
 C_rule <- function(x, error = 0.1){
   C <- round(c((x/1.1) - ((x/1.1)*error), (x/1.1) + ((x/1.1)*error)))
@@ -92,11 +93,11 @@ std_info$mz_POS <- NA
 std_info$mz_NEG <- NA
 for(i in 1:nrow(std_info)){
   std_info$mz_POS[i] <- unlist(
-    mass2mz(getMolecule(as.character(std_info$formula[i]))$exactmass, 
-            adduct = as.character(std_info$POS[i])))
+    CompoundDb::mass2mz(getMolecule(as.character(std_info$formula[i]))$exactmass, 
+                        adduct = as.character(std_info$POS[i])))
   std_info$mz_NEG[i] <- unlist(
-    mass2mz(getMolecule(as.character(std_info$formula[i]))$exactmass, 
-            adduct = as.character(std_info$NEG[i])))
+    CompoundDb::mass2mz(getMolecule(as.character(std_info$formula[i]))$exactmass, 
+                        adduct = as.character(std_info$NEG[i])))
 }
 std_info$form_pred_POS <- NA
 std_info$form_pred_NEG <- NA
@@ -134,7 +135,7 @@ cwp <- CentWaveParam(
   noise = 100,
   integrate = 2)
 
-for(k in 3#:(length(mix.levels))
+for(k in 1#:(length(mix.levels))
 ){
   
   # Select STDs used in mix "k"
@@ -167,32 +168,23 @@ for(k in 3#:(length(mix.levels))
     data_raw <- readMSData(paste0(MZML_PATH, filename),
                            mode = "onDisk")
     std_info.i$mz <- std_info.i[, paste0("mz_", polarity)]
-    for(i in 1:(nrow(std_info.i))){
+    for(i in 1:(nrow(std_info.i))
+    ){
       if(!is.na(std_info.i$mz[i])){
         eic <- chromatogram(data_raw, aggregationFun = "max", 
                             mz = std_info.i$mz[i] + 0.01 * c(-1, 1))
         pks <- data.frame(chromPeaks(findChromPeaks(eic, param = cwp)))
-        if(any(which((pks$rtmin - 10) < std_info.i$RT[i] & 
-                     (pks$rtmax + 10) > std_info.i$RT[i]))){
-          pks <- pks[which((pks$rtmin - 10) < std_info.i$RT[i] & 
-                             (pks$rtmax + 10) > std_info.i$RT[i]), ]
+        if(any(which((pks$rtmin - 30) < std_info.i$RT[i] & 
+                     (pks$rtmax + 30) > std_info.i$RT[i]))){
+          pks <- pks[which((pks$rtmin - 30) < std_info.i$RT[i] & 
+                             (pks$rtmax + 30) > std_info.i$RT[i]), ]
           if(nrow(pks) > 1){
             pks <- pks[which.max(pks$maxo), ]
           }
-
-          ## Have one function that returns the full scan for the peak position
-          ## of a chrom peak. chromPeakFullScan -> returns a Spectra with one
-          ## Spectrum per chromPeak.
-          ## Have a helper function that takes an rt as input and returns the
-          ## index of the matching spectrum. which.closest
           sps <- data_raw[[closest(pks$rt, rtime(data_raw),
                                    duplicates = "closest")]]
           sps2 <- as.data.frame(sps)
-          ## sps <- data_raw %>%
-          ##   filterRt(rt = pks$rt + 0.5 * c(-1,1)) %>%
-          ##   spectra
-          ## sps2 <- data.frame(sps[[2]])
-          ## <- stops here.
+          sps2$i100 <- (sps2$i / max(sps2$i))*100
           
           sps2$i100 <- (sps2$i / max(sps2$i))*100
 
@@ -225,8 +217,7 @@ for(k in 3#:(length(mix.levels))
 
           ## Function that takes a formula as input and returns element counts.
           formulas <- data.frame(formula = getFormula(molecules))
-          ## Use lapply(as.character(formulas$formula), countElements)
-          tmp <- makeup(as.character(formulas$formula)) ## maybe use MetabCoreUtils?
+          tmp <- lapply(as.character(formulas$formula), countElements)
           if(class(tmp) == "numeric"){
             formulas$C <- tmp["C"]
             formulas$H <- tmp["H"]
@@ -268,15 +259,44 @@ for(k in 3#:(length(mix.levels))
               } else {formulas$Na[j] <- 0}
             } # close formula "j"
           }
-          ## end here.
-
-          ## NEW CODE: check if formulas match the expected intensities.
-          formulas$C_rule <- FALSE
-          if(intensities[1] < 1e6){
-            tmp.error <- 0.4} else {tmp.error <- 1.0}
-          tmp <- C_rule((intensities[2] / intensities[1])*100, tmp.error)
-          formulas$C_rule[formulas$C >= tmp[1] & 
-                            formulas$C <= tmp[2]] <- TRUE
+          
+          
+          formulas$C_cntrb <- (formulas$C * 1.07) / (
+            (formulas$C * 1.07) + (formulas$H * 0.012) + 
+              (formulas$O * 0.038) + (formulas$N * 0.37) + 
+              (formulas$S * 0.76))
+          formulas$C_exp <- ((
+            (intensities[2] / 
+               intensities[1])*100) * formulas$C_cntrb) / 1.1
+          C_error <- 0.25
+          formulas$C_min <- formulas$C_exp - (formulas$C_exp * C_error)
+          formulas$C_max <- formulas$C_exp + (formulas$C_exp * C_error)
+          formulas$C_rule <- (formulas$C > formulas$C_min) & 
+            (formulas$C < formulas$C_max)
+          
+          formulas$A1 <- (
+            (formulas$C * 1.07) + (formulas$H * 0.012) + 
+              (formulas$O * 0.038) + (formulas$N * 0.37) + 
+              (formulas$S * 0.76))
+          formulas$A1_min <- formulas$A1 - (formulas$A1 * C_error)
+          formulas$A1_max <- formulas$A1 + (formulas$A1 * C_error)
+          A1_x100 <- ((intensities[2] / intensities[1])*100)
+          formulas$A1_rule <- (A1_x100 > formulas$A1_min) & 
+            (A1_x100 < formulas$A1_max)
+          
+          formulas$S_cntrb <- (formulas$S * 4.295776) / (
+            (formulas$C * 0.011449) + (formulas$H * 1.44e-06) + 
+              (formulas$O * 1.444e-05) + (formulas$N * 0.001369) + 
+              (formulas$S * 4.295776))
+          formulas$S_exp <- ((
+            (intensities[3] / 
+               intensities[1])*100) * formulas$S_cntrb) / 4.295776
+          S_error <- 0.5
+          formulas$S_min <- formulas$S_exp - (formulas$S_exp * S_error)
+          formulas$S_max <- formulas$S_exp + (formulas$S_exp * S_error)
+          formulas$S_rule <- (formulas$S >= formulas$S_min) & 
+            (formulas$S <= formulas$S_max)
+          
           formulas$H_rule <- FALSE
           formulas$H_rule[formulas$H <= 
                             H_rule(formulas$C, formulas$N)] <- TRUE
@@ -301,11 +321,13 @@ for(k in 3#:(length(mix.levels))
             formulas.ok <- 
               formulas[formulas$C_rule & formulas$H_rule & 
                          formulas$N_rule & formulas$RPU_rule &
+                         formulas$A1_rule & formulas$S_rule & 
                          formulas$Na == 1, ]
           }else{
             formulas.ok <- 
               formulas[formulas$C_rule & formulas$H_rule & 
-                         formulas$N_rule & formulas$RPU_rule, ]
+                         formulas$N_rule & formulas$RPU_rule &
+                         formulas$A1_rule & formulas$S_rule, ]
           }
           ## end here.
           
@@ -321,7 +343,8 @@ for(k in 3#:(length(mix.levels))
             } # close formula "j"
             formulas.ok <- formulas.ok[order(formulas.ok$isodev), ]
             
-            if(nrow(formulas.ok) < 6){
+            if(nrow(formulas.ok) < 6
+            ){
               std_info[
                 which(std_info$name == std_info.i$name[i]),
                 paste0("form_pred_", polarity)] <- 
@@ -331,7 +354,8 @@ for(k in 3#:(length(mix.levels))
                 which(std_info$name == std_info.i$name[i]),
                 paste0("form_pred_", polarity)] <- 
                 paste0(paste(formulas.ok$formula[1:5], 
-                             collapse = "; "), "; etc.")
+                             collapse = "; "), "; etc. (n=", 
+                       nrow(formulas.ok), ")")
             }
           } # close: if(nrow(formulas.ok) > 0)
           rm(pks)
