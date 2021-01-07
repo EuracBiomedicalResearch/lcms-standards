@@ -1,13 +1,13 @@
 mix	name	abbreviation	HMDB.code	formula	POS	NEG	RT	data_set	sample	operator	version	quality_POS	quality_NEG
 1	Acetylhistidine	acetylhistidine	HMDB0032055	C8H11N3O3	[M+H]+	[M-H]-	180	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
-1	Betaine	betaine	HMDB0000043	C5H11NO2	[M+H]+	[M-H+HCOOH]-	166	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	3_bad
+1	Betaine	betaine	HMDB0000043	C5H11NO2	[M+H]+	[M+CHO2]-	166	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	3_bad
 1	C3 Carnitine	carnitine_c3	HMDB0000824	C10H19NO4	NA	NA	NA	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	3_bad
 1	CDP	CDP	HMDB0001546	C9H15N3O11P2	NA	[M-H]-	172	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	2_medium
 1	Creatine	creatine	HMDB0000064	C4H9N3O2	[M+H]+	[M-H]-	173	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	3_bad
 1	Dimethylglycine	dimethylglycine	HMDB0000092	C4H9NO2	[M+H]+	[M-H]-	177	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	1_good
 1	L-Glutamic Acid	glutamic	HMDB0000148	C5H9NO4	[M+H]+	[M-H]-	176	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 1	Glycerol	glycerol	HMDB0000131	C3H8O3	NA	NA	NA	2020_01_matrix_effect	serum	Vinicius	2	3_bad	3_bad
-1	Myo-Inositol	myoinositol	HMDB0000211	C6H12O6	[M+Na]+	[M-H+HCOOH]-	193	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	0_perfect
+1	Myo-Inositol	myoinositol	HMDB0000211	C6H12O6	[M+Na]+	[M+CHO2]-	193	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	0_perfect
 1	3-Phosphoglyceric Acid	phosphoglyceric_3	HMDB0000807	C3H7O7P	[M+H]+	[M-H]-	267	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	2_medium
 1	propionic acid	propionic	HMDB0000237	C3H6O2	NA	[M-H]-	53	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	3_bad
 1	Pyruvic Acid	pyruvic	HMDB0000243	C3H4O3	NA	[M-H]-	41	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	2_medium
@@ -34,7 +34,7 @@ mix	name	abbreviation	HMDB.code	formula	POS	NEG	RT	data_set	sample	operator	vers
 3	Alanine	alanine	HMDB0000161	C3H7NO2	[M+H]+	[M-H+HCOONa]-	170	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 3	Citrulline	citrulline	HMDB0000904	C6H13N3O3	[M+H]+	[M-H]-	182	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 3	Cytosine	cytosine	HMDB0000630	C4H5N3O	[M+H]+	[M-H]-	153	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
-3	Glucose	glucose	HMDB0000122	C6H12O6	[M+Na]+	[M-H+HCOOH]-	167	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
+3	Glucose	glucose	HMDB0000122	C6H12O6	[M+Na]+	[M+CHO2]-	167	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
 3	Glutathione Oxidized	glutathione_oxidized	HMDB0003337	C20H32N6O12S2	[M+H]+	[M-H]-	212	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 3	Glycolic acid	glycolic	HMDB0000115	C2H4O3	NA	[M-H]-	49	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	2_medium
 3	Guanine	guanine	HMDB0000132	C5H5N5O	[M+H]+	[M-H]-	155	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
@@ -42,7 +42,7 @@ mix	name	abbreviation	HMDB.code	formula	POS	NEG	RT	data_set	sample	operator	vers
 3	Malonic acid	malonic	HMDB0000691	C3H4O4	NA	[M-H]-	63	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	2_medium
 3	Niacinamide	niacinamide	HMDB0001406	C6H6N2O	[M+H]+	NA	50	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	3_bad
 3	5-Oxoproline	oxoproline	HMDB0000267	C5H7NO3	[M+H]+	[M-H]-	71	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	1_good
-3	Palmitoylcarnitine	palmitoylcarnitine	HMDB0000222	C23H45NO4	[M+H]+	[M-H+HCOOH]-	34	2020_01_matrix_effect	water	Mar Garcia-Aloy	2	2_medium	3_bad
+3	Palmitoylcarnitine	palmitoylcarnitine	HMDB0000222	C23H45NO4	[M+H]+	[M+CHO2]-	34	2020_01_matrix_effect	water	Mar Garcia-Aloy	2	2_medium	3_bad
 3	UDP	UDP	HMDB0000295	C9H14N2O12P2	NA	NA	238	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	2_medium
 4	Acetylalanine	acetylalanine_NL	HMDB0000766	C5H9NO3	[M+H]+	[M-H]-	37	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	2_medium
 4	Allantoin	allantoin	HMDB0000462	C4H6N4O3	[M+H]+	[M-H]-	139	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	0_perfect	0_perfect
@@ -62,13 +62,13 @@ mix	name	abbreviation	HMDB.code	formula	POS	NEG	RT	data_set	sample	operator	vers
 5	dADP	ADP_d	HMDB0001508	C10H15N5O9P2	[M+H]+	[M-H]-	260	2020_01_matrix_effect	water	Mar Garcia-Aloy	2	3_bad	3_bad
 5	dCDP	CDP_d	HMDB0001245	C9H15N3O10P2	[M+H]+	[M-H]-	260	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	2_medium
 5	CoA	CoA	HMDB0001423	C21H36N7O16P3S	NA	[M-H]-	203	2020_01_matrix_effect	water	Mar Garcia-Aloy	2	3_bad	3_bad
-5	Corticosterone	corticosterone	HMDB0001547	C21H30O4	[M+H]+	[M-H+HCOOH]-	35	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	0_perfect	3_bad
+5	Corticosterone	corticosterone	HMDB0001547	C21H30O4	[M+H]+	[M+CHO2]-	35	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	0_perfect	3_bad
 5	"1,3-Dimethyluric acid"	dimethyluric_1_3	HMDB0001857	C7H8N4O3	[M+H]+	[M-H]-	100	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
 5	Glycerophospho-inositol	glycerophospho_inositol	HMDB0011649	C9H19O11P	[M+H]+	[M-H]-	NA	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	NA	NA
 5	GTP	GTP	HMDB0001273	C10H16N5O14P3	NA	[M-H]-	NA	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	3_bad
 5	2-Ketobutyric acid	ketobutyric_2	HMDB0000005	C4H6O3	NA	[M-H]-	39	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	2_medium
-5	Mannose	mannose	HMDB0000169	C6H12O6	[M+Na]+	[M-H+HCOOH]-	163	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
-5	5-MTA	MTA	HMDB0001173	C11H15N5O3S	[M+H]+	[M-H+HCOOH]-	80	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
+5	Mannose	mannose	HMDB0000169	C6H12O6	[M+Na]+	[M+CHO2]-	163	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
+5	5-MTA	MTA	HMDB0001173	C11H15N5O3S	[M+H]+	[M+CHO2]-	80	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
 5	NADP	NADP	HMDB0000217	C21H28N7O17P3	[M+H]+	[M-H]-	280	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	2_medium
 5	Nicotinic acid	nicotinic	HMDB0001488	C6H5NO2	[M+H]+	[M-H]-	37	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
 5	Orotic acid	orotic	HMDB0000226	C5H4N2O4	[M+H]+	[M-H]-	177	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
@@ -86,13 +86,13 @@ mix	name	abbreviation	HMDB.code	formula	POS	NEG	RT	data_set	sample	operator	vers
 6	Methioninesulfoxide	methionine_sulfoxide	HMDB0002005	C5H11NO3S	[M+H]+	[M-H]-	182	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 6	Paracetamol	paracetamol	HMDB0001859	C8H9NO2	[M+H]+	[M-H]-	36	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 6	Sphingosine-1-phosphate	sphingosine_phosphate	HMDB0000277	C18H38NO5P	[M+H]+	[M-H]-	145	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
-6	Sucrose	sucrose	HMDB0000258	C12H22O11	[M+Na]+	[M-H+HCOOH]-	187	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	0_perfect
+6	Sucrose	sucrose	HMDB0000258	C12H22O11	[M+Na]+	[M+CHO2]-	187	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	0_perfect
 6	Tryptophan	tryptophan	HMDB0000929	C11H12N2O2	[M+H]+	[M-H]-	155	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 6	UDP-acetylglucosamine	UDP_acetylglucosamine	HMDB0000290	C17H27N3O17P2	[M+H]+	[M-H]-	331	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	1_good
 7	ADMA	ADMA	HMDB0001539	C8H18N4O2	[M+H]+	[M-H]-	176	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 7	dAMP	AMP_d	HMDB0000905	C10H14N5O6P	[M+H]+	[M-H]-	208	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 7	Caffeine	caffeine	HMDB0001847	C8H10N4O2	[M+H]+	NA	35	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	3_bad
-7	CDP-choline	CDP_choline	HMDB0001413	C14H26N4O11P2	[M+H]+	[M-H+HCOOH]-	217	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
+7	CDP-choline	CDP_choline	HMDB0001413	C14H26N4O11P2	[M+H]+	[M+CHO2]-	217	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 7	Creatinine	creatinine	HMDB0000562	C4H7N3O	[M+H]+	[M-H]-	87	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
 7	Glutaric acid	glutaric	HMDB0000661	C5H8O4	NA	[M-H]-	38	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	1_good
 7	Glycero-phosphocholine	glycero_phosphocholine	HMDB0000086	C8H20NO6P	[M+H]+	[M+Cl]-	189	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
@@ -101,7 +101,7 @@ mix	name	abbreviation	HMDB.code	formula	POS	NEG	RT	data_set	sample	operator	vers
 7	1-Methyluric acid	methyluric	HMDB0003099	C6H6N4O3	[M+H]+	[M-H]-	145	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	0_perfect	1_good
 7	Phenylpyruvic acid	phenylpyruvic	HMDB0000205	C9H8O3	[M+H-H2O]+	[M-H]-	35	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	1_good
 7	Serine	serine	HMDB0000187	C3H7NO3	[M+H]+	[M-H]-	181	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
-7	Sphingosine	sphingosine	HMDB0000252	C18H37NO2	[M+H]+	[M-H+HCOOH]-	37	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	3_bad
+7	Sphingosine	sphingosine	HMDB0000252	C18H37NO2	[M+H]+	[M+CHO2]-	37	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	3_bad
 7	Taurine	taurine	HMDB0000251	C2H7NO3S	[M+H]+	[M-H]-	172	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 7	Threonic Acid	threonic	HMDB0000943	C4H8O5	[M+Na]+	[M-H]-	130	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
 8	Aspirin	aspirin	HMDB0001879	C9H8O4	NA	[M-H]-	33	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	2_medium
@@ -135,13 +135,13 @@ mix	name	abbreviation	HMDB.code	formula	POS	NEG	RT	data_set	sample	operator	vers
 9	Proline	proline	HMDB0000162	C5H9NO2	[M+H]+	[M-H]-	169	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 9	Thymidine	thymidine	HMDB0000273	C10H14N2O5	[M+Na]+	[M-H]-	72	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	2_medium
 10	N-Acetylornithine	acetylornithine	HMDB0003357	C7H14N2O3	[M+H]+	[M-H]-	170	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
-10	Adenosine	adenosine	HMDB0000050	C10H13N5O4	[M+H]+	[M-H+HCOOH]-	134	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	0_perfect
+10	Adenosine	adenosine	HMDB0000050	C10H13N5O4	[M+H]+	[M+CHO2]-	134	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	0_perfect
 10	L-Aspartic Acid	aspartic	HMDB0000191	C4H7NO4	[M+H]+	[M-H]-	181	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 10	Citric Acid	citric	HMDB0000094	C6H8O7	[M+Na]+	[M-H]-	177	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
-10	Cytidine	cytidine	HMDB0000089	C9H13N3O5	[M+H]+	[M-H+HCOOH]-	162	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
+10	Cytidine	cytidine	HMDB0000089	C9H13N3O5	[M+H]+	[M+CHO2]-	162	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 10	Fumaric Acid	fumaric	HMDB0000134	C4H4O4	NA	[M-H]-	48	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	2_medium
 10	GDP	GDP	HMDB0001201	C10H15N5O11P2	[M+H]+	[M-H]-	295	2020_01_matrix_effect	water	Mar Garcia-Aloy	2	3_bad	3_bad
-10	Glucosamine	glucosamine	HMDB0001514	C6H13NO5	[M+H]+	[M-H+HCOOH]-	181	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
+10	Glucosamine	glucosamine	HMDB0001514	C6H13NO5	[M+H]+	[M+CHO2]-	181	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 10	Phosphoenolpyruvic Acid	phosphoenolpyruvic	HMDB0000263	C3H5O6P	[M+H]+	[M-H]-	227	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
 10	Phosphorylethanolamine	phosphorylethanolamine	HMDB0000224	C2H8NO4P	[M+H]+	[2M-H]-	198	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	0_perfect	1_good
 10	Ribulose 5-Phosphate	ribulose_phosphate	HMDB0000618	C5H11O8P	[M+H]+	[M-H]-	225	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	1_good
@@ -192,11 +192,11 @@ mix	name	abbreviation	HMDB.code	formula	POS	NEG	RT	data_set	sample	operator	vers
 13	Phosphorylcholine	phosphorylcholine	HMDB0001565	C5H14NO4P	[M+H]+	[M+Cl]-	195	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
 13	Sorbitol	sorbitol	HMDB0000247	C6H14O6	[M+Na]+	[M-H]-	165	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	0_perfect	0_perfect
 13	Spermine	spermine	HMDB0001256	C10H26N4	[M+H]+	NA	204	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	3_bad
-13	Uridine	uridine	HMDB0000296	C9H12N2O6	[M+H]+	[M-H+HCOOH]-	124	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	1_good
+13	Uridine	uridine	HMDB0000296	C9H12N2O6	[M+H]+	[M+CHO2]-	124	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	1_good
 13	dUTP	UTP_d	HMDB0001191	C9H15N2O14P3	NA	NA	33	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	3_bad
 14	Acetylcarnitine	acetylcarnitine	HMDB0000201	C9H17NO4	[M+H]+	NA	37	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	3_bad
 14	ADP-Glucose	ADP_glucose	HMDB0006557	C16H25N5O15P2	[M+H-Hexose-H2O]+	[M-H]-	275	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	1_good
-14	"1,5-anhydro D-glucitol"	anhydroglucitol	HMDB0002712	C6H12O5	[M+Na]+	[M-H+HCOOH]-	135	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	3_bad
+14	"1,5-anhydro D-glucitol"	anhydroglucitol	HMDB0002712	C6H12O5	[M+Na]+	[M+CHO2]-	135	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	3_bad
 14	Glyceraldehyde 2-phosphate	glyceraldehyde_phosphate	HMDB0001112	C3H7O6P	[M+H]+	[M-H]-	213	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
 14	Glycerol-3-Phosphate	glycerol_phosphate	HMDB0000126	C3H9O6P	[M+H]+	[2M-H]-	222	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 14	dGTP	GTP_d	HMDB0001440	C10H16N5O13P3	NA	NA	233	2020_01_matrix_effect	water	Mar Garcia-Aloy	2	3_bad	3_bad
@@ -219,7 +219,7 @@ mix	name	abbreviation	HMDB.code	formula	POS	NEG	RT	data_set	sample	operator	vers
 15	2-Methylcitric acid	methylcitric	HMDB0000379	C7H10O7	[M+Na]+	[M-H]-	171	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
 15	Phenylalanine	phenylalanine	HMDB0000159	C9H11NO2	[M+H]+	[M-H]-	154	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 15	Phosphoserine	phosphoserine	HMDB0000272	C3H8NO6P	[M+H]+	[2M-H]-	231	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
-16	Acetyl-Glucosamine	acetylglucosamine	HMDB0000215	C8H15NO6	[M+Na]+	[M-H+HCOOH]-	156	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
+16	Acetyl-Glucosamine	acetylglucosamine	HMDB0000215	C8H15NO6	[M+Na]+	[M+CHO2]-	156	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 16	Acetylmethionine	acetylmethionine	HMDB0011745	C7H13NO3S	[M+H]+	[M-H]-	37	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 16	Dihydroxyacetone phosphate	dihydroxyacetone_phosphate	HMDB0001473	C3H7O6P	[M+H]+	[2M-H]-	220	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	1_good
 16	"1,7-Dimethyluric acid"	dimethyluric_1_7	HMDB0011103	C7H8N4O3	[M+H]+	[M-H]-	119	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
@@ -232,7 +232,7 @@ mix	name	abbreviation	HMDB.code	formula	POS	NEG	RT	data_set	sample	operator	vers
 17	Gluconic Acid	gluconic	HMDB0000625	C6H12O7	[M+Na]+	[M-H]-	171	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
 17	3-Hydroxy-DL-kynurenine	hydroxykynurenine_3	HMDB0000732	C10H12N2O4	[M+H]+	[M-H]-	163	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good
 17	Indoxyl sulfate	indoxyl_sulfate	HMDB0000682	C8H7NO4S	[M+Na]+	[M-H]-	50	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	2_medium
-17	alpha-Lactose	lactose	HMDB0000186	C12H22O11	[M+Na]+	[M-H+HCOOH]-	194	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	0_perfect	0_perfect
+17	alpha-Lactose	lactose	HMDB0000186	C12H22O11	[M+Na]+	[M+CHO2]-	194	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	0_perfect	0_perfect
 17	7-Methylxanthine	methylxanthine_7	HMDB0001991	C6H6N4O2	[M+H]+	[M-H]-	85	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	2_medium
 17	Nicotine	nicotine	HMDB0001934	C10H14N2	[M+H]+	NA	37	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	3_bad
 17	Oxalacetic acid	oxalacetic	HMDB0000223	C4H4O5	NA	NA	NA	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	3_bad
