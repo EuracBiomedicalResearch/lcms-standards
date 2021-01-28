@@ -1,7 +1,7 @@
 name	abbreviation	formula	POS	NEG	RT	data_set	sample	operator	version	quality_NEG	quality_POS
 Carnitine (D3)	carnitine_d3	164.124	[M+H]+	NA	61	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	2_medium
 Creatinine (N-Methhyl_D3)	creatinine_methyl_d3	116.0777	[M+H]+	[M-H]-	126	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
-"Glucose (6,6-D2)"	glucose_d2	182.0759	[M+Na]+	[M-H+HCOOH]-	166	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	2_medium
+"Glucose (6,6-D2)"	glucose_d2	182.0759	[M+Na]+	[M+CHO2]-	166	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	2_medium
 "Succinic acid-2,2,3,3-d4"	succinic_d4	122.0517	NA	[M-H]-	37	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	3_bad
 "L-Alanine (13C3, 99%; 15N, 99%)"	alanine_13C_15N	93.0548	[M+H]+	[M-H]-	167	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	1_good
 "L-Arginine HCl (13C6, 99%; 15N4, 99%)"	arginine_13C_15N	184.1199	[M+H]+	[M-H]-	183	2019_11_matrix_effect	serum	Mar Garcia-Aloy	2	0_perfect	0_perfect
