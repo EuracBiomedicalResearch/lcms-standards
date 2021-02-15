@@ -2,7 +2,16 @@
 
 This repository contains measurement of sets of standards on LC-MS systems with
 specific configurations. The aim is to provide approximate retention times 
-(RTs) for the standard compounds in the respective setups.  
+(RTs) and ions for the standard compounds in the respective setups.
+
+The first definition of retention times and ions for all standards was performed
+manually by Mar Garcia-Alloy. In the *new* workflow we aim to use the `xcms` and
+`Spectra` package to refine these and to determine also all additional adducts
+created/measurable from each compound. In the workflow we first:
+- Identify chromatographic peaks in each file for one *standard mix*.
+- Plot each chromatographic peak.
+- Perform correspondence analysis to group each chromatographic peak to a
+  feature.
   
 
 ## Data tables

@@ -1,0 +1,31 @@
+---
+title: "Seamless Integration of Mass Spectrometry Data from Different Sources with the `Spectra` Package"
+author: "Andrea Vicini, Johannes Rainer"
+output:
+  rmarkdown::html_document:
+    highlight: pygments
+    toc: true
+    toc_depth: 3
+    fig_width: 5
+---
+
+```{r style, echo = FALSE, results = 'asis', message = FALSE}
+library(BiocStyle)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+```
+
+**Last modified:** `r file.info("analyzing-MS-data-from-different-sources-with-Spectra.Rmd")$mtime`<br />
+**Compiled**: `r date()`
+
+# Introduction
+
+In this document we perform the preprocessing and analysis of mzML files to
+determine retention times and measured ions for the internal standards.
+
+
+# Data preprocessing
+
+- load the *std_serum_files.txt* file.
+- subset to the first mix (Mix01).
+- import the data.
+- perform chromatographic peak detection.
