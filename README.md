@@ -13,6 +13,11 @@ created/measurable from each compound. In the workflow we first:
 - Perform correspondence analysis to group each chromatographic peak to a
   feature.
   
+## Analysis workflow files
+
+- [preprocessing-standards.Rmd](preprocessing-standards.Rmd): preprocessing of
+  LC-MS(/MS) data for the standards data set.
+
 
 ## Data tables
 
@@ -41,9 +46,9 @@ created/measurable from each compound. In the workflow we first:
   All mixes are added in a *low* and *high* concentration, for the high
   concentrations also DDA MS2 data was measured with two different collision
   energies.
-  
 
-## R files
+
+## *Old* R files
 
 - [EIC_superposed.Rmd](EIC_superposed.Rmd): Markdown file for printing 
   the EIC of one compound using all samples. The plots are saved 

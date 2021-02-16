@@ -1,5 +1,5 @@
 ---
-title: "Seamless Integration of Mass Spectrometry Data from Different Sources with the `Spectra` Package"
+title: "Preprocessing of the *standards* data set"
 author: "Andrea Vicini, Johannes Rainer"
 output:
   rmarkdown::html_document:
@@ -14,18 +14,40 @@ library(BiocStyle)
 knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 ```
 
-**Last modified:** `r file.info("analyzing-MS-data-from-different-sources-with-Spectra.Rmd")$mtime`<br />
+**Last modified:** `r file.info("preprocessing-standards.Rmd")$mtime`<br />
 **Compiled**: `r date()`
 
 # Introduction
 
 In this document we perform the preprocessing and analysis of mzML files to
-determine retention times and measured ions for the internal standards.
+determine retention times and measured ions for the *standards*. These standards
+are a collection of ~ 250 pure standards of polar metabolites which were used to
+setup the HILIC-based LC-MS protocols to measure the polar metabolome in human
+serum samples.
 
 
 # Data preprocessing
 
-- load the *std_serum_files.txt* file.
-- subset to the first mix (Mix01).
-- import the data.
-- perform chromatographic peak detection.
+In this section we perform the preprocessing of the LC-MS(/MS) data for all
+mzML files of one mix of standards.
+
+- [ ] load the *data/std_serum_files.txt* file.
+- [ ] subset to the first mix (Mix01).
+- [ ] load also the *data/standards_dilution.txt* file, subset to the first mix
+  (column `"mix"`) and include a table with columns *name*, *formula*, *RT*, 
+  *POS*, *NEG*.
+- [ ] import the data (both POS and NEG into the same variable/object).
+- [ ] create a base peak chromatogram (BPC) of all samples (use a different
+  color for polarity and *matrix* (i.e. QC/serum and water)).
+- [ ] perform chromatographic peak detection.
+- [ ] table with the number of peaks per file.
+- [ ] let's see how to proceed from here...
+
+
+# Session information
+
+The R version and packages used in this analysis are listed below.
+
+```{r sessioninfo}
+sessionInfo()
+```
