@@ -180,7 +180,7 @@ mix	name	abbreviation	HMDB.code	formula	POS	NEG	RT	data_set	sample	operator	vers
 12	Thiamine	thiamine	HMDB0000235	C12H16N4OS	[M+H]+	[M-H]-	148	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
 12	Tryptamine	tryptamine	HMDB0000303	C10H12N2	[M+H-NH3]+	NA	36	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	3_bad
 13	N-Acetyl-beta-alanine	acetylalanine_NB	HMDB0061880	C5H9NO3	[M+H]+	[M-H]-	37	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
-13	Acetylneuraminic Acid	acetylneuraminic	HMDB0000230	C11H19NO9	[M+H-2(H2O)]+	[M-H]-	180	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	2_medium
+13	Acetylneuraminic Acid	acetylneuraminic	HMDB0000230	C11H19NO9	[M+H-H4O2]+	[M-H]-	180	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	2_medium
 13	Dopamine	dopamine	HMDB0000073	C8H11NO2	[M+H]+	[M-H]-	140	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium
 13	"Fructose-1,6-Diphosphate"	fructose_diphosphate	HMDB0001058	C6H14O12P2	[M+H-H2O]+	[M-H]-	330	2020_01_matrix_effect	serum	Vinicius	2	3_bad	3_bad
 13	Ibuprofen	ibuprofen	HMDB0001925	C13H18O2	NA	[M-H]-	31	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	0_perfect
