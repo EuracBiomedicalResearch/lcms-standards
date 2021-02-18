@@ -298,7 +298,6 @@
 "2020/2020_01"	"HighIS_Mix05_3_NEG.mzML"	"NEG"	"2020-01-16 15:27:06"	"Mix05"	"Water_Mix05_High"	"FS"
 "2020/2020_01"	"HighIS_Mix13_2_NEG.mzML"	"NEG"	"2020-01-16 15:35:51"	"Mix13"	"Water_Mix13_High"	"FS"
 "2020/2020_01"	"HighIS_Mix01_CE20_NEG.mzML"	"NEG"	"2020-01-16 15:47:51"	"Mix01"	"Water_Mix01_High"	"CE20"
-"2020/2020_01"	"HighIS_Mix01_CE20_NEG_c.mzML"	"c"	"2020-01-16 15:47:51"	"Mix01"	"Water_Mix01_High"	"CE20"
 "2020/2020_01"	"HighIS_Mix01_CE30_NEG.mzML"	"NEG"	"2020-01-16 15:56:39"	"Mix01"	"Water_Mix01_High"	"CE30"
 "2020/2020_01"	"HighIS_Mix02_CE20_NEG.mzML"	"NEG"	"2020-01-16 16:05:27"	"Mix02"	"Water_Mix02_High"	"CE20"
 "2020/2020_01"	"HighIS_Mix02_CE30_NEG.mzML"	"NEG"	"2020-01-16 16:14:15"	"Mix02"	"Water_Mix02_High"	"CE30"
