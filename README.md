@@ -2,8 +2,22 @@
 
 This repository contains measurement of sets of standards on LC-MS systems with
 specific configurations. The aim is to provide approximate retention times 
-(RTs) for the standard compounds in the respective setups.  
+(RTs) and ions for the standard compounds in the respective setups.
+
+The first definition of retention times and ions for all standards was performed
+manually by Mar Garcia-Alloy. In the *new* workflow we aim to use the `xcms` and
+`Spectra` package to refine these and to determine also all additional adducts
+created/measurable from each compound. In the workflow we first:
+- Identify chromatographic peaks in each file for one *standard mix*.
+- Plot each chromatographic peak.
+- Perform correspondence analysis to group each chromatographic peak to a
+  feature.
   
+## Analysis workflow files
+
+- [preprocessing-standards.Rmd](preprocessing-standards.Rmd): preprocessing of
+  LC-MS(/MS) data for the standards data set.
+
 
 ## Data tables
 
@@ -32,9 +46,9 @@ specific configurations. The aim is to provide approximate retention times
   All mixes are added in a *low* and *high* concentration, for the high
   concentrations also DDA MS2 data was measured with two different collision
   energies.
-  
 
-## R files
+
+## *Old* R files
 
 - [EIC_superposed.Rmd](EIC_superposed.Rmd): Markdown file for printing 
   the EIC of one compound using all samples. The plots are saved 
