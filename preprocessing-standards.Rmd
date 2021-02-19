@@ -31,14 +31,96 @@ serum samples.
 In this section we perform the preprocessing of the LC-MS(/MS) data for all
 mzML files of one mix of standards.
 
+
 - [ ] load the *data/std_serum_files.txt* file.
+```{r}
+std_serum_files=read.table("data/std_serum_files.txt", header = T)
+
+```
+
+
 - [ ] subset to the first mix (Mix01).
+```{r}
+std_serum_files01 <- std_serum_files[which(std_serum_files$type == "Mix01"),]
+```
+
 - [ ] load also the *data/standards_dilution.txt* file, subset to the first mix
-  (column `"mix"`) and include a table with columns *name*, *formula*, *RT*, 
+  (column `"mix"`) and include a table with columns *name*, *formula*, *RT*,
   *POS*, *NEG*.
+```{r}
+std_dilution <- read.table("data/standards_dilution.txt", sep= "\t", header = T)
+std_dilution1 <- std_dilution[std_dilution$mix == 1,]
+table1 <- std_dilution1[, c("name", "formula", "RT", "POS", "NEG")]
+table1
+```
+
 - [ ] import the data (both POS and NEG into the same variable/object).
+
+```{r load-data, warning=FALSE}
+library(xcms)
+library(magrittr)
+
+pathfiles <- "~/mix01/2020:2020_01/"
+fls <- paste0(pathfiles, std_serum_files01$mzML)
+
+#' Define a data.frame with additional information on the files.
+pd=cbind(data.frame(file = paste0(std_serum_files01$folder,
+                                  "/",
+                                  std_serum_files01$mzML)),
+         std_serum_files01[, -c(1,2)])
+data <- readMSData(fls, pdata = new("NAnnotatedDataFrame", pd),
+                   mode = "onDisk")
+```
+
 - [ ] create a base peak chromatogram (BPC) of all samples (use a different
   color for polarity and *matrix* (i.e. QC/serum and water)).
+
+```{r parallel-setup, eval = TRUE}
+#' Set up parallel processing using 2 cores
+if (.Platform$OS.type == "unix") {
+    register(bpstart(MulticoreParam(2)))
+} else {
+    register(bpstart(SnowParam(2)))
+}
+```
+
+```{r general-access}
+#' Get the retention time
+head(rtime(data))
+
+#' Get the retention times splitted by file.
+rts <- split(rtime(data), fromFile(data))
+
+#' The number of spectra per file
+lengths(rts)
+```
+
+```{r}
+bpc <- chromatogram(data, aggregationFun = "max")
+
+#' Define colors for the groups.
+library(RColorBrewer)
+groups_pol <- unique(data$polarity)
+groups_matrix <- unique(data$class)
+col_polarity <- brewer.pal(5, "Set1") [c(1, 2)]
+names(col_polarity) <- groups_pol      # POS red, NEG blue
+col_matrix <- brewer.pal(5, "Set1") [c(5, 5, 3, 3)]
+names(col_matrix) <- groups_matrix      # Water orange # QC green
+```
+
+```{r, fig.cap = "Base peak chromatogram. Different colours for different polarity", fig.width = 10, fig.height = 5}
+# Visualize the plot
+plot(bpc, col = col_polarity[data$polarity])
+legend("topright", col = col_polarity, legend = names(col_polarity), lwd = 2)
+```
+
+
+```{r, fig.cap = "Base peak chromatogram. Different colours for different matrix type", fig.width = 10, fig.height = 5}
+# Visualize the plot
+plot(bpc, col = col_matrix[data$class])
+legend("topright", col = unique(col_matrix), legend = c("Water","QC"), lwd = 2)
+```
+
 - [ ] perform chromatographic peak detection.
 - [ ] table with the number of peaks per file.
 - [ ] let's see how to proceed from here...
