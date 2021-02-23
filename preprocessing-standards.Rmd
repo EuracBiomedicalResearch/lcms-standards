@@ -25,7 +25,7 @@ dir.create(RDATA_PATH, showWarnings = FALSE)
 
 ## Define the *base* path where mzML files can be found. This is
 ## /data/massspec/mzML/ on the cluster
-MZML_PATH <- "/data/massspec/mzML/"
+MZML_PATH <- "~/mix01/" #"/data/massspec/mzML/"
 
 library(BiocParallel)
 #' Set up parallel processing using 2 cores
@@ -56,10 +56,11 @@ Below we load all required libraries and the definition of the dataset.
 library(xcms)
 library(pander)
 library(RColorBrewer)
+library(magrittr)
 std_serum_files <- read.table("data/std_serum_files.txt", header = TRUE)
 ```
 
-We next subset the data set to a files with samples from a single standards mix.
+We next subset the data set to files with samples from a single standards mix.
 
 ```{r}
 std_serum_files01 <- std_serum_files[which(std_serum_files$type == "Mix01"), ]
@@ -121,10 +122,84 @@ polarity seem to have higher intensities than the corresponding samples measured
 in negative polarity.
 
 - [ ] perform chromatographic peak detection.
+
+```{r}
+cwp <- CentWaveParam(ppm = 50,
+                     peakwidth = c(2, 20),
+                     snthresh = 5,
+                     mzdiff = 0.001,
+                     prefilter = c(4, 300),
+                     noise = 100,
+                     integrate = 2)
+
+data <- findChromPeaks(data, param = cwp) 
+pks <- chromPeaks(data)
+```    
+    
+Consider Xanthine
+```{r}
+mz_xan <- 152.03384
+dev <- 0.01
+xan_pos <- data %>%
+    filterRt(rt = c(130, 150)) %>%
+    filterMz(mz = c(mz_xan + 1 - dev, mz_xan + 1 + dev)) %>%
+    filterFile(file = which(data$polarity == "POS"))
+```
+
+
+```{r Xanthine-detected_peaks, fig.path = IMAGE_PATH, fig.cap = "Detected peaks for Xanthine.", fig.width = 7, fig.height = 5}
+chr <- chromatogram(filterFile(data, file = which(data$polarity == "POS")), 
+                    rt = c(130,150), mz = c(mz_xan + 1 - dev, mz_xan + 1 + dev))
+col_samples <- col_matrix_pol[chr$matrix_pol]
+plot(chr, col = col_samples, 
+     peakBg = paste0(col_samples[chromPeaks(chr)[, "sample"]], 40))
+legend("topright", col = col_matrix_pol,
+       legend = names(col_matrix_pol), lwd = 1, cex = 1)
+# The last two peaks have not been detected
+```
+
 - [ ] table with the number of peaks per file.
-- [ ] split the data set for positive and negative polarity
+
+```{r, echo = FALSE, results = "asis"}
+nppf <- cbind(data$mzML, as.numeric(table(pks[, "sample"])))
+colnames(nppf) <- c("file name", "number of peaks")
+pandoc.table(nppf, style = "rmarkdown", caption = "Number of peaks per file")
+```
+
+We split the data set for positive and negative polarity
+```{r}
+data_pos <- filterFile(data, file = which(data$polarity == "POS"))
+data_neg <- filterFile(data, file = which(data$polarity == "NEG"))
+```
 - [ ] run correspondence analysis (separately for the positive and negative
       polarity).
+```{r}
+pdp <- PeakDensityParam( sampleGroups = data_pos$matrix_pol, bw = 1.8,
+                         minFraction = 0.6, binSize = 0.02)
+data_pos <- groupChromPeaks(data_pos, param = pdp)
+
+pdp <- PeakDensityParam( sampleGroups = data_neg$matrix_pol, bw = 1.8,
+                         minFraction = 0.6, binSize = 0.02)
+data_neg <- groupChromPeaks(data_neg, param = pdp) 
+
+fD_pos=featureDefinitions(data_pos)
+fD_neg=featureDefinitions(data_neg)
+```
+```{r correspondence-featureSummary}
+#' Per-feature summary.
+head(featureSummary(data_pos))
+head(featureSummary(data_neg))
+```
+
+```{r correspondence-featureValue}
+#' feature intensity matrix
+fmat_pos <- featureValues(data_pos, value = "into", method = "sum")
+head(fmat_pos)
+fmat_neg <- featureValues(data_neg, value = "into", method = "sum")
+head(fmat_neg)
+```
+
+
 - [ ] let's see how to proceed from here...
 
 
