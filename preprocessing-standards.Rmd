@@ -184,6 +184,11 @@ data_neg <- groupChromPeaks(data_neg, param = pdp)
 
 fD_pos=featureDefinitions(data_pos)
 fD_neg=featureDefinitions(data_neg)
+#' feature intensity matrix
+fmat_pos <- featureValues(data_pos, value = "into", method = "sum")
+fmat_neg <- featureValues(data_neg, value = "into", method = "sum")
+
+
 ```
 ```{r correspondence-featureSummary}
 #' Per-feature summary.
@@ -191,13 +196,73 @@ head(featureSummary(data_pos))
 head(featureSummary(data_neg))
 ```
 
-```{r correspondence-featureValue}
-#' feature intensity matrix
+```{r fillChromPeaks}
+#' Percentage of missing values before filling
+sum(is.na(fmat_pos))/length(fmat_pos) # positive polarity
+sum(is.na(fmat_neg))/length(fmat_neg) # negative polarity
+
+data_pos <- fillChromPeaks(data_pos, param = ChromPeakAreaParam())
+data_neg <- fillChromPeaks(data_neg, param = ChromPeakAreaParam())
+
 fmat_pos <- featureValues(data_pos, value = "into", method = "sum")
-head(fmat_pos)
 fmat_neg <- featureValues(data_neg, value = "into", method = "sum")
-head(fmat_neg)
+
+#' Percentage of missing values before filling
+sum(is.na(fmat_pos))/length(fmat_pos) # positive polarity
+sum(is.na(fmat_neg))/length(fmat_neg) # negative polarity
+
 ```
+
+We start with consider features for water and also subset to FS mode only
+
+```{r}
+fmat_pos_wat <- fmat_pos[, which(data_pos$matrix_pol == "Water_POS" 
+                                 & data_pos$mode == "FS")]
+# Exclude rows with NA
+fmat_pos_wat <- fmat_pos_wat[which(apply(fmat_pos_wat, 1, 
+                                         function(x) sum(is.na(x))) == 0), ]
+```
+
+and log2 transform the abundances (and keep only rows without missing values)
+
+```{r}
+fmat_pos_watl2 <- log2(fmat_pos_wat)
+```
+
+We perform a t-test to see if there is a significant positive difference between
+samples with high concentrations of standards and samples with low concentration
+
+```{r}
+#t.test(x=fmat_pos_wat[1,c(1,3,6)]-fmat_pos_wat[1,c(2,4,5)], mu = 0, alternative= "less")
+# H0: high<=low vs H1: H0^c
+high <- grep("^High",colnames(fmat_pos_watl2)) #c(1,3,6)
+low <- grep("^Low",colnames(fmat_pos_watl2)) #c(2,4,5)
+# Compute the p-values
+#pvalues_two <- apply(fmat_pos_watl2, 1, function(x) t.test(x[high] - x[low], mu = 0)$p.value)
+pvalues <- apply(fmat_pos_watl2, 1, function(x) t.test(x[high]-x[low], 
+                        mu = 0, alternative = "greater")$p.value)
+
+# Can data be assumed normal?
+# hist(apply(fmat_pos_watl2, 1, function(x) shapiro.test(x[high]-x[low])$p.value))
+```
+
+
+```{r}
+# Plot the p-values
+plot(pvalues)
+
+# Compute the difference between means in high and low concentration samples
+diffmeans= apply(fmat_pos_wat, 1, function(x) mean(x[high]-x[low]))
+# Compute the difference between means in high and low concentration samples
+ratiomeans= apply(fmat_pos_wat, 1, function(x) mean((x[high])/(x[low])))
+```
+
+
+```{r}
+# Volcano plot
+plot(diffmeans, log10(pvalues))
+```
+
 
 
 - [ ] let's see how to proceed from here...
