@@ -182,8 +182,8 @@ pdp <- PeakDensityParam( sampleGroups = data_neg$matrix_pol, bw = 1.8,
                          minFraction = 0.6, binSize = 0.02)
 data_neg <- groupChromPeaks(data_neg, param = pdp) 
 
-fD_pos=featureDefinitions(data_pos)
-fD_neg=featureDefinitions(data_neg)
+fD_pos <- featureDefinitions(data_pos)
+fD_neg <- featureDefinitions(data_neg)
 #' feature intensity matrix
 fmat_pos <- featureValues(data_pos, value = "into", method = "sum")
 fmat_neg <- featureValues(data_neg, value = "into", method = "sum")
@@ -198,8 +198,8 @@ head(featureSummary(data_neg))
 
 ```{r fillChromPeaks}
 #' Percentage of missing values before filling
-sum(is.na(fmat_pos))/length(fmat_pos) # positive polarity
-sum(is.na(fmat_neg))/length(fmat_neg) # negative polarity
+sum(is.na(fmat_pos)) / length(fmat_pos) # positive polarity
+sum(is.na(fmat_neg)) / length(fmat_neg) # negative polarity
 
 data_pos <- fillChromPeaks(data_pos, param = ChromPeakAreaParam())
 data_neg <- fillChromPeaks(data_neg, param = ChromPeakAreaParam())
@@ -208,8 +208,8 @@ fmat_pos <- featureValues(data_pos, value = "into", method = "sum")
 fmat_neg <- featureValues(data_neg, value = "into", method = "sum")
 
 #' Percentage of missing values before filling
-sum(is.na(fmat_pos))/length(fmat_pos) # positive polarity
-sum(is.na(fmat_neg))/length(fmat_neg) # negative polarity
+sum(is.na(fmat_pos)) / length(fmat_pos) # positive polarity
+sum(is.na(fmat_neg)) / length(fmat_neg) # negative polarity
 
 ```
 
@@ -233,12 +233,10 @@ We perform a t-test to see if there is a significant positive difference between
 samples with high concentrations of standards and samples with low concentration
 
 ```{r}
-#t.test(x=fmat_pos_wat[1,c(1,3,6)]-fmat_pos_wat[1,c(2,4,5)], mu = 0, alternative= "less")
 # H0: high<=low vs H1: H0^c
 high <- grep("^High",colnames(fmat_pos_watl2)) #c(1,3,6)
 low <- grep("^Low",colnames(fmat_pos_watl2)) #c(2,4,5)
-# Compute the p-values
-#pvalues_two <- apply(fmat_pos_watl2, 1, function(x) t.test(x[high] - x[low], mu = 0)$p.value)
+
 pvalues <- apply(fmat_pos_watl2, 1, function(x) t.test(x[high]-x[low], 
                         mu = 0, alternative = "greater")$p.value)
 
@@ -248,17 +246,16 @@ pvalues <- apply(fmat_pos_watl2, 1, function(x) t.test(x[high]-x[low],
 
 
 ```{r}
-# Plot the p-values
-plot(pvalues)
+# plot(pvalues)
 
 # Compute the difference between means in high and low concentration samples
-diffmeans= apply(fmat_pos_wat, 1, function(x) mean(x[high]-x[low]))
+diffmeans <- apply(fmat_pos_wat, 1, function(x) mean(x[high] - x[low]))
 # Compute the difference between means in high and low concentration samples
-ratiomeans= apply(fmat_pos_wat, 1, function(x) mean((x[high])/(x[low])))
+ratiomeans <- apply(fmat_pos_wat, 1, function(x) mean((x[high]) / (x[low])))
 ```
 
 
-```{r}
+```{r Volcano-plot-pvalues, fig.path = IMAGE_PATH, fig.cap = "Volcano plot of p-values.", fig.width = 7, fig.height = 5}
 # Volcano plot
 plot(diffmeans, log10(pvalues))
 ```
