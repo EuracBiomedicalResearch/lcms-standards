@@ -57,6 +57,9 @@ library(xcms)
 library(pander)
 library(RColorBrewer)
 library(magrittr)
+library(Rdisop)
+library(MetaboCoreUtils)
+library(MsCoreUtils)
 std_serum_files <- read.table("data/std_serum_files.txt", header = TRUE)
 ```
 
@@ -121,7 +124,8 @@ seconds, but also around 160 seconds). In general, samples measured in positive
 polarity seem to have higher intensities than the corresponding samples measured
 in negative polarity.
 
-- [ ] perform chromatographic peak detection.
+Next we perform the chromatographic peak detection on all samples and
+subsequently *refine* also the chromatographic peaks.
 
 ```{r}
 cwp <- CentWaveParam(ppm = 50,
@@ -134,22 +138,23 @@ cwp <- CentWaveParam(ppm = 50,
 
 data <- findChromPeaks(data, param = cwp) 
 pks <- chromPeaks(data)
-```    
-    
-Consider Xanthine
-```{r}
-mz_xan <- 152.03384
-dev <- 0.01
-xan_pos <- data %>%
-    filterRt(rt = c(130, 150)) %>%
-    filterMz(mz = c(mz_xan + 1 - dev, mz_xan + 1 + dev)) %>%
-    filterFile(file = which(data$polarity == "POS"))
+```
+
+We next evaluate the signal for Xanthine. For this we first calculate first its
+monoisotopic mass based on the compound's chemical formula and then the m/z of
+its [M+H]+ ion. 
+
+```{r xanthine-mz}
+frml_xan <- std_dilution01[std_dilution01$name == "Xanthine", "formula"]
+mass_xan <- getMolecule(frml_xan)$exactmass    # calculate mass
+mz_xan <- mass2mz(mass_xan, "[M+H]+")[1, 1]    # get the m/z for [M+H]+
+mzr_xan <- mz_xan + c(1, -1) * ppm(mz_xan, 50) # calculate m/z range
 ```
 
 
 ```{r Xanthine-detected_peaks, fig.path = IMAGE_PATH, fig.cap = "Detected peaks for Xanthine.", fig.width = 7, fig.height = 5}
 chr <- chromatogram(filterFile(data, file = which(data$polarity == "POS")), 
-                    rt = c(130,150), mz = c(mz_xan + 1 - dev, mz_xan + 1 + dev))
+                    rt = c(130, 150), mz = mzr_xan)
 col_samples <- col_matrix_pol[chr$matrix_pol]
 plot(chr, col = col_samples, 
      peakBg = paste0(col_samples[chromPeaks(chr)[, "sample"]], 40))
@@ -167,19 +172,19 @@ pandoc.table(nppf, style = "rmarkdown", caption = "Number of peaks per file")
 ```
 
 We split the data set for positive and negative polarity
+
 ```{r}
 data_pos <- filterFile(data, file = which(data$polarity == "POS"))
 data_neg <- filterFile(data, file = which(data$polarity == "NEG"))
 ```
+
 - [ ] run correspondence analysis (separately for the positive and negative
       polarity).
-```{r}
-pdp <- PeakDensityParam( sampleGroups = data_pos$matrix_pol, bw = 1.8,
-                         minFraction = 0.6, binSize = 0.02)
-data_pos <- groupChromPeaks(data_pos, param = pdp)
 
-pdp <- PeakDensityParam( sampleGroups = data_neg$matrix_pol, bw = 1.8,
-                         minFraction = 0.6, binSize = 0.02)
+```{r}
+pdp <- PeakDensityParam(sampleGroups = data_pos$matrix_pol, bw = 1.8,
+                        minFraction = 0.6, binSize = 0.02)
+data_pos <- groupChromPeaks(data_pos, param = pdp)
 data_neg <- groupChromPeaks(data_neg, param = pdp) 
 
 fD_pos <- featureDefinitions(data_pos)
@@ -190,6 +195,7 @@ fmat_neg <- featureValues(data_neg, value = "into", method = "sum")
 
 
 ```
+
 ```{r correspondence-featureSummary}
 #' Per-feature summary.
 head(featureSummary(data_pos))
@@ -219,8 +225,7 @@ We start with consider features for water and also subset to FS mode only
 fmat_pos_wat <- fmat_pos[, which(data_pos$matrix_pol == "Water_POS" 
                                  & data_pos$mode == "FS")]
 # Exclude rows with NA
-fmat_pos_wat <- fmat_pos_wat[which(apply(fmat_pos_wat, 1, 
-                                         function(x) sum(is.na(x))) == 0), ]
+fmat_pos_wat <- na.omit(fmat_pos_wat)
 ```
 
 and log2 transform the abundances (and keep only rows without missing values)
@@ -233,36 +238,49 @@ We perform a t-test to see if there is a significant positive difference between
 samples with high concentrations of standards and samples with low concentration
 
 ```{r}
-# H0: high<=low vs H1: H0^c
-high <- grep("^High",colnames(fmat_pos_watl2)) #c(1,3,6)
-low <- grep("^Low",colnames(fmat_pos_watl2)) #c(2,4,5)
+# H0: high==low vs H1: H0^c
+high <- grep("^High", colnames(fmat_pos_watl2)) #c(1,3,6)
+low <- grep("^Low", colnames(fmat_pos_watl2)) #c(2,4,5)
 
-pvalues <- apply(fmat_pos_watl2, 1, function(x) t.test(x[high]-x[low], 
-                        mu = 0, alternative = "greater")$p.value)
-
+pvalues <- apply(fmat_pos_watl2, 1, function(x) {
+    res <- t.test(x[high], x[low], mu = 0)
+    c(pvalue = res$p.value,
+      M = unname(res$estimate[1] - res$estimate[2]))
+})
+pvalues <- t(pvalues)
 # Can data be assumed normal?
 # hist(apply(fmat_pos_watl2, 1, function(x) shapiro.test(x[high]-x[low])$p.value))
 ```
 
 
-```{r}
-# plot(pvalues)
-
-# Compute the difference between means in high and low concentration samples
-diffmeans <- apply(fmat_pos_wat, 1, function(x) mean(x[high] - x[low]))
-# Compute the difference between means in high and low concentration samples
-ratiomeans <- apply(fmat_pos_wat, 1, function(x) mean((x[high]) / (x[low])))
-```
-
-
 ```{r Volcano-plot-pvalues, fig.path = IMAGE_PATH, fig.cap = "Volcano plot of p-values.", fig.width = 7, fig.height = 5}
 # Volcano plot
-plot(diffmeans, log10(pvalues))
+plot(pvalues[, "M"], -log10(pvalues[, "pvalue"]), pch = 21, col = "#00000080",
+     bg = "#00000020", xlab = "M", ylab = expression(-log[10]~(p)))
 ```
 
+What's not clear to me:
+- Why do we have so many features *significant*?
+- Why do we have features with higher abundance in low compared to high?
+
+TODO:
+- [ ] (pandoc) table with the *significant* features (those with pvalue < 0.05
+      and a M-value > 3 (8-times higher concentration in high)): columns:
+      feature id, mzmed, rtmed (from `featureDefinitions`), M, pvalue. Order
+      them by rtmed.
+- [ ] plot all significant features (export as png file). Use the
+      `featureChromatograms` function (with parameters `expandRt = 2` and
+      `filled = TRUE`) to extract the EIC and plot that. Add also a vertical
+      line to the plot where we expect one of the standards from mix01 to be
+      measured. Look through all plots and see if maybe some have ~ the same
+      retention time and similar peak shape (could be different adducts/ions of
+      the same compound).
 
 
-- [ ] let's see how to proceed from here...
+- [ ] let's see how to proceed from here... maybe feature grouping? Install
+      `RforMassSpectrometry/MsFeatures` for that and have a look at its
+      documentation and vignette. We want to group features if the have about
+      the same retention time and then have also correlated abundances.
 
 
 # Session information
