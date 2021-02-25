@@ -17,6 +17,25 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 **Last modified:** `r file.info("preprocessing-standards.Rmd")$mtime`<br />
 **Compiled**: `r date()`
 
+```{r general-settings, echo = FALSE}
+IMAGE_PATH <- "images/preprocessing-standards/mix01/"
+RDATA_PATH <- "data/RData/preprocessing-standards/mix01/"
+dir.create(IMAGE_PATH, showWarnings = FALSE)
+dir.create(RDATA_PATH, showWarnings = FALSE)
+
+## Define the *base* path where mzML files can be found. This is
+## /data/massspec/mzML/ on the cluster
+MZML_PATH <- "~/mix01/" #"/data/massspec/mzML/"
+
+library(BiocParallel)
+#' Set up parallel processing using 2 cores
+if (.Platform$OS.type == "unix") {
+    register(bpstart(MulticoreParam(2)))
+} else {
+    register(bpstart(SnowParam(2)))
+}
+```
+
 # Introduction
 
 In this document we perform the preprocessing and analysis of mzML files to
@@ -31,98 +50,218 @@ serum samples.
 In this section we perform the preprocessing of the LC-MS(/MS) data for all
 mzML files of one mix of standards.
 
+Below we load all required libraries and the definition of the dataset.
 
-- [ ] load the *data/std_serum_files.txt* file.
-```{r}
-std_serum_files=read.table("data/std_serum_files.txt", header = T)
-
-```
-
-
-- [ ] subset to the first mix (Mix01).
-```{r}
-std_serum_files01 <- std_serum_files[which(std_serum_files$type == "Mix01"),]
-```
-
-- [ ] load also the *data/standards_dilution.txt* file, subset to the first mix
-  (column `"mix"`) and include a table with columns *name*, *formula*, *RT*,
-  *POS*, *NEG*.
-```{r}
-std_dilution <- read.table("data/standards_dilution.txt", sep= "\t", header = T)
-std_dilution1 <- std_dilution[std_dilution$mix == 1,]
-table1 <- std_dilution1[, c("name", "formula", "RT", "POS", "NEG")]
-table1
-```
-
-- [ ] import the data (both POS and NEG into the same variable/object).
-
-```{r load-data, warning=FALSE}
+```{r libraries}
 library(xcms)
+library(pander)
+library(RColorBrewer)
 library(magrittr)
+std_serum_files <- read.table("data/std_serum_files.txt", header = TRUE)
+```
 
-pathfiles <- "~/mix01/2020:2020_01/"
-fls <- paste0(pathfiles, std_serum_files01$mzML)
+We next subset the data set to files with samples from a single standards mix.
 
-#' Define a data.frame with additional information on the files.
-pd=cbind(data.frame(file = paste0(std_serum_files01$folder,
-                                  "/",
-                                  std_serum_files01$mzML)),
-         std_serum_files01[, -c(1,2)])
-data <- readMSData(fls, pdata = new("NAnnotatedDataFrame", pd),
+```{r}
+std_serum_files01 <- std_serum_files[which(std_serum_files$type == "Mix01"), ]
+```
+
+The list of standards that constitute the present sample mix are listed below
+along with the expected retention time and the most abundant adduct for positive
+and negative polarity as defined in a previous analysis.
+
+```{r, echo = FALSE, results = "asis"}
+std_dilution <- read.table("data/standards_dilution.txt",
+                           sep= "\t", header = TRUE)
+std_dilution01 <- std_dilution[std_dilution$mix == 1, ]
+table1 <- std_dilution01[, c("name", "formula", "RT", "POS", "NEG")]
+pandoc.table(table1, style = "rmarkdown", caption = "Standards of mix 01")
+```
+
+We next import the MS data from all mzML files of this mix.
+
+```{r load-data, warning = FALSE}
+fls <- paste0(MZML_PATH, std_serum_files01$folder, "/", std_serum_files01$mzML)
+data <- readMSData(fls, pdata = new("NAnnotatedDataFrame", std_serum_files01),
                    mode = "onDisk")
 ```
 
-- [ ] create a base peak chromatogram (BPC) of all samples (use a different
-  color for polarity and *matrix* (i.e. QC/serum and water)).
-
-```{r parallel-setup, eval = TRUE}
-#' Set up parallel processing using 2 cores
-if (.Platform$OS.type == "unix") {
-    register(bpstart(MulticoreParam(2)))
-} else {
-    register(bpstart(SnowParam(2)))
-}
-```
-
-```{r general-access}
-#' Get the retention time
-head(rtime(data))
-
-#' Get the retention times splitted by file.
-rts <- split(rtime(data), fromFile(data))
-
-#' The number of spectra per file
-lengths(rts)
-```
+We next create the base peak chromatogram (BPC) for each file and define colors
+for the different sets of samples.
 
 ```{r}
 bpc <- chromatogram(data, aggregationFun = "max")
 
-#' Define colors for the groups.
-library(RColorBrewer)
-groups_pol <- unique(data$polarity)
-groups_matrix <- unique(data$class)
-col_polarity <- brewer.pal(5, "Set1") [c(1, 2)]
-names(col_polarity) <- groups_pol      # POS red, NEG blue
-col_matrix <- brewer.pal(5, "Set1") [c(5, 5, 3, 3)]
-names(col_matrix) <- groups_matrix      # Water orange # QC green
+#' Define a new variable combining the polarity and the matrix in which the
+#' standards are solved.
+tmp <- rep("Water", length(fileNames(data)))
+tmp[grep("^QC", data$class)] <- "Serum"
+matrix_pol <- paste0(tmp, "_", data$polarity)
+data$matrix_pol <- matrix_pol
+
+#' Define the colors for each type
+col_matrix_pol <- brewer.pal(5, "Set1")[c(1, 2, 4, 5)]
+names(col_matrix_pol) <- c("Water_POS", "Water_NEG", "Serum_NEG", "Serum_POS")
 ```
 
-```{r, fig.cap = "Base peak chromatogram. Different colours for different polarity", fig.width = 10, fig.height = 5}
-# Visualize the plot
-plot(bpc, col = col_polarity[data$polarity])
-legend("topright", col = col_polarity, legend = names(col_polarity), lwd = 2)
+The BPC are shown below.
+
+```{r bpc-mix01, fig.path = IMAGE_PATH, fig.cap = "Base peak chromatogram. Different colours for polarity and matrix. The vertical grey dotted lines indicate the retention time where an ion of a standard present in the current mix is expected.", fig.width = 10, fig.height = 5}
+plot(bpc, col = paste0(col_matrix_pol[data$matrix_pol], 80))
+legend("topright", col = col_matrix_pol,
+       legend = names(col_matrix_pol), lwd = 1)
+abline(v = std_dilution01$RT, lty = 3, col = "grey")
 ```
 
-
-```{r, fig.cap = "Base peak chromatogram. Different colours for different matrix type", fig.width = 10, fig.height = 5}
-# Visualize the plot
-plot(bpc, col = col_matrix[data$class])
-legend("topright", col = unique(col_matrix), legend = c("Water","QC"), lwd = 2)
-```
+As expected, the signal in serum samples (orange and purple) seems to be higher
+for the retention time regions in which a high number of compounds is expected
+(20-60, 110-200 seconds). Surprisingly, also the samples with the mix solved in
+water yield high signals for positive polarity (in the region from 60-120
+seconds, but also around 160 seconds). In general, samples measured in positive
+polarity seem to have higher intensities than the corresponding samples measured
+in negative polarity.
 
 - [ ] perform chromatographic peak detection.
+
+```{r}
+cwp <- CentWaveParam(ppm = 50,
+                     peakwidth = c(2, 20),
+                     snthresh = 5,
+                     mzdiff = 0.001,
+                     prefilter = c(4, 300),
+                     noise = 100,
+                     integrate = 2)
+
+data <- findChromPeaks(data, param = cwp) 
+pks <- chromPeaks(data)
+```    
+    
+Consider Xanthine
+```{r}
+mz_xan <- 152.03384
+dev <- 0.01
+xan_pos <- data %>%
+    filterRt(rt = c(130, 150)) %>%
+    filterMz(mz = c(mz_xan + 1 - dev, mz_xan + 1 + dev)) %>%
+    filterFile(file = which(data$polarity == "POS"))
+```
+
+
+```{r Xanthine-detected_peaks, fig.path = IMAGE_PATH, fig.cap = "Detected peaks for Xanthine.", fig.width = 7, fig.height = 5}
+chr <- chromatogram(filterFile(data, file = which(data$polarity == "POS")), 
+                    rt = c(130,150), mz = c(mz_xan + 1 - dev, mz_xan + 1 + dev))
+col_samples <- col_matrix_pol[chr$matrix_pol]
+plot(chr, col = col_samples, 
+     peakBg = paste0(col_samples[chromPeaks(chr)[, "sample"]], 40))
+legend("topright", col = col_matrix_pol,
+       legend = names(col_matrix_pol), lwd = 1, cex = 1)
+# The last two peaks have not been detected
+```
+
 - [ ] table with the number of peaks per file.
+
+```{r, echo = FALSE, results = "asis"}
+nppf <- cbind(data$mzML, as.numeric(table(pks[, "sample"])))
+colnames(nppf) <- c("file name", "number of peaks")
+pandoc.table(nppf, style = "rmarkdown", caption = "Number of peaks per file")
+```
+
+We split the data set for positive and negative polarity
+```{r}
+data_pos <- filterFile(data, file = which(data$polarity == "POS"))
+data_neg <- filterFile(data, file = which(data$polarity == "NEG"))
+```
+- [ ] run correspondence analysis (separately for the positive and negative
+      polarity).
+```{r}
+pdp <- PeakDensityParam( sampleGroups = data_pos$matrix_pol, bw = 1.8,
+                         minFraction = 0.6, binSize = 0.02)
+data_pos <- groupChromPeaks(data_pos, param = pdp)
+
+pdp <- PeakDensityParam( sampleGroups = data_neg$matrix_pol, bw = 1.8,
+                         minFraction = 0.6, binSize = 0.02)
+data_neg <- groupChromPeaks(data_neg, param = pdp) 
+
+fD_pos <- featureDefinitions(data_pos)
+fD_neg <- featureDefinitions(data_neg)
+#' feature intensity matrix
+fmat_pos <- featureValues(data_pos, value = "into", method = "sum")
+fmat_neg <- featureValues(data_neg, value = "into", method = "sum")
+
+
+```
+```{r correspondence-featureSummary}
+#' Per-feature summary.
+head(featureSummary(data_pos))
+head(featureSummary(data_neg))
+```
+
+```{r fillChromPeaks}
+#' Percentage of missing values before filling
+sum(is.na(fmat_pos)) / length(fmat_pos) # positive polarity
+sum(is.na(fmat_neg)) / length(fmat_neg) # negative polarity
+
+data_pos <- fillChromPeaks(data_pos, param = ChromPeakAreaParam())
+data_neg <- fillChromPeaks(data_neg, param = ChromPeakAreaParam())
+
+fmat_pos <- featureValues(data_pos, value = "into", method = "sum")
+fmat_neg <- featureValues(data_neg, value = "into", method = "sum")
+
+#' Percentage of missing values before filling
+sum(is.na(fmat_pos)) / length(fmat_pos) # positive polarity
+sum(is.na(fmat_neg)) / length(fmat_neg) # negative polarity
+
+```
+
+We start with consider features for water and also subset to FS mode only
+
+```{r}
+fmat_pos_wat <- fmat_pos[, which(data_pos$matrix_pol == "Water_POS" 
+                                 & data_pos$mode == "FS")]
+# Exclude rows with NA
+fmat_pos_wat <- fmat_pos_wat[which(apply(fmat_pos_wat, 1, 
+                                         function(x) sum(is.na(x))) == 0), ]
+```
+
+and log2 transform the abundances (and keep only rows without missing values)
+
+```{r}
+fmat_pos_watl2 <- log2(fmat_pos_wat)
+```
+
+We perform a t-test to see if there is a significant positive difference between
+samples with high concentrations of standards and samples with low concentration
+
+```{r}
+# H0: high<=low vs H1: H0^c
+high <- grep("^High",colnames(fmat_pos_watl2)) #c(1,3,6)
+low <- grep("^Low",colnames(fmat_pos_watl2)) #c(2,4,5)
+
+pvalues <- apply(fmat_pos_watl2, 1, function(x) t.test(x[high]-x[low], 
+                        mu = 0, alternative = "greater")$p.value)
+
+# Can data be assumed normal?
+# hist(apply(fmat_pos_watl2, 1, function(x) shapiro.test(x[high]-x[low])$p.value))
+```
+
+
+```{r}
+# plot(pvalues)
+
+# Compute the difference between means in high and low concentration samples
+diffmeans <- apply(fmat_pos_wat, 1, function(x) mean(x[high] - x[low]))
+# Compute the difference between means in high and low concentration samples
+ratiomeans <- apply(fmat_pos_wat, 1, function(x) mean((x[high]) / (x[low])))
+```
+
+
+```{r Volcano-plot-pvalues, fig.path = IMAGE_PATH, fig.cap = "Volcano plot of p-values.", fig.width = 7, fig.height = 5}
+# Volcano plot
+plot(diffmeans, log10(pvalues))
+```
+
+
+
 - [ ] let's see how to proceed from here...
 
 
