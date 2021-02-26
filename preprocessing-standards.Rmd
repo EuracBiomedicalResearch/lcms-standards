@@ -137,8 +137,17 @@ cwp <- CentWaveParam(ppm = 50,
                      integrate = 2)
 
 data <- findChromPeaks(data, param = cwp) 
-pks <- chromPeaks(data)
+save(data, file = paste0(RDATA_PATH, "data_peakdetection.RData"))
 ```
+
+```{r centWave-refine, message = FALSE, warning = FALSE, eval = !file.exists(paste0(RDATA_PATH, "data_refined.RData"))}
+mnp <- MergeNeighboringPeaksParam(expandRt = 2.5, expandMz = 0.001,
+                                  minProp = 3/4)
+data <- refineChromPeaks(data, param = mnp)
+pks <- chromPeaks(data)
+save(data, file = paste0(RDATA_PATH, "data_refined.RData"))
+```
+
 
 We next evaluate the signal for Xanthine. For this we first calculate first its
 monoisotopic mass based on the compound's chemical formula and then the m/z of
@@ -186,6 +195,7 @@ pdp <- PeakDensityParam(sampleGroups = data_pos$matrix_pol, bw = 1.8,
                         minFraction = 0.6, binSize = 0.02)
 data_pos <- groupChromPeaks(data_pos, param = pdp)
 data_neg <- groupChromPeaks(data_neg, param = pdp) 
+save(data_pos,data_neg, file = paste0(RDATA_PATH, "data_postcorrespondence.RData"))
 
 fD_pos <- featureDefinitions(data_pos)
 fD_neg <- featureDefinitions(data_neg)
@@ -209,6 +219,7 @@ sum(is.na(fmat_neg)) / length(fmat_neg) # negative polarity
 
 data_pos <- fillChromPeaks(data_pos, param = ChromPeakAreaParam())
 data_neg <- fillChromPeaks(data_neg, param = ChromPeakAreaParam())
+save(data_pos,data_neg, file = paste0(RDATA_PATH, "data_postfilling.RData"))
 
 fmat_pos <- featureValues(data_pos, value = "into", method = "sum")
 fmat_neg <- featureValues(data_neg, value = "into", method = "sum")
@@ -268,6 +279,16 @@ TODO:
       and a M-value > 3 (8-times higher concentration in high)): columns:
       feature id, mzmed, rtmed (from `featureDefinitions`), M, pvalue. Order
       them by rtmed.
+      
+
+```{r, echo = FALSE, results = "asis"}
+#sign_f_indexes <- which(pvalues[, "pvalue"] < 0.05 & pvalues[, "M"] > 3)
+sign_f_id <- rownames(fmat_pos_wat)[which(pvalues[, "pvalue"] < 0.05 & pvalues[, "M"] > 3)]
+sign_f <- cbind(sign_f_id, fD_pos[sign_f_id,c("mzmed", "rtmed")], 
+               pvalues[sign_f_id,])
+sign_f <- sign_f[order(sign_f[, "rtmed" ], decreasing = FALSE),]
+pandoc.table(data.frame(sign_f), style = "rmarkdown", caption = "Significant features")
+```
 - [ ] plot all significant features (export as png file). Use the
       `featureChromatograms` function (with parameters `expandRt = 2` and
       `filled = TRUE`) to extract the EIC and plot that. Add also a vertical
@@ -275,6 +296,34 @@ TODO:
       measured. Look through all plots and see if maybe some have ~ the same
       retention time and similar peak shape (could be different adducts/ions of
       the same compound).
+
+```{r}
+f_chrs <- featureChromatograms(data_pos, expandRt = 2, 
+                               features = sign_f_id, filled = TRUE)
+#plot(f_chrs[1, match(colnames(fmat_pos_wat), f_chrs$mzML)])
+```
+
+
+```{r plotfeatures}
+# Plot all the features and save their plot as a png files in the 
+# selectedfeatures folder 
+if(!dir.exists(paste0(IMAGE_PATH, "selectedfeatures")))
+  dir.create(paste0(IMAGE_PATH, "selectedfeatures"))
+col_hl <- rep(brewer.pal(5, "Set1")[3], ncol(f_chrs)) #verde
+col_hl[low] <- brewer.pal(5, "Set1")[4] # viola
+for (i in 1:nrow(f_chrs))
+{
+png(filename = paste0(IMAGE_PATH, "selectedfeatures/feature", i, ".png"), width=700, height=500)
+chr_obj=f_chrs[i, match(colnames(fmat_pos_wat), f_chrs$mzML)]
+plot(chr_obj, col = col_hl, 
+     peakBg = paste0(col_hl[chromPeaks(chr_obj)[, "sample"]], 40))
+legend("topright", col = brewer.pal(5, "Set1")[c(3,4)],
+       legend = c("high","low"), lwd = 1, cex = 1)
+abline(v = std_dilution01$RT, lty = 3, col = "grey")
+dev.off()
+}
+
+```
 
 
 - [ ] let's see how to proceed from here... maybe feature grouping? Install
