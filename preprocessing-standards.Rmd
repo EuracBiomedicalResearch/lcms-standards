@@ -60,13 +60,21 @@ library(magrittr)
 library(Rdisop)
 library(MetaboCoreUtils)
 library(MsCoreUtils)
+library(MsFeatures)
+library(SummarizedExperiment)
+
 std_serum_files <- read.table("data/std_serum_files.txt", header = TRUE)
+```
+
+```{r}
+mix <- 1
 ```
 
 We next subset the data set to files with samples from a single standards mix.
 
 ```{r}
-std_serum_files01 <- std_serum_files[which(std_serum_files$type == "Mix01"), ]
+ftype <- paste0("Mix", ifelse(mix<10,paste0(0,mix),mix)) 
+std_serum_files01 <- std_serum_files[which(std_serum_files$type == ftype), ]
 ```
 
 The list of standards that constitute the present sample mix are listed below
@@ -76,9 +84,10 @@ and negative polarity as defined in a previous analysis.
 ```{r, echo = FALSE, results = "asis"}
 std_dilution <- read.table("data/standards_dilution.txt",
                            sep= "\t", header = TRUE)
-std_dilution01 <- std_dilution[std_dilution$mix == 1, ]
+std_dilution01 <- std_dilution[std_dilution$mix == mix, ]
 table1 <- std_dilution01[, c("name", "formula", "RT", "POS", "NEG")]
-pandoc.table(table1, style = "rmarkdown", caption = "Standards of mix 01")
+pandoc.table(table1, style = "rmarkdown", caption = paste0("Standards of ",
+                                                           ftype))
 ```
 
 We next import the MS data from all mzML files of this mix.
@@ -127,7 +136,7 @@ in negative polarity.
 Next we perform the chromatographic peak detection on all samples and
 subsequently *refine* also the chromatographic peaks.
 
-```{r}
+```{r peakdetection}
 cwp <- CentWaveParam(ppm = 50,
                      peakwidth = c(2, 20),
                      snthresh = 5,
@@ -140,7 +149,11 @@ data <- findChromPeaks(data, param = cwp)
 save(data, file = paste0(RDATA_PATH, "data_peakdetection.RData"))
 ```
 
-```{r centWave-refine, message = FALSE, warning = FALSE, eval = !file.exists(paste0(RDATA_PATH, "data_refined.RData"))}
+```{r peakdetection-cached, echo = FALSE, eval = file.exists(paste0(RDATA_PATH, "data_peakdetection.RData"))}
+load(paste0(RDATA_PATH, "data_peakdetection.RData"))
+```
+
+```{r refinement, message = FALSE, warning = FALSE, eval = !file.exists(paste0(RDATA_PATH, "data_refined.RData"))}
 mnp <- MergeNeighboringPeaksParam(expandRt = 2.5, expandMz = 0.001,
                                   minProp = 3/4)
 data <- refineChromPeaks(data, param = mnp)
@@ -148,6 +161,9 @@ pks <- chromPeaks(data)
 save(data, file = paste0(RDATA_PATH, "data_refined.RData"))
 ```
 
+```{r refinement, echo = FALSE, eval = file.exists(paste0(RDATA_PATH, "data_refined.RData"))}
+load(paste0(RDATA_PATH, "data_refined.RData"))
+```
 
 We next evaluate the signal for Xanthine. For this we first calculate first its
 monoisotopic mass based on the compound's chemical formula and then the m/z of
@@ -190,7 +206,7 @@ data_neg <- filterFile(data, file = which(data$polarity == "NEG"))
 - [ ] run correspondence analysis (separately for the positive and negative
       polarity).
 
-```{r}
+```{r correspondence}
 pdp <- PeakDensityParam(sampleGroups = data_pos$matrix_pol, bw = 1.8,
                         minFraction = 0.6, binSize = 0.02)
 data_pos <- groupChromPeaks(data_pos, param = pdp)
@@ -203,7 +219,10 @@ fD_neg <- featureDefinitions(data_neg)
 fmat_pos <- featureValues(data_pos, value = "into", method = "sum")
 fmat_neg <- featureValues(data_neg, value = "into", method = "sum")
 
+```
 
+```{r correspondence-cached, echo = FALSE, eval = file.exists(paste0(RDATA_PATH, "data_postcorrespondence.RData"))}
+load(paste0(RDATA_PATH, "data_postcorrespondence.RData"))
 ```
 
 ```{r correspondence-featureSummary}
@@ -221,20 +240,29 @@ data_pos <- fillChromPeaks(data_pos, param = ChromPeakAreaParam())
 data_neg <- fillChromPeaks(data_neg, param = ChromPeakAreaParam())
 save(data_pos,data_neg, file = paste0(RDATA_PATH, "data_postfilling.RData"))
 
-fmat_pos <- featureValues(data_pos, value = "into", method = "sum")
-fmat_neg <- featureValues(data_neg, value = "into", method = "sum")
+fmat_pos_f <- featureValues(data_pos, value = "into", method = "sum")
+fmat_neg_f <- featureValues(data_neg, value = "into", method = "sum")
 
 #' Percentage of missing values before filling
-sum(is.na(fmat_pos)) / length(fmat_pos) # positive polarity
-sum(is.na(fmat_neg)) / length(fmat_neg) # negative polarity
+sum(is.na(fmat_pos_f)) / length(fmat_pos_f) # positive polarity
+sum(is.na(fmat_neg_f)) / length(fmat_neg_f) # negative polarity
 
 ```
 
 We start with consider features for water and also subset to FS mode only
 
+Positive polarity
+
+
 ```{r}
-fmat_pos_wat <- fmat_pos[, which(data_pos$matrix_pol == "Water_POS" 
+keep_features <- rowSums(is.na(fmat_pos[, which(data_pos$matrix_pol == "Water_POS" 
+                                 & data_pos$mode == "FS")])) <= 3
+fmat_pos_wat <- fmat_pos_f[ keep_features, which(data_pos$matrix_pol == "Water_POS" 
                                  & data_pos$mode == "FS")]
+
+# fmat_pos_wat <- fmat_pos_f[, which(data_pos$matrix_pol == "Water_POS" 
+#                                  & data_pos$mode == "FS")]
+  
 # Exclude rows with NA
 fmat_pos_wat <- na.omit(fmat_pos_wat)
 ```
@@ -325,11 +353,214 @@ dev.off()
 
 ```
 
+- [ ] let's see how to proceed from here... maybe feature grouping? Install
+      `RforMassSpectrometry/MsFeatures` for that and have a look at its
+      documentation and vignette. We want to group features if the have about
+      the same retention time and then have also correlated abundances.
+      
+Grouping features
+
+```{r}
+plot(sign_f$rtmed, sign_f$mzmed,
+     xlab = "retention time", ylab = "m/z", main = "features",
+     col = "#00000060")
+grid()
+```
+
+
+```{r}
+se_pos <- quantify(data_pos, method = "sum", value = "into")
+se <- se_pos[sign_f$sign_f_id, which(data_pos$matrix_pol == "Water_POS" & 
+                                       data_pos$mode == "FS")]
+se <- groupFeatures(se, param = SimilarRtimeParam(2), rtime = "rtmed")
+table(featureGroups(se))
+```
+
+```{r}
+split(rowData(se)$rtmed, featureGroups(se)) %>%
+vapply(FUN = mean, numeric(1)) %>%
+sort()
+# rowData(se)$feature_group <- NULL
+```
+
+```{r}
+library(pheatmap)
+fvals <- log2(assay(se))
+
+cormat <- cor(t(fvals), use = "pairwise.complete.obs")
+ann <- data.frame(fgroup = featureGroups(se))
+rownames(ann) <- rownames(cormat)
+
+res <- pheatmap(cormat, annotation_row = ann, cluster_rows = TRUE,
+                cluster_cols = TRUE)
+```
+
+```{r}
+se <- groupFeatures(se, AbundanceSimilarityParam(threshold = 0.7,
+                                                 transform = log2), i = 1)
+table(featureGroups(se))
+```
+
+```{r}
+fts <- grep("FG.003", featureGroups(se))
+pairs(t(fvals[fts, ]), gap = 0.1, main = "FG.003")
+```
+
+```{r}
+tmp <- as.data.frame(rowData(se)[fts, c("rtmed", "mzmed", "feature_group")])
+tmp <- tmp[order(tmp$feature_group), ]
+knitr::kable(tmp)
+```
+
+NEGATIVE
+```{r}
+keep_features <- rowSums(is.na(fmat_neg[, which(data_neg$matrix_pol == "Water_NEG" 
+                                 & data_neg$mode == "FS")])) <= 3
+fmat_neg_wat <- fmat_neg_f[ keep_features, which(data_neg$matrix_pol == "Water_NEG" 
+                                 & data_pos$mode == "FS")]
+
+# fmat_neg_wat <- fmat_neg_f[, which(data_neg$matrix_pol == "Water_NEG" 
+#                                  & data_neg$mode == "FS")]
+  
+# Exclude rows with NA
+fmat_neg_wat <- na.omit(fmat_neg_wat)
+```
+
+and log2 transform the abundances (and keep only rows without missing values)
+
+```{r}
+fmat_neg_watl2 <- log2(fmat_neg_wat)
+```
+
+We perform a t-test to see if there is a significant positive difference between
+samples with high concentrations of standards and samples with low concentration
+
+```{r}
+# H0: high==low vs H1: H0^c
+high <- grep("^High", colnames(fmat_neg_watl2)) #c(1,3,6)
+low <- grep("^Low", colnames(fmat_neg_watl2)) #c(2,4,5)
+
+pvalues <- apply(fmat_neg_watl2, 1, function(x) {
+    res <- t.test(x[high], x[low], mu = 0)
+    c(pvalue = res$p.value,
+      M = unname(res$estimate[1] - res$estimate[2]))
+})
+pvalues <- t(pvalues)
+# Can data be assumed normal?
+# hist(apply(fmat_neg_watl2, 1, function(x) shapiro.test(x[high]-x[low])$p.value))
+```
+
+
+```{r Volcano-plot-pvalues, fig.path = IMAGE_PATH, fig.cap = "Volcano plot of p-values.", fig.width = 7, fig.height = 5}
+# Volcano plot
+plot(pvalues[, "M"], -log10(pvalues[, "pvalue"]), pch = 21, col = "#00000080",
+     bg = "#00000020", xlab = "M", ylab = expression(-log[10]~(p)))
+```
+
+What's not clear to me:
+- Why do we have so many features *significant*?
+- Why do we have features with higher abundance in low compared to high?
+
+TODO:
+- [ ] (pandoc) table with the *significant* features (those with pvalue < 0.05
+      and a M-value > 3 (8-times higher concentration in high)): columns:
+      feature id, mzmed, rtmed (from `featureDefinitions`), M, pvalue. Order
+      them by rtmed.
+      
+
+```{r, echo = FALSE, results = "asis"}
+#sign_f_indexes <- which(pvalues[, "pvalue"] < 0.05 & pvalues[, "M"] > 3)
+sign_f_id <- rownames(fmat_neg_wat)[which(pvalues[, "pvalue"] < 0.05 & pvalues[, "M"] > 3)]
+sign_f <- cbind(sign_f_id, fD_neg[sign_f_id,c("mzmed", "rtmed")], 
+               pvalues[sign_f_id,])
+sign_f <- sign_f[order(sign_f[, "rtmed" ], decreasing = FALSE),]
+pandoc.table(data.frame(sign_f), style = "rmarkdown", caption = "Significant features")
+```
+- [ ] plot all significant features (export as png file). Use the
+      `featureChromatograms` function (with parameters `expandRt = 2` and
+      `filled = TRUE`) to extract the EIC and plot that. Add also a vertical
+      line to the plot where we expect one of the standards from mix01 to be
+      measured. Look through all plots and see if maybe some have ~ the same
+      retention time and similar peak shape (could be different adducts/ions of
+      the same compound).
+
+```{r}
+f_chrs <- featureChromatograms(data_neg, expandRt = 2, 
+                               features = sign_f_id, filled = TRUE)
+#plot(f_chrs[1, match(colnames(fmat_neg_wat), f_chrs$mzML)])
+```
+
+
+```{r plotfeatures}
+# Plot all the features and save their plot as a png files in the 
+# selectedfeatures folder 
+if(!dir.exists(paste0(IMAGE_PATH, "selectedfeatures")))
+  dir.create(paste0(IMAGE_PATH, "selectedfeatures"))
+col_hl <- rep(brewer.pal(5, "Set1")[3], ncol(f_chrs)) #verde
+col_hl[low] <- brewer.pal(5, "Set1")[4] # viola
+for (i in 1:nrow(f_chrs))
+{
+png(filename = paste0(IMAGE_PATH, "selectedfeatures/feature", i, ".png"), width=700, height=500)
+chr_obj=f_chrs[i, match(colnames(fmat_neg_wat), f_chrs$mzML)]
+plot(chr_obj, col = col_hl, 
+     peakBg = paste0(col_hl[chromPeaks(chr_obj)[, "sample"]], 40))
+legend("topright", col = brewer.pal(5, "Set1")[c(3,4)],
+       legend = c("high","low"), lwd = 1, cex = 1)
+abline(v = std_dilution01$RT, lty = 3, col = "grey")
+dev.off()
+}
+
+```
 
 - [ ] let's see how to proceed from here... maybe feature grouping? Install
       `RforMassSpectrometry/MsFeatures` for that and have a look at its
       documentation and vignette. We want to group features if the have about
       the same retention time and then have also correlated abundances.
+      
+Grouping features
+
+```{r}
+plot(sign_f$rtmed, sign_f$mzmed,
+     xlab = "retention time", ylab = "m/z", main = "features",
+     col = "#00000060")
+grid()
+```
+
+
+```{r}
+se_neg <- quantify(data_neg, method = "sum", value = "into")
+se <- se_neg[sign_f$sign_f_id, which(data_neg$matrix_pol == "Water_neg" & 
+                                       data_neg$mode == "FS")]
+se <- groupFeatures(se, param = SimilarRtimeParam(2), rtime = "rtmed")
+table(featureGroups(se))
+```
+
+```{r}
+split(rowData(se)$rtmed, featureGroups(se)) %>%
+vapply(FUN = mean, numeric(1)) %>%
+sort()
+# rowData(se)$feature_group <- NULL
+```
+
+```{r}
+library(pheatmap)
+fvals <- log2(assay(se))
+
+cormat <- cor(t(fvals), use = "pairwise.complete.obs")
+ann <- data.frame(fgroup = featureGroups(se))
+rownames(ann) <- rownames(cormat)
+
+res <- pheatmap(cormat, annotation_row = ann, cluster_rows = TRUE,
+                cluster_cols = TRUE)
+```
+
+```{r}
+se <- groupFeatures(se, AbundanceSimilarityParam(threshold = 0.7,
+                                                 transform = log2), i = 1)
+table(featureGroups(se))
+```
+
+
 
 
 # Session information
