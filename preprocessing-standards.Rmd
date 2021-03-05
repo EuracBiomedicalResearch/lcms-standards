@@ -67,6 +67,7 @@ library(MetaboCoreUtils)
 library(MsCoreUtils)
 library(MsFeatures)
 library(SummarizedExperiment)
+library(CompMetaboTools)
 
 std_serum_files <- read.table("data/std_serum_files.txt", header = TRUE)
 ```
@@ -163,7 +164,6 @@ load(paste0(RDATA_PATH, "data_peakdetection.RData"))
 mnp <- MergeNeighboringPeaksParam(expandRt = 2.5, expandMz = 0.001,
                                   minProp = 3/4)
 data <- refineChromPeaks(data, param = mnp)
-pks <- chromPeaks(data)
 save(data, file = paste0(RDATA_PATH, "data_refined.RData"))
 ```
 
@@ -197,6 +197,7 @@ legend("topright", col = col_matrix_pol,
 - [ ] table with the number of peaks per file.
 
 ```{r, echo = FALSE, results = "asis"}
+pks <- chromPeaks(data)
 nppf <- cbind(data$mzML, as.numeric(table(pks[, "sample"])))
 colnames(nppf) <- c("file name", "number of peaks")
 pandoc.table(nppf, style = "rmarkdown", caption = "Number of peaks per file")
@@ -477,6 +478,97 @@ plotOverlay(eics, col = cols[featureGroups(data_subs)[fts]], lwd = 2)
 plotOverlay(normalize(eics), col = cols[featureGroups(data_subs)[fts]], lwd = 2)
 ```
 
+Compute exact masses of standars
+```{r}
+frmls <- std_dilution01[, "formula"]
+masses <- sapply(frmls, function(formula) getMolecule(formula)$exactmass)
+```
+
+Compute m/z of possible adducts of the standars
+```{r}
+#mz_adducts <- mass2mz(masses, c("[M+H]+","[M+Na]+"))
+mz_adducts <- mass2mz(masses, adductNames(ifelse(pol == "POS", "positive", "negative")))
+ord <- order(mz_adducts[, 1])
+frmls <- frmls[ord]
+info_stds <- std_dilution01 [ord, ]
+mz_adducts <- mz_adducts[ord, ]
+```
+
+mzmed of significant features
+```{r}
+mzmed_f <- sign_f$mzmed
+names(mzmed_f) <- sign_f$sign_f_id
+mzmed_f <- sort(mzmed_f)
+```
+
+Compute matrix of matchings
+```{r}
+#closest(sort(sign_f$mzmed),sort(mz_adducts[,1]), tolerance = 0, ppm = 20)
+matches_mat <-apply(mz_adducts, 2, function(col) closest(mzmed_f, col,
+                                                         tolerance = 0, ppm = 20))
+rownames(matches_mat)=names(mzmed_f)
+```
+
+
+```{r}
+# from adduct to feature
+rownames(matches_mat)[which(!is.na(matches_mat[, "[M+H]+"]))] 
+matches_mat[which(!is.na(matches_mat[,"[M+H]+"])), "[M+H]+"] 
+# from feature to adduct
+colnames(matches_mat)[which(!is.na(matches_mat["FT0463", ]))] 
+frmls[matches_mat["FT0463", which(!is.na(matches_mat["FT0463", ]))]] 
+sign_f[which(sign_f[,"sign_f_id"] =="FT0463"), ]
+```
+
+
+```{r}
+get_adducts <- function(ft, matches_mat, info_stds = NULL)
+{
+  addnames <- colnames(matches_mat)[which(!is.na(matches_mat[ft, ]))]
+  res <- cbind(addnames, 
+               info_stds[matches_mat[ft, which(!is.na(matches_mat[ft, ]))], ])
+  res
+}
+
+#get_adducts(ft="FT0463", matches_mat, info_stds[,c("name", "formula")])
+```
+
+```{r}
+matchings=NULL
+for (i in 1:nrow(sign_f))
+{
+  addcts=get_adducts(ft=sign_f$sign_f_id[i], matches_mat, 
+                     info_stds[, c("name", "formula")])
+  if(nrow(addcts)>0)
+    matchings=rbind(matchings,cbind(id=sign_f$sign_f_id[i],
+                                    group=sign_f$feature_group[i],addcts)) 
+}
+```
+
+Matchings per group feature
+```{r}
+matchings_groups <- lapply(unique(matchings$group), function(x) matchings[which(matchings$group==x), c("addnames","name","formula")])
+names(matchings_groups)=unique(matchings$group)
+```
+
+Plot attempts: still to complete
+
+```{r}
+pdf(paste0(IMAGE_PATH,"matchings.pdf"), width=20,height=10)
+par(mar=c(5.1, 10, 4.1, 2.1))
+v=as.vector(matches_mat)
+x=rep(1:nrow(matches_mat), ncol(matches_mat))
+y=rep(1:ncol(matches_mat), each=nrow(matches_mat))
+x[is.na(v)]=NA
+y[is.na(v)]=NA
+plot(x,y, ylim=c(0,40), col=rainbow(15)[v], xlab="features", ylab= "adducts", xaxt="n", yaxt="n", pch = 16)
+axis(side=1, at = 1:nrow(matches_mat), labels= FALSE)
+axis(side=2, at = 1:ncol(matches_mat), labels= FALSE)
+text(x, y, labels=frmls[v], cex= 0.7, pos=3, srt =90)
+text(par("usr")[1], 1:ncol(matches_mat), labels = colnames(matches_mat), srt = 0, pos = 2, xpd = TRUE)
+abline(h=1:ncol(matches_mat),col="grey85")
+dev.off()
+```
 
 # Session information
 
