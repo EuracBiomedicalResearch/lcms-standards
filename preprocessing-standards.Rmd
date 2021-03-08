@@ -274,6 +274,9 @@ sum(is.na(fmat_neg_f)) / length(fmat_neg_f) # negative polarity
 
 We start to consider features for water and also subset to FS mode only
 
+
+## Standards solved in pure water
+
 Choose subsetting
 
 ```{r}
@@ -594,97 +597,57 @@ tmp <- lapply(sign_f$sign_f_id, function(z) {
 })
 matchings <- do.call(rbind, tmp)
 rownames(matchings) <- NULL
-matchings$feature_group <-
-    sign_f$feature_group[match(matchings$feature_id, sign_f$sign_f_id)]
 ```
 
-Matchings per group feature
-```{r}
-matchings_groups <- lapply(unique(matchings$group), function(x)
-  matchings[which(matchings$group == x), c("id", "add_name", "name", "formula")])
-names(matchings_groups)=unique(matchings$group)
-```
-
-Plot of the matchings attempt. Features belonging to the same group have been 
-connected with a straight line 
-
-```{r matchings-plot, fig.path = IMAGE_PATH, fig.cap = "Plot of the matchings. Features belonging to the same group have been connected with a straight line.", fig.width = 6, fig.height = 3}
-par(mar = c(5.1, 5, 4.1, 2.1))
-angle_labels <- 30
-addmatched <- unique(matchings$add_name)
-xlim <- c(0, nrow(matchings) + 1)
-ylim <- c(0, length(addmatched) + 1)
-x <- match(matchings_groups[[1]][, "id"], matchings$id)
-y <- match(matchings_groups[[1]][, "add_name"], addmatched)
-plot(x, y, xlim = xlim, ylim = ylim, type = "l", xlab ="features", 
-     ylab = "adducts", xaxt = "n", yaxt= "n")
-axis(side = 1, at = 1:nrow(matchings), labels = FALSE)
-axis(side = 2, at = 1:length(addmatched), labels = FALSE)
-abline(v = 1:nrow(matchings), h = 1:length(addmatched), col = "gray85", lty = 3)
-text(par("usr")[1], 1:length(addmatched), labels = addmatched, srt = 0, pos = 2,
-     xpd = TRUE, cex= 0.7)
-text(1:nrow(matchings), par("usr")[3]-1, labels = matchings$id, srt = 0, pos = 1, 
-     xpd = TRUE, cex= 0.7, srt= 90)
-points(x, y, pch = 16, 
-       col=rainbow(15)[match(matchings_groups[[1]][, "name"], table1$name)])
-text(x, y, labels = matchings_groups[[1]][, "name"], cex = 0.7, pos = 3, 
-     srt = angle_labels)
-
-for (i in 2: length(matchings_groups))
-{
-  x <- match(matchings_groups[[i]][, "id"], matchings$id)
-  y <- match(matchings_groups[[i]][, "add_name"], addmatched)
-  points(x, y, xlim = xlim, ylim = ylim, type= "l")
-  points(x, y, pch = 16, 
-         col=rainbow(15)[match(matchings_groups[[i]][, "name"], table1$name)])
-  text(x, y, labels = matchings_groups[[i]][, "name"], cex= 0.7, pos = 3, 
-       srt = angle_labels)
-}
-
-```
-
-Here compare the retention time of adducts that are both in the found matchings 
-and in the standards_dilution.txt file
+We next store this mapping information into a SQLite database.
 
 ```{r}
-compare_rt <- NULL
-for (i in 1:nrow(matchings))
-{
-  idx <- which(table1[,"name"] == matchings$name[i] & 
-                 table1[,pol] == matchings$add_name[i])
-  if(length(idx) > 0) 
-    compare_rt=rbind(compare_rt, cbind(matchings[i, ], RT = table1[idx, "RT"]))
-}
+compound <- table1[, c("name", "formula", "RT", pol)]
+feature_to_compound <- matchings[, c("feature_id", "adduct", "name")]
+feature <- as.data.frame(sign_f)
+colnames(feature)[1] <- "feature_id"
 
-compare_rt <- cbind(compare_rt, sign_f[match(compare_rt$id,sign_f$sign_f_id),c("rtmed","rtmed_group")])
-rownames(compare_rt)=1:nrow(compare_rt)
-pandoc.table(compare_rt[,c("name", "add_name", "rtmed", "RT")], style = "rmarkdown")
-```
-
-```{r}
-compound <- table1[,c("name", "formula", "RT", pol)]
-feature_to_compound <- matchings[,c("id", "add_name", "name")]
-colnames(feature_to_compound) <- c("feature_id", "add_name", "comp_name") 
-feature <- data.frame(sign_f)
-colnames(feature) <- c("id", "mzmed", "rtmed", "pvalue", "M", "f_group", "rtmed_group")
-
+library(RSQLite)
 con <- dbConnect(RSQLite::SQLite(), ":memory:")
 dbWriteTable(con, "feature", feature, append = TRUE)
 dbWriteTable(con, "compound", compound, append = TRUE)
 dbWriteTable(con, "feature_to_compound", feature_to_compound, 
              append = TRUE)
-dbplyr::src_dbi(con)
-
-dbplyr::src_dbi(con)
-summary_table <- tbl(con, sql("SELECT compound.name, add_name, feature.id, 
-                           feature.f_group, feature.rtmed, feature.M, 
-                           feature.pvalue, compound.POS, compound.RT 
-                  FROM compound
-                  INNER JOIN feature_to_compound ON compound.name == comp_name
-                  INNER JOIN feature ON feature_id == feature.id"))
-
-summary_table
 ```
+
+The table below summarizes the mapping of features to adducts of standards.
+
+```{r, results = "asis", echo = FALSE}
+stab <- dbGetQuery(
+    con, paste0("select compound.name, adduct, feature.feature_id, ",
+                "feature_group, rtmed, RT from feature_to_compound ",
+                "join compound on ",
+                "(feature_to_compound.name = compound.name) join feature on ",
+                "(feature_to_compound.feature_id = feature.feature_id)"))
+stab <- stab[order(tab$name), ]
+rownames(stab) <- NULL
+pandoc.table(stab, style = "rmarkdown", split.table = "Inf",
+             caption = paste0("Matching of theoretical adducts of standards ",
+                              "with m/z of features with a significant ",
+                              "difference of abundances."))
+```
+
+For the standards below now feature was identified.
+
+```{r, results = "asis", echo = FALSE}
+pandoc.table(compound[!compound$name %in% stab$name, ],
+             style = "rmarkdown", caption = "Standards without features.")
+```
+
+TODO
+	- for each standard, create overlapping EIC plots (like in code block
+      *feature_group_plots*) for the assigned features.
+
+
+## Standards solved in human serum samples
+
+Next we evaluate the data for the lab standards solved in human serum samples.
+
 
 # Session information
 
