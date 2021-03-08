@@ -19,14 +19,14 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 
 ```{r}
 mix <- 1
-mix_name <- paste0("Mix", ifelse(mix<10,paste0(0,mix),mix)) 
+mix_name <- paste0("Mix", ifelse(mix < 10, paste0(0, mix), mix)) 
 ```
 
 ```{r general-settings, echo = FALSE}
 IMAGE_PATH <- paste0("images/preprocessing-standards/", tolower(mix_name),"/")
 RDATA_PATH <- paste0("data/RData/preprocessing-standards/", tolower(mix_name), "/")
-dir.create(IMAGE_PATH, showWarnings = FALSE)
-dir.create(RDATA_PATH, showWarnings = FALSE)
+dir.create(IMAGE_PATH, showWarnings = FALSE, recursive = TRUE)
+dir.create(RDATA_PATH, showWarnings = FALSE, recursive = TRUE)
 
 ## Define the *base* path where mzML files can be found. This is
 ## /data/massspec/mzML/ on the cluster
@@ -163,7 +163,6 @@ load(paste0(RDATA_PATH, "data_peakdetection.RData"))
 mnp <- MergeNeighboringPeaksParam(expandRt = 2.5, expandMz = 0.001,
                                   minProp = 3/4)
 data <- refineChromPeaks(data, param = mnp)
-pks <- chromPeaks(data)
 save(data, file = paste0(RDATA_PATH, "data_refined.RData"))
 ```
 
@@ -194,13 +193,21 @@ legend("topright", col = col_matrix_pol,
 # The last two peaks have not been detected
 ```
 
-- [ ] table with the number of peaks per file.
+We can clearly see a difference in signal for the different samples in this
+experiment.
+
+The number of detected chromatographic peaks per file is shown below.
 
 ```{r, echo = FALSE, results = "asis"}
-nppf <- cbind(data$mzML, as.numeric(table(pks[, "sample"])))
+nppf <- cbind(data$mzML, as.numeric(table(chromPeaks(data)[, "sample"])))
 colnames(nppf) <- c("file name", "number of peaks")
 pandoc.table(nppf, style = "rmarkdown", caption = "Number of peaks per file")
 ```
+
+A larger number of peaks is detected in samples with a high concentration of the
+internal standards. As can be expected, the number of peaks is higher for files
+with the internal standards added to a QC samples compared to the files with
+internal standards in water.
 
 We split the data set for positive and negative polarity
 
@@ -209,8 +216,8 @@ data_pos <- filterFile(data, file = which(data$polarity == "POS"))
 data_neg <- filterFile(data, file = which(data$polarity == "NEG"))
 ```
 
-- [ ] run correspondence analysis (separately for the positive and negative
-      polarity).
+Next we perform a correspondence analysis to group chromatographic peaks across
+samples.
 
 ```{r correspondence}
 pdp <- PeakDensityParam(sampleGroups = data_pos$matrix_pol, bw = 1.8,
@@ -264,24 +271,27 @@ sum(is.na(fmat_neg_f)) / length(fmat_neg_f) # negative polarity
 
 We start to consider features for water and also subset to FS mode only
 
-Choose substetting
+Choose subsetting
+
 ```{r}
 # Maybe these can become parameters of a function
 pol <- "POS" # "POS" or "NEG"
 matr <- "Water" # "Water" or "Serum"
-fmat <- get(paste0("fmat_",tolower(pol)))
-fmat_f <- get(paste0("fmat_",tolower(pol),"_f"))
-fD <- get(paste0("fD_",tolower(pol)))
-data_subs <- get(paste0("data_",tolower(pol))) #
-mp=paste0(matr,"_",pol)
+fmat <- get(paste0("fmat_", tolower(pol)))
+fmat_f <- get(paste0("fmat_", tolower(pol),"_f"))
+fD <- get(paste0("fD_", tolower(pol)))
+data_subs <- get(paste0("data_", tolower(pol))) #
+mp <- paste0(matr, "_", pol)
 
 ```
 
+We next restrict the analysis to features for which a peak was detected in at
+least 2 samples.
 
 ```{r}
 keep_features <- rowSums(!is.na(fmat[, which(data_subs$matrix_pol == mp 
                                  & data_subs$mode == "FS")])) >= 2
-fmat_mp <- fmat_f[ keep_features, which(data_subs$matrix_pol == mp 
+fmat_mp <- fmat_f[keep_features, which(data_subs$matrix_pol == mp 
                                  & data_subs$mode == "FS")]
 
 # fmat_mp <- fmat_f[, which(data_subs$matrix_pol == mp 
@@ -290,6 +300,9 @@ fmat_mp <- fmat_f[ keep_features, which(data_subs$matrix_pol == mp
 # Exclude rows with NA
 fmat_mp <- na.omit(fmat_mp)
 ```
+
+This subsetted the data from `r length(keep_features)` to in total 
+`r nrow(fmat_mp)` features.
 
 and log2 transform the abundances (and keep only rows without missing values)
 
@@ -334,13 +347,14 @@ TODO:
 ```{r, echo = FALSE, results = "asis"}
 #sign_f_indexes <- which(pvalues[, "pvalue"] < 0.05 & pvalues[, "M"] > 3)
 sign_f_id <- rownames(fmat_mp)[which(pvalues[, "pvalue"] < 0.05 & 
-                                       pvalues[, "M"] > 3)]
-sign_f <- cbind(sign_f_id, fD[sign_f_id,c("mzmed", "rtmed")], 
-               pvalues[sign_f_id,])
-sign_f <- sign_f[order(sign_f[, "rtmed" ], decreasing = FALSE),]
+                                     pvalues[, "M"] > 3)]
+sign_f <- cbind(sign_f_id, fD[sign_f_id, c("mzmed", "rtmed")], 
+               pvalues[sign_f_id, ])
+sign_f <- sign_f[order(sign_f[, "rtmed" ], decreasing = FALSE), ]
 pandoc.table(data.frame(sign_f), style = "rmarkdown", 
              caption = "Significant features")
 ```
+
 - [ ] plot all significant features (export as png file). Use the
       `featureChromatograms` function (with parameters `expandRt = 2` and
       `filled = TRUE`) to extract the EIC and plot that. Add also a vertical
@@ -360,21 +374,21 @@ save(f_chrs, file = paste0(RDATA_PATH, "f_chrs_", mp, ".RData"))
 ```{r plotfeatures}
 # Plot all the features and save their plot as a png files in the 
 # selectedfeatures folder 
-if(!dir.exists(paste0(IMAGE_PATH, "selectedfeatures", mp)))
-  dir.create(paste0(IMAGE_PATH, "selectedfeatures", mp))
+dir.create(paste0(IMAGE_PATH, "selectedfeatures", mp),
+           showWarnings = FALSE, recursive = TRUE)
 col_hl <- rep(brewer.pal(5, "Set1")[3], ncol(f_chrs)) # green
 col_hl[low] <- brewer.pal(5, "Set1")[4] # purple
-for (i in 1:nrow(f_chrs))
-{
-png(filename = paste0(IMAGE_PATH, "selectedfeatures", mp,"/feature", i, ".png"), 
-    width=700, height=500)
-chr_obj=f_chrs[i, match(colnames(fmat_mp), f_chrs$mzML)]
-plot(chr_obj, col = col_hl, 
-     peakBg = paste0(col_hl[chromPeaks(chr_obj)[, "sample"]], 40))
-legend("topright", col = brewer.pal(5, "Set1")[c(3, 4)],
-       legend = c("high", "low"), lwd = 1, cex = 1)
-abline(v = std_dilution01$RT, lty = 3)
-dev.off()
+for (i in 1:nrow(f_chrs)) {
+    png(filename = paste0(IMAGE_PATH, "selectedfeatures",
+                          mp, "/", sign_f_id[i], ".png"), 
+        width = 10, height = 6, res = 300, units = "cm", pointsize = 4)
+    chr_obj <- f_chrs[i, match(colnames(fmat_mp), f_chrs$mzML)]
+    plot(chr_obj, col = col_hl, 
+         peakBg = paste0(col_hl[chromPeaks(chr_obj)[, "sample"]], 40))
+    legend("topright", col = brewer.pal(5, "Set1")[c(3, 4)],
+           legend = c("high", "low"), lwd = 1, cex = 1)
+    abline(v = std_dilution01$RT, lty = 3)
+    dev.off()
 }
 
 ```
@@ -384,7 +398,8 @@ dev.off()
       documentation and vignette. We want to group features if the have about
       the same retention time and then have also correlated abundances.
 
-# Grouping of features      
+## Grouping of features
+
 ```{r}
 plot(sign_f$rtmed, sign_f$mzmed,
      xlab = "retention time", ylab = "m/z", main = "features",
@@ -394,15 +409,20 @@ grid()
 ```
 
 ```{r}
+library(CompMetaboTools)
 featureGroups(data_subs) <- NA_character_
 featureDefinitions(data_subs)[sign_f$sign_f_id, "feature_group"] <- "FG"
-table(featureGroups(data_subs))
 ```
 
- Grouping of features by similar retention time
-```{r}
-data_subs <- groupFeatures(data_subs, param = SimilarRtimeParam(4))
-table(featureGroups(data_subs))
+Grouping of features by similar retention time.
+
+```{r, results = "asis"}
+data_subs <- groupFeatures(data_subs, param = SimilarRtimeParam(diffRt = 4))
+
+sign_f$feature_group <-
+    featureDefinitions(data_subs)[sign_f$sign_f_id, "feature_group"]
+sign_f <- sign_f[order(sign_f$feature_group, sign_f$mzmed), ]
+pandoc.table(as.data.frame(sign_f), style = "rmarkdown")
 ```
 
 ```{r}
@@ -420,12 +440,16 @@ res <- pheatmap(cormat, annotation_row = ann, cluster_rows = TRUE,
 ```
 
 Grouping of features by abundance correlation across samples
-```{r}
+```{r, results = "asis"}
 data_subs <- groupFeatures(data_subs, 
-                           AbundanceSimilarityParam(threshold = 0.7, 
+                           AbundanceSimilarityParam(threshold = 0.5, 
                                                     transform = log2), 
                            filled = TRUE, method = "sum")
-table(featureGroups(data_subs))
+
+sign_f$feature_group <-
+    featureDefinitions(data_subs)[sign_f$sign_f_id, "feature_group"]
+sign_f <- sign_f[order(sign_f$feature_group, sign_f$mzmed), ]
+pandoc.table(as.data.frame(sign_f), style = "rmarkdown")
 ```
 
 ```{r}
@@ -434,31 +458,58 @@ grid()
 ```
 
 Grouping of features by EIC correlation
-```{r}
-data_subs <- groupFeatures(data_subs, EicCorrelationParam(threshold = 0.7, n = 2,
-                                                  clean = TRUE))
-table(featureGroups(data_subs))
+```{r, results = "hide", message = "FALSE"}
+data_subs <- groupFeatures(
+    data_subs, EicCorrelationParam(threshold = 0.7, n = 2, clean = TRUE))
 ```
 
 ```{r, echo = FALSE, results = "asis"}
-# Table with significant features and groups of features
-fD=featureDefinitions(data_subs)
-sign_f <- cbind(sign_f_id, fD[sign_f_id,c("mzmed", "rtmed")], 
-               pvalues[sign_f_id,], 
-               feature_group = fD[sign_f_id, c("feature_group")])
-sign_f <- sign_f[order(sign_f[, "rtmed" ]),]
-sign_f <- sign_f[order(sign_f[, "feature_group" ]),]
-rtmed_f=split(sign_f$rtmed, sign_f$feature_group) %>%
-vapply(FUN = mean, numeric(1))
-rtmed_f=rep(rtmed_f, unname(table(sign_f$feature_group)))
-sign_f <- cbind(sign_f,rtmed_f)
-sign_f <- sign_f[order(sign_f[, "rtmed_f" ]),]
-pandoc.table(data.frame(sign_f), style = "rmarkdown", caption = "Significant features")
+sign_f$feature_group <-
+    featureDefinitions(data_subs)[sign_f$sign_f_id, "feature_group"]
+sign_f <- sign_f[order(sign_f$feature_group, sign_f$mzmed), ]
+pandoc.table(as.data.frame(sign_f), style = "rmarkdown")
 ```
 
-```{r}
-plotFeatureGroups(data_subs)
-grid()
+We next create plots for each feature group.
+
+```{r feature_group_plots, echo = FALSE}
+## order feature groups by retention time and plot each.
+sign_f <- sign_f[order(sign_f$rtmed), ]
+fgs <- unique(sign_f$feature_group)
+dr <- paste0(IMAGE_PATH, "feature_groups/")
+dir.create(dr, showWarnings = FALSE, recursive = TRUE)
+for (i in seq_along(fgs)) {
+    fn <- paste0(dr, i, "-", fgs[i])
+    fts <- sign_f$sign_f_id[sign_f$feature_group == fgs[i]]
+    eics <- featureChromatograms(data_subs, features = fts, filled = TRUE,
+                                 n = 2, expandRt = 3)
+    png(paste0(fn, "-joy.png"), width = 12, height = 6,
+        units = "cm", res = 300, pointsize = 4)
+    par(mfrow = c(1, 2), mar = c(3.5, 3.5, 1, 0.5))
+    if (nrow(eics) > 1) {
+        ypos <- joyPlot(eics, sample = 1, main = pData(eics)$mzML[1])
+        abline(h = ypos, col = "#00000040", lty = 2)
+        text(x = min(rtime(eics[1, 1])), y = ypos, pos = 4,
+             labels = round(rowMeans(mz(eics)), 3), col = "#00000080")
+        abline(v = std_dilution01$RT, lty = 3, col = "#00000040")
+        ypos <- joyPlot(eics, sample = 2, main = pData(eics)$mzML[1])
+        abline(h = ypos, col = "#00000040", lty = 2)
+        text(x = min(rtime(eics[1, 2])), y = ypos, pos = 4,
+             labels = round(rowMeans(mz(eics)), 3), col = "#00000080")
+        abline(v = std_dilution01$RT, lty = 3, col = "#00000040")
+    } else plot(3, 3, pch = NA)
+    dev.off()
+    png(paste0(fn, ".png"), width = 12, height = 12,
+        units = "cm", res = 300, pointsize = 4)
+    par(mfrow = c(2, 2), mar = c(3.5, 3.5, 1, 0.5))
+    plotOverlay(eics[, 1, drop = FALSE])
+    abline(v = std_dilution01$RT, lty = 3, col = "#00000040")
+    plotOverlay(eics[, 2, drop = FALSE])
+    abline(v = std_dilution01$RT, lty = 3, col = "#00000040")
+    plotOverlay(normalize(eics[, 1, drop = FALSE]))
+    plotOverlay(normalize(eics[, 2, drop = FALSE]))
+    dev.off()
+}
 ```
 
 ```{r}
