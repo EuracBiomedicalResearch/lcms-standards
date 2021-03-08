@@ -67,6 +67,9 @@ library(MetaboCoreUtils)
 library(MsCoreUtils)
 library(MsFeatures)
 library(SummarizedExperiment)
+library(CompMetaboTools)
+library(DBI)
+library(dplyr)
 
 std_serum_files <- read.table("data/std_serum_files.txt", header = TRUE)
 ```
@@ -458,10 +461,17 @@ grid()
 ```
 
 Grouping of features by EIC correlation
-```{r, results = "hide", message = "FALSE"}
-data_subs <- groupFeatures(
-    data_subs, EicCorrelationParam(threshold = 0.7, n = 2, clean = TRUE))
+```{r EIC-grouping, echo = FALSE, eval = !file.exists(paste0(RDATA_PATH, "data_post_grouping", mp, ".RData"))}
+data_subs <- groupFeatures(data_subs, EicCorrelationParam(threshold = 0.7, n = 2,
+                                                  clean = TRUE))
+save(data_subs, file = paste0(RDATA_PATH, "data_post_grouping", mp, ".RData"))
+table(featureGroups(data_subs))
 ```
+
+```{r grouping-cached, echo = FALSE, eval = file.exists(paste0(RDATA_PATH, "data_post_grouping", mp, ".RData"))}
+load(paste0(RDATA_PATH, "data_post_grouping", mp, ".RData"))
+```
+
 
 ```{r, echo = FALSE, results = "asis"}
 sign_f$feature_group <-
@@ -528,6 +538,157 @@ plotOverlay(eics, col = cols[featureGroups(data_subs)[fts]], lwd = 2)
 plotOverlay(normalize(eics), col = cols[featureGroups(data_subs)[fts]], lwd = 2)
 ```
 
+Compute exact masses of standars
+```{r}
+frmls <- std_dilution01[, "formula"]
+masses <- sapply(frmls, function(formula) getMolecule(formula)$exactmass)
+```
+
+Compute m/z of possible adducts of the standars
+```{r}
+#mz_adducts <- mass2mz(masses, c("[M+H]+","[M+Na]+"))
+mz_adducts <- mass2mz(masses, adductNames(ifelse(pol == "POS", "positive", "negative")))
+ord <- order(mz_adducts[, 1])
+frmls <- frmls[ord]
+info_stds <- std_dilution01 [ord, ]
+mz_adducts <- mz_adducts[ord, ]
+```
+
+mzmed of significant features
+```{r}
+mzmed_f <- sign_f$mzmed
+names(mzmed_f) <- sign_f$sign_f_id
+mzmed_f <- sort(mzmed_f)
+```
+
+Compute matrix of matchings
+```{r}
+#closest(sort(sign_f$mzmed),sort(mz_adducts[,1]), tolerance = 0, ppm = 20)
+matches_mat <-apply(mz_adducts, 2, function(col) closest(mzmed_f, col,
+                                                         tolerance = 0, ppm = 20))
+rownames(matches_mat) <- names(mzmed_f)
+```
+
+
+```{r}
+# from adduct to feature
+rownames(matches_mat)[which(!is.na(matches_mat[, "[M+H]+"]))] 
+matches_mat[which(!is.na(matches_mat[,"[M+H]+"])), "[M+H]+"] 
+# from feature to adduct
+colnames(matches_mat)[which(!is.na(matches_mat["FT0463", ]))] 
+frmls[matches_mat["FT0463", which(!is.na(matches_mat["FT0463", ]))]] 
+sign_f[which(sign_f[,"sign_f_id"] == "FT0463"), ]
+```
+
+
+```{r}
+get_adducts <- function(ft, matches_mat, info_stds = NULL)
+{
+  add_name <- colnames(matches_mat)[which(!is.na(matches_mat[ft, ]))]
+  res <- cbind(add_name, 
+               info_stds[matches_mat[ft, which(!is.na(matches_mat[ft, ]))], ])
+  res
+}
+#get_adducts(ft="FT0463", matches_mat, info_stds[,c("name", "formula")])
+```
+
+```{r}
+matchings=NULL
+for (i in 1:nrow(sign_f))
+{
+  addcts <- get_adducts(ft = sign_f$sign_f_id[i], matches_mat, 
+                     info_stds[, c("name", "formula")])
+  if(nrow(addcts)>0)
+    matchings <- rbind(matchings,cbind(id = sign_f$sign_f_id[i],
+                                    group = sign_f$group[i],addcts)) 
+}
+```
+
+Matchings per group feature
+```{r}
+matchings_groups <- lapply(unique(matchings$group), function(x) 
+  matchings[which(matchings$group == x), c("id", "add_name", "name", "formula")])
+names(matchings_groups)=unique(matchings$group)
+```
+
+Plot of the matchings attempt. Features belonging to the same group have been 
+connected with a straight line 
+
+```{r matchings-plot, fig.path = IMAGE_PATH, fig.cap = "Plot of the matchings. Features belonging to the same group have been connected with a straight line.", fig.width = 6, fig.height = 3}
+par(mar = c(5.1, 5, 4.1, 2.1))
+angle_labels <- 30
+addmatched <- unique(matchings$add_name)
+xlim <- c(0, nrow(matchings) + 1)
+ylim <- c(0, length(addmatched) + 1)
+x <- match(matchings_groups[[1]][, "id"], matchings$id)
+y <- match(matchings_groups[[1]][, "add_name"], addmatched)
+plot(x, y, xlim = xlim, ylim = ylim, type = "l", xlab ="features", 
+     ylab = "adducts", xaxt = "n", yaxt= "n")
+axis(side = 1, at = 1:nrow(matchings), labels = FALSE)
+axis(side = 2, at = 1:length(addmatched), labels = FALSE)
+abline(v = 1:nrow(matchings), h = 1:length(addmatched), col = "gray85", lty = 3)
+text(par("usr")[1], 1:length(addmatched), labels = addmatched, srt = 0, pos = 2,
+     xpd = TRUE, cex= 0.7)
+text(1:nrow(matchings), par("usr")[3]-1, labels = matchings$id, srt = 0, pos = 1, 
+     xpd = TRUE, cex= 0.7, srt= 90)
+points(x, y, pch = 16, 
+       col=rainbow(15)[match(matchings_groups[[1]][, "name"], table1$name)])
+text(x, y, labels = matchings_groups[[1]][, "name"], cex = 0.7, pos = 3, 
+     srt = angle_labels)
+
+for (i in 2: length(matchings_groups))
+{
+  x <- match(matchings_groups[[i]][, "id"], matchings$id)
+  y <- match(matchings_groups[[i]][, "add_name"], addmatched)
+  points(x, y, xlim = xlim, ylim = ylim, type= "l")
+  points(x, y, pch = 16, 
+         col=rainbow(15)[match(matchings_groups[[i]][, "name"], table1$name)])
+  text(x, y, labels = matchings_groups[[i]][, "name"], cex= 0.7, pos = 3, 
+       srt = angle_labels)
+}
+
+```
+Here compare the retention time of adducts that are both in the found matchings 
+and in the standards_dilution.txt file
+```{r}
+compare_rt <- NULL
+for (i in 1:nrow(matchings))
+{
+  idx <- which(table1[,"name"] == matchings$name[i] & 
+                 table1[,pol] == matchings$add_name[i])
+  if(length(idx) > 0) 
+    compare_rt=rbind(compare_rt, cbind(matchings[i, ], RT = table1[idx, "RT"]))
+}
+
+compare_rt <- cbind(compare_rt, sign_f[match(compare_rt$id,sign_f$sign_f_id),c("rtmed","rtmed_group")])
+rownames(compare_rt)=1:nrow(compare_rt)
+pandoc.table(compare_rt[,c("name", "add_name", "rtmed", "RT")], style = "rmarkdown")
+```
+
+```{r}
+compound <- table1[,c("name", "formula", "RT", pol)]
+feature_to_compound <- matchings[,c("id", "add_name", "name")]
+colnames(feature_to_compound) <- c("feature_id", "add_name", "comp_name") 
+feature <- data.frame(sign_f)
+colnames(feature) <- c("id", "mzmed", "rtmed", "pvalue", "M", "f_group", "rtmed_group")
+
+con <- dbConnect(RSQLite::SQLite(), ":memory:")
+dbWriteTable(con, "feature", feature, append = TRUE)
+dbWriteTable(con, "compound", compound, append = TRUE)
+dbWriteTable(con, "feature_to_compound", feature_to_compound, 
+             append = TRUE)
+dbplyr::src_dbi(con)
+
+dbplyr::src_dbi(con)
+summary_table <- tbl(con, sql("SELECT compound.name, add_name, feature.id, 
+                           feature.f_group, feature.rtmed, feature.M, 
+                           feature.pvalue, compound.POS, compound.RT 
+                  FROM compound
+                  INNER JOIN feature_to_compound ON compound.name == comp_name
+                  INNER JOIN feature ON feature_id == feature.id"))
+
+summary_table
+```
 
 # Session information
 
