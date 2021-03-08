@@ -461,6 +461,7 @@ grid()
 ```
 
 Grouping of features by EIC correlation
+
 ```{r EIC-grouping, echo = FALSE, eval = !file.exists(paste0(RDATA_PATH, "data_post_grouping", mp, ".RData"))}
 data_subs <- groupFeatures(data_subs, EicCorrelationParam(threshold = 0.7, n = 2,
                                                   clean = TRUE))
@@ -480,7 +481,8 @@ sign_f <- sign_f[order(sign_f$feature_group, sign_f$mzmed), ]
 pandoc.table(as.data.frame(sign_f), style = "rmarkdown")
 ```
 
-We next create plots for each feature group.
+We next create plots for each feature group. These are saved to a folder and not
+displayed here.
 
 ```{r feature_group_plots, echo = FALSE}
 ## order feature groups by retention time and plot each.
@@ -522,39 +524,29 @@ for (i in seq_along(fgs)) {
 }
 ```
 
-```{r}
-# Some groups splitted: FG.010.001, FG.002.001
-fts <- grep("FG.002.001", featureGroups(data_subs))
-eics <- featureChromatograms(data_subs, features = fts,
-                             filled = TRUE, n = 1)
-```
-
-```{r}
-cols <- rainbow(length(fts))
-names(cols) <- unique(featureGroups(data_subs)[fts])
-
-par(mfrow = c(1, 2))
-plotOverlay(eics, col = cols[featureGroups(data_subs)[fts]], lwd = 2)
-plotOverlay(normalize(eics), col = cols[featureGroups(data_subs)[fts]], lwd = 2)
-```
-
 Compute exact masses of standars
+
 ```{r}
 frmls <- std_dilution01[, "formula"]
 masses <- sapply(frmls, function(formula) getMolecule(formula)$exactmass)
 ```
 
-Compute m/z of possible adducts of the standars
+Compute m/z of possible adducts of the standards
+
 ```{r}
 #mz_adducts <- mass2mz(masses, c("[M+H]+","[M+Na]+"))
-mz_adducts <- mass2mz(masses, adductNames(ifelse(pol == "POS", "positive", "negative")))
-ord <- order(mz_adducts[, 1])
-frmls <- frmls[ord]
-info_stds <- std_dilution01 [ord, ]
-mz_adducts <- mz_adducts[ord, ]
+mz_adducts <- mass2mz(
+    masses, adductNames(ifelse(pol == "POS", "positive", "negative")))
+rownames(std_dilution01) <- std_dilution01$name
+rownames(mz_adducts) <- rownames(std_dilution01)
+idx <- order(mz_adducts[, 1])
+mz_adducts <- mz_adducts[idx, ]
+std_dilution01 <- std_dilution01[idx, ]
+info_stds <- std_dilution01
 ```
 
 mzmed of significant features
+
 ```{r}
 mzmed_f <- sign_f$mzmed
 names(mzmed_f) <- sign_f$sign_f_id
@@ -563,9 +555,8 @@ mzmed_f <- sort(mzmed_f)
 
 Compute matrix of matchings
 ```{r}
-#closest(sort(sign_f$mzmed),sort(mz_adducts[,1]), tolerance = 0, ppm = 20)
-matches_mat <-apply(mz_adducts, 2, function(col) closest(mzmed_f, col,
-                                                         tolerance = 0, ppm = 20))
+matches_mat <- apply(mz_adducts, 2, function(col)
+    closest(mzmed_f, col, tolerance = 0, ppm = 20))
 rownames(matches_mat) <- names(mzmed_f)
 ```
 
@@ -580,33 +571,36 @@ frmls[matches_mat["FT0463", which(!is.na(matches_mat["FT0463", ]))]]
 sign_f[which(sign_f[,"sign_f_id"] == "FT0463"), ]
 ```
 
+Next we create a table that maps features to compounds' adducts. This table will
+have one entry for each map between one feature and one adduct and this mapping
+can thus be n:m.
 
 ```{r}
-get_adducts <- function(ft, matches_mat, info_stds = NULL)
-{
-  add_name <- colnames(matches_mat)[which(!is.na(matches_mat[ft, ]))]
-  res <- cbind(add_name, 
-               info_stds[matches_mat[ft, which(!is.na(matches_mat[ft, ]))], ])
-  res
+get_adducts <- function(ft, matches_mat, info_stds = NULL) {
+    not_na <- which(!is.na(matches_mat[ft, ]))
+    if (length(not_na))
+        data.frame(
+            feature_id = ft,
+            adduct = colnames(matches_mat)[not_na], 
+            info_stds[matches_mat[ft, not_na], ])
+    else data.frame()
 }
-#get_adducts(ft="FT0463", matches_mat, info_stds[,c("name", "formula")])
+## get_adducts(ft="FT0463", matches_mat, info_stds[,c("name", "formula")])
 ```
 
 ```{r}
-matchings=NULL
-for (i in 1:nrow(sign_f))
-{
-  addcts <- get_adducts(ft = sign_f$sign_f_id[i], matches_mat, 
-                     info_stds[, c("name", "formula")])
-  if(nrow(addcts)>0)
-    matchings <- rbind(matchings,cbind(id = sign_f$sign_f_id[i],
-                                    group = sign_f$group[i],addcts)) 
-}
+tmp <- lapply(sign_f$sign_f_id, function(z) {
+    addcts <- get_adducts(ft = z, matches_mat, info_stds[, c("name", "formula")])
+})
+matchings <- do.call(rbind, tmp)
+rownames(matchings) <- NULL
+matchings$feature_group <-
+    sign_f$feature_group[match(matchings$feature_id, sign_f$sign_f_id)]
 ```
 
 Matchings per group feature
 ```{r}
-matchings_groups <- lapply(unique(matchings$group), function(x) 
+matchings_groups <- lapply(unique(matchings$group), function(x)
   matchings[which(matchings$group == x), c("id", "add_name", "name", "formula")])
 names(matchings_groups)=unique(matchings$group)
 ```
@@ -648,8 +642,10 @@ for (i in 2: length(matchings_groups))
 }
 
 ```
+
 Here compare the retention time of adducts that are both in the found matchings 
 and in the standards_dilution.txt file
+
 ```{r}
 compare_rt <- NULL
 for (i in 1:nrow(matchings))
