@@ -57,7 +57,7 @@ mzML files of one mix of standards.
 
 Below we load all required libraries and the definition of the dataset.
 
-```{r libraries}
+```{r libraries, message = FALSE, warning = FALSE}
 library(xcms)
 library(pander)
 library(RColorBrewer)
@@ -272,92 +272,73 @@ sum(is.na(fmat_neg_f)) / length(fmat_neg_f) # negative polarity
 
 ```
 
-We start to consider features for water and also subset to FS mode only
+We subset the data according to matrix (and polarity) considering FS mode only 
+data
 
+```{r}
+data_WP <- filterFile(data_pos, file = which(data_pos$matrix_pol == "Water_POS" 
+                                   & data_pos$mode == "FS"), 
+                      keepFeatures = TRUE)
+data_WN <- filterFile(data_neg, file = which(data_neg$matrix_pol == "Water_NEG" 
+                                   & data_neg$mode == "FS"), 
+                      keepFeatures = TRUE)
+data_SP <- filterFile(data_pos, file = which(data_pos$matrix_pol == "Serum_POS" 
+                                   & data_pos$mode == "FS"), 
+                      keepFeatures = TRUE)
+data_SN <- filterFile(data_neg, file = which(data_neg$matrix_pol == "Serum_NEG" 
+                                   & data_neg$mode == "FS"), 
+                      keepFeatures = TRUE)
+```
 
 ## Standards solved in pure water
-
-Choose subsetting
-
-```{r}
-# Maybe these can become parameters of a function
-pol <- "POS" # "POS" or "NEG"
-matr <- "Water" # "Water" or "Serum"
-fmat <- get(paste0("fmat_", tolower(pol)))
-fmat_f <- get(paste0("fmat_", tolower(pol),"_f"))
-fD <- get(paste0("fD_", tolower(pol)))
-data_subs <- get(paste0("data_", tolower(pol))) #
-mp <- paste0(matr, "_", pol)
-
-```
-
-We next restrict the analysis to features for which a peak was detected in at
-least 2 samples.
-
-```{r}
-keep_features <- rowSums(!is.na(fmat[, which(data_subs$matrix_pol == mp 
-                                 & data_subs$mode == "FS")])) >= 2
-fmat_mp <- fmat_f[keep_features, which(data_subs$matrix_pol == mp 
-                                 & data_subs$mode == "FS")]
-
-# fmat_mp <- fmat_f[, which(data_subs$matrix_pol == mp 
-#                                  & data_subs$mode == "FS")]
-  
-# Exclude rows with NA
-fmat_mp <- na.omit(fmat_mp)
-```
-
-This subsetted the data from `r length(keep_features)` to in total 
-`r nrow(fmat_mp)` features.
-
-and log2 transform the abundances (and keep only rows without missing values)
-
-```{r}
-fmat_mpl2 <- log2(fmat_mp)
-```
-
-We perform a t-test to see if there is a significant positive difference between
-samples with high concentrations of standards and samples with low concentration
-
-```{r}
-# H0: high==low vs H1: H0^c
-high <- grep("High", colnames(fmat_mpl2)) #c(1,3,6)
-low <- grep("Low", colnames(fmat_mpl2)) #c(2,4,5)
-
-pvalues <- apply(fmat_mpl2, 1, function(x) {
-    res <- t.test(x[high], x[low], mu = 0)
-    c(pvalue = res$p.value,
-      M = unname(res$estimate[1] - res$estimate[2]))
-})
-pvalues <- t(pvalues)
-```
-
-
-```{r Volcano-plot-pvalues, fig.path = IMAGE_PATH, fig.cap = "Volcano plot of p-values.", fig.width = 7, fig.height = 5}
-# Volcano plot
-plot(pvalues[, "M"], -log10(pvalues[, "pvalue"]), pch = 21, col = "#00000080",
-     bg = "#00000020", xlab = "M", ylab = expression(-log[10]~(p)))
-```
-
-What's not clear to me:
-- Why do we have so many features *significant*?
-- Why do we have features with higher abundance in low compared to high?
-
-TODO:
-- [ ] (pandoc) table with the *significant* features (those with pvalue < 0.05
-      and a M-value > 3 (8-times higher concentration in high)): columns:
-      feature id, mzmed, rtmed (from `featureDefinitions`), M, pvalue. Order
-      them by rtmed.
       
+```{r}
+# This function returns a data frame of features with significant difference 
+# betweenn low and high samples ordered according to rtmed
+get_sign_f <- function(data_subs, drawplot = TRUE)
+{
+  fmat <- featureValues(data_subs, value = "into", method = "sum", filled = FALSE)
+  fmat_f <- featureValues(data_subs, value = "into", method = "sum", filled = TRUE)
+  fD <- featureDefinitions(data_subs)
+  keep_features <- rowSums(!is.na(fmat)) >= 2
+  fmat_l2 <- log2(na.omit(fmat_f[keep_features,]))
+  
+  # H0: high==low vs H1: H0^c
+  high <- grep("High", colnames(fmat_l2)) #c(1,3,6)
+  low <- grep("Low", colnames(fmat_l2)) #c(2,4,5)
+  
+  pvalues <- apply(fmat_l2, 1, function(x) {
+  res <- t.test(x[high], x[low], mu = 0)
+  c(pvalue = res$p.value,
+    M = unname(res$estimate[1] - res$estimate[2]))
+  })
+  pvalues <- t(pvalues)
+  
+  if(drawplot)
+  {
+    plot(pvalues[, "M"], -log10(pvalues[, "pvalue"]), pch = 21, col = "#00000080",
+      bg = "#00000020", xlab = "M", ylab = expression(-log[10]~(p)))
+  }
+  
+  sign_f_id <- rownames(fmat_l2)[which(pvalues[, "pvalue"] < 0.05 & 
+                                       pvalues[, "M"] > 3)]
+  sign_f <- cbind(sign_f_id, fD[sign_f_id, c("mzmed", "rtmed")], 
+                pvalues[sign_f_id, ])
+  sign_f <- sign_f[order(sign_f[, "rtmed" ], decreasing = FALSE), ]
+  sign_f
+}
+```
 
-```{r, echo = FALSE, results = "asis"}
-#sign_f_indexes <- which(pvalues[, "pvalue"] < 0.05 & pvalues[, "M"] > 3)
-sign_f_id <- rownames(fmat_mp)[which(pvalues[, "pvalue"] < 0.05 & 
-                                     pvalues[, "M"] > 3)]
-sign_f <- cbind(sign_f_id, fD[sign_f_id, c("mzmed", "rtmed")], 
-               pvalues[sign_f_id, ])
-sign_f <- sign_f[order(sign_f[, "rtmed" ], decreasing = FALSE), ]
-pandoc.table(data.frame(sign_f), style = "rmarkdown", 
+```{r}
+sign_f_WP <- get_sign_f(data_WP)
+pandoc.table(data.frame(sign_f_WP), style = "rmarkdown", 
+             caption = "Significant features")
+```
+
+
+```{r}
+sign_f_WN <- get_sign_f(data_WN)
+pandoc.table(data.frame(sign_f_WN), style = "rmarkdown", 
              caption = "Significant features")
 ```
 
@@ -369,45 +350,54 @@ pandoc.table(data.frame(sign_f), style = "rmarkdown",
       retention time and similar peak shape (could be different adducts/ions of
       the same compound).
 
-```{r sign-featureChromatograms}
-f_chrs <- featureChromatograms(data_subs, expandRt = 2, 
-                               features = sign_f_id, filled = TRUE)
-save(f_chrs, file = paste0(RDATA_PATH, "f_chrs_", mp, ".RData"))
-```
-
 
 
 ```{r plotfeatures}
-# Plot all the features and save their plot as a png files in the 
-# selectedfeatures folder 
-dir.create(paste0(IMAGE_PATH, "selectedfeatures", mp),
-           showWarnings = FALSE, recursive = TRUE)
-col_hl <- rep(brewer.pal(5, "Set1")[3], ncol(f_chrs)) # green
-col_hl[low] <- brewer.pal(5, "Set1")[4] # purple
-for (i in 1:nrow(f_chrs)) {
+# Function (to avoid code duplication) to plot all the features and save 
+# their plot as a png files in the  selectedfeatures folder. 
+# I have to adjust this 
+plotfeatures <- function(features, data_subs, mp)
+{
+  if(!file.exists(paste0(RDATA_PATH, "f_chrs_", mp, ".RData")))
+  {
+    f_chrs <- featureChromatograms(data_subs, expandRt = 2, 
+                                   features = features, filled = TRUE)
+    save(f_chrs, file = paste0(RDATA_PATH, "f_chrs_", mp, ".RData"))
+  }
+  else
+    load(paste0(RDATA_PATH, "f_chrs_", mp, ".RData"))
+  
+  dir.create(paste0(IMAGE_PATH, "selectedfeatures", mp),
+             showWarnings = FALSE, recursive = TRUE)
+  col_hl <- rep(brewer.pal(5, "Set1")[3], ncol(f_chrs)) # green
+  mzMLnames <- data_subs$mzML
+  low <- grep("Low", mzMLnames)
+  col_hl[low] <- brewer.pal(5, "Set1")[4] # purple
+  for (i in 1:nrow(f_chrs)) {
     png(filename = paste0(IMAGE_PATH, "selectedfeatures",
-                          mp, "/", sign_f_id[i], ".png"), 
+                          mp, "/", features[i], ".png"), 
         width = 10, height = 6, res = 300, units = "cm", pointsize = 4)
-    chr_obj <- f_chrs[i, match(colnames(fmat_mp), f_chrs$mzML)]
+    chr_obj <- f_chrs[i, match(mzMLnames, f_chrs$mzML)]
     plot(chr_obj, col = col_hl, 
          peakBg = paste0(col_hl[chromPeaks(chr_obj)[, "sample"]], 40))
     legend("topright", col = brewer.pal(5, "Set1")[c(3, 4)],
            legend = c("high", "low"), lwd = 1, cex = 1)
     abline(v = std_dilution01$RT, lty = 3)
     dev.off()
+  }
 }
-
 ```
 
-- [ ] let's see how to proceed from here... maybe feature grouping? Install
-      `RforMassSpectrometry/MsFeatures` for that and have a look at its
-      documentation and vignette. We want to group features if the have about
-      the same retention time and then have also correlated abundances.
+
+```{r plotfeatures-water}
+plotfeatures(sign_f_WP$sign_f_id, data_WP, "Water_POS")
+plotfeatures(sign_f_WN$sign_f_id, data_WN, "Water_NEG")
+```
 
 ## Grouping of features
 
 ```{r}
-plot(sign_f$rtmed, sign_f$mzmed,
+plot(sign_f_WP$rtmed, sign_f_WP$mzmed,
      xlab = "retention time", ylab = "m/z", main = "features",
      col = "#00000060")
 abline(v= table1$RT, lty = 2)
@@ -416,102 +406,99 @@ grid()
 
 ```{r}
 library(CompMetaboTools)
-featureGroups(data_subs) <- NA_character_
-featureDefinitions(data_subs)[sign_f$sign_f_id, "feature_group"] <- "FG"
+featureGroups(data_WP) <- NA_character_
+featureDefinitions(data_WP)[sign_f_WP$sign_f_id, "feature_group"] <- "FG"
+
 ```
 
 Grouping of features by similar retention time.
 
 ```{r, results = "asis"}
-data_subs <- groupFeatures(data_subs, param = SimilarRtimeParam(diffRt = 4))
-
-sign_f$feature_group <-
-    featureDefinitions(data_subs)[sign_f$sign_f_id, "feature_group"]
-sign_f <- sign_f[order(sign_f$feature_group, sign_f$mzmed), ]
-pandoc.table(as.data.frame(sign_f), style = "rmarkdown")
+data_WP <- groupFeatures(data_WP, param = SimilarRtimeParam(diffRt = 4))
+sign_f_WP$feature_group <-
+    featureDefinitions(data_WP)[sign_f_WP$sign_f_id, "feature_group"]
+sign_f_WP <- sign_f_WP[order(sign_f_WP$feature_group, sign_f_WP$mzmed), ]
+pandoc.table(as.data.frame(sign_f_WP), style = "rmarkdown")
 ```
 
 ```{r}
 library(pheatmap)
-fvals <- log2(featureValues(data_subs, filled = TRUE, 
-                            method = "sum")[sign_f$sign_f_id, ])
-
+fvals <- log2(featureValues(data_WP, filled = TRUE, 
+                            method = "sum")[sign_f_WP$sign_f_id, ])
 cormat <- cor(t(fvals), use = "pairwise.complete.obs")
-ann <- data.frame(fgroup = featureDefinitions(data_subs)[sign_f$sign_f_id, 
+ann <- data.frame(fgroup = featureDefinitions(data_WP)[sign_f_WP$sign_f_id, 
                                                          "feature_group"])
 rownames(ann) <- rownames(cormat)
-
 res <- pheatmap(cormat, annotation_row = ann, cluster_rows = TRUE,
                 cluster_cols = TRUE)
 ```
 
 Grouping of features by abundance correlation across samples
+
 ```{r, results = "asis"}
-data_subs <- groupFeatures(data_subs, 
+data_WP <- groupFeatures(data_WP, 
                            AbundanceSimilarityParam(threshold = 0.5, 
                                                     transform = log2), 
                            filled = TRUE, method = "sum")
-
-sign_f$feature_group <-
-    featureDefinitions(data_subs)[sign_f$sign_f_id, "feature_group"]
-sign_f <- sign_f[order(sign_f$feature_group, sign_f$mzmed), ]
-pandoc.table(as.data.frame(sign_f), style = "rmarkdown")
+sign_f_WP$feature_group <-
+    featureDefinitions(data_WP)[sign_f_WP$sign_f_id, "feature_group"]
+sign_f_WP <- sign_f_WP[order(sign_f_WP$feature_group, sign_f_WP$mzmed), ]
+pandoc.table(as.data.frame(sign_f_WP), style = "rmarkdown")
 ```
 
 ```{r}
-plotFeatureGroups(data_subs)
+plotFeatureGroups(data_WP)
 grid()
 ```
 
 Grouping of features by EIC correlation
 
-```{r EIC-grouping, echo = FALSE, eval = !file.exists(paste0(RDATA_PATH, "data_post_grouping", mp, ".RData"))}
-data_subs <- groupFeatures(data_subs, EicCorrelationParam(threshold = 0.7, n = 2,
+```{r EIC-grouping, echo = FALSE, eval = !file.exists(paste0(RDATA_PATH, "data_post_groupingWater_POS.RData"))}
+data_WP <- groupFeatures(data_WP, EicCorrelationParam(threshold = 0.7, n = 2,
                                                   clean = TRUE))
-save(data_subs, file = paste0(RDATA_PATH, "data_post_grouping", mp, ".RData"))
-table(featureGroups(data_subs))
+save(data_WP, file = paste0(RDATA_PATH, "data_post_groupingWater_POS.RData"))
 ```
 
-```{r grouping-cached, echo = FALSE, eval = file.exists(paste0(RDATA_PATH, "data_post_grouping", mp, ".RData"))}
-load(paste0(RDATA_PATH, "data_post_grouping", mp, ".RData"))
+```{r grouping-cached, echo = FALSE, eval = file.exists(paste0(RDATA_PATH, "data_post_groupingWater_POS.RData"))}
+load(paste0(RDATA_PATH, "data_post_groupingWater_POS.RData"))
 ```
-
 
 ```{r, echo = FALSE, results = "asis"}
-sign_f$feature_group <-
-    featureDefinitions(data_subs)[sign_f$sign_f_id, "feature_group"]
-sign_f <- sign_f[order(sign_f$feature_group, sign_f$mzmed), ]
-pandoc.table(as.data.frame(sign_f), style = "rmarkdown")
+sign_f_WP$feature_group <-
+    featureDefinitions(data_WP)[sign_f_WP$sign_f_id, "feature_group"]
+sign_f_WP <- sign_f_WP[order(sign_f_WP$feature_group, sign_f_WP$mzmed), ]
+pandoc.table(as.data.frame(sign_f_WP), style = "rmarkdown")
 ```
 
 We next create plots for each feature group. These are saved to a folder and not
 displayed here.
 
-```{r feature_group_plots, echo = FALSE}
-## order feature groups by retention time and plot each.
-sign_f <- sign_f[order(sign_f$rtmed), ]
-fgs <- unique(sign_f$feature_group)
-dr <- paste0(IMAGE_PATH, "feature_groups/")
-dir.create(dr, showWarnings = FALSE, recursive = TRUE)
-for (i in seq_along(fgs)) {
+```{r}
+# Plots the features in `data_subs` that have id in `features_id` and are 
+# grouped as specified by `groups`
+plot_groups_of_features <- function(features_id, groups, data_subs, dr)
+{
+  fgs <- unique(groups)
+  dir.create(dr, showWarnings = FALSE, recursive = TRUE)
+  for (i in seq_along(fgs)) {
     fn <- paste0(dr, i, "-", fgs[i])
-    fts <- sign_f$sign_f_id[sign_f$feature_group == fgs[i]]
+    fts <- features_id[groups == fgs[i]]
     eics <- featureChromatograms(data_subs, features = fts, filled = TRUE,
                                  n = 2, expandRt = 3)
     png(paste0(fn, "-joy.png"), width = 12, height = 6,
         units = "cm", res = 300, pointsize = 4)
     par(mfrow = c(1, 2), mar = c(3.5, 3.5, 1, 0.5))
     if (nrow(eics) > 1) {
-        ypos <- joyPlot(eics, sample = 1, main = pData(eics)$mzML[1])
-        abline(h = ypos, col = "#00000040", lty = 2)
-        text(x = min(rtime(eics[1, 1])), y = ypos, pos = 4,
-             labels = round(rowMeans(mz(eics)), 3), col = "#00000080")
-        abline(v = std_dilution01$RT, lty = 3, col = "#00000040")
-        ypos <- joyPlot(eics, sample = 2, main = pData(eics)$mzML[1])
-        abline(h = ypos, col = "#00000040", lty = 2)
-        text(x = min(rtime(eics[1, 2])), y = ypos, pos = 4,
-             labels = round(rowMeans(mz(eics)), 3), col = "#00000080")
-        abline(v = std_dilution01$RT, lty = 3, col = "#00000040")
+      ypos <- joyPlot(eics, sample = 1, main = pData(eics)$mzML[1])
+      abline(h = ypos, col = "#00000040", lty = 2)
+      text(x = min(rtime(eics[1, 1])), y = ypos, pos = 4,
+           labels = round(rowMeans(mz(eics)), 3), col = "#00000080")
+      abline(v = std_dilution01$RT, lty = 3, col = "#00000040")
+      ypos <- joyPlot(eics, sample = 2, main = pData(eics)$mzML[1])
+      abline(h = ypos, col = "#00000040", lty = 2)
+      text(x = min(rtime(eics[1, 2])), y = ypos, pos = 4,
+           labels = round(rowMeans(mz(eics)), 3), col = "#00000080")
+      abline(v = std_dilution01$RT, lty = 3, col = "#00000040")
     } else plot(3, 3, pch = NA)
     dev.off()
     png(paste0(fn, ".png"), width = 12, height = 12,
@@ -524,90 +511,233 @@ for (i in seq_along(fgs)) {
     plotOverlay(normalize(eics[, 1, drop = FALSE]))
     plotOverlay(normalize(eics[, 2, drop = FALSE]))
     dev.off()
+  } 
 }
 ```
 
-Compute exact masses of standars
-
-```{r}
-frmls <- std_dilution01[, "formula"]
-masses <- sapply(frmls, function(formula) getMolecule(formula)$exactmass)
+```{r feature_groups_plots_WP, echo = FALSE}
+## order feature groups by retention time and plot each.
+sign_f_WP <- sign_f_WP[order(sign_f_WP$rtmed), ]
+plot_groups_of_features(sign_f_WP$sign_f_id, sign_f_WP$feature_group,
+                       data_WP, paste0(IMAGE_PATH, "feature_groups/"))
 ```
 
-Compute m/z of possible adducts of the standards
+Feature grouping in water and negative polarity
 
-```{r}
-#mz_adducts <- mass2mz(masses, c("[M+H]+","[M+Na]+"))
-mz_adducts <- mass2mz(
-    masses, adductNames(ifelse(pol == "POS", "positive", "negative")))
-rownames(std_dilution01) <- std_dilution01$name
-rownames(mz_adducts) <- rownames(std_dilution01)
-idx <- order(mz_adducts[, 1])
-mz_adducts <- mz_adducts[idx, ]
-std_dilution01 <- std_dilution01[idx, ]
-info_stds <- std_dilution01
+```{r, eval = !file.exists(paste0(RDATA_PATH, "data_post_groupingWater_NEG.RData"))}
+featureGroups(data_WN) <- NA_character_
+featureDefinitions(data_WN)[sign_f_WN$sign_f_id, "feature_group"] <- "FG"
+data_WN <- groupFeatures(data_WN, param = SimilarRtimeParam(diffRt = 4))
+data_WN <- groupFeatures(data_WN, 
+                           AbundanceSimilarityParam(threshold = 0.5, 
+                                                    transform = log2), 
+                           filled = TRUE, method = "sum")
+data_WN <- groupFeatures(data_WN, EicCorrelationParam(threshold = 0.7, n = 2,
+                                                          clean = TRUE))
+save(data_WN, file = paste0(RDATA_PATH, "data_post_groupingWater_NEG.RData"))
 ```
 
-mzmed of significant features
-
-```{r}
-mzmed_f <- sign_f$mzmed
-names(mzmed_f) <- sign_f$sign_f_id
-mzmed_f <- sort(mzmed_f)
+```{r, echo = FALSE, results = "asis"}
+sign_f_WN$feature_group <-
+    featureDefinitions(data_WN)[sign_f_WN$sign_f_id, "feature_group"]
+sign_f_WN <- sign_f_WN[order(sign_f_WN$feature_group, sign_f_WN$mzmed), ]
+pandoc.table(as.data.frame(sign_f_WN), style = "rmarkdown")
 ```
 
-Compute matrix of matchings
-```{r}
-matches_mat <- apply(mz_adducts, 2, function(col)
-    closest(mzmed_f, col, tolerance = 0, ppm = 20))
-rownames(matches_mat) <- names(mzmed_f)
+```{r feature_groups_plots_WN, echo = FALSE}
+## order feature groups by retention time and plot each.
+sign_f_WN <- sign_f_WN[order(sign_f_WN$rtmed), ]
+plot_groups_of_features(sign_f_WN$sign_f_id, sign_f_WN$feature_group,
+                       data_WP, paste0(IMAGE_PATH, "feature_groups/"))
 ```
 
-
-```{r}
-# from adduct to feature
-rownames(matches_mat)[which(!is.na(matches_mat[, "[M+H]+"]))] 
-matches_mat[which(!is.na(matches_mat[,"[M+H]+"])), "[M+H]+"] 
-# from feature to adduct
-colnames(matches_mat)[which(!is.na(matches_mat["FT0463", ]))] 
-frmls[matches_mat["FT0463", which(!is.na(matches_mat["FT0463", ]))]] 
-sign_f[which(sign_f[,"sign_f_id"] == "FT0463"), ]
-```
 
 Next we create a table that maps features to compounds' adducts. This table will
 have one entry for each map between one feature and one adduct and this mapping
 can thus be n:m.
+To avoid code repetition we define the following function that matches the 
+features in `sign_f` to possible adducts of the compounds in `info_stds` with
+polarity specified by `pol`
 
 ```{r}
-get_adducts <- function(ft, matches_mat, info_stds = NULL) {
+get_matchings <- function(info_stds, sign_f, pol)
+{
+  #Compute exact masses of standars
+  frmls <- info_stds[, "formula"]
+  masses <- sapply(frmls, function(formula) getMolecule(formula)$exactmass)
+  
+  #Compute m/z of possible adducts of the standards
+  mz_adducts <- mass2mz(
+    masses, adductNames(ifelse(pol == "POS", "positive", "negative")))
+  rownames(info_stds) <- info_stds$name
+  rownames(mz_adducts) <- rownames(info_stds)
+  idx <- order(mz_adducts[, 1])
+  mz_adducts <- mz_adducts[idx, ]
+  info_stds <- info_stds[idx, ]
+  
+  #mzmed of significant features
+  mzmed_f <- sign_f$mzmed
+  names(mzmed_f) <- sign_f$sign_f_id
+  mzmed_f <- sort(mzmed_f)
+  
+  #Compute matrix of matchings
+  matches_mat <- apply(mz_adducts, 2, function(col)
+    closest(mzmed_f, col, tolerance = 0, ppm = 20))
+  rownames(matches_mat) <- names(mzmed_f)
+  
+  get_adducts <- function(ft, matches_mat, info_stds = NULL) {
     not_na <- which(!is.na(matches_mat[ft, ]))
     if (length(not_na))
-        data.frame(
-            feature_id = ft,
-            adduct = colnames(matches_mat)[not_na], 
-            info_stds[matches_mat[ft, not_na], ])
+      data.frame(
+        feature_id = ft,
+        adduct = colnames(matches_mat)[not_na], 
+        info_stds[matches_mat[ft, not_na], ])
     else data.frame()
+  }
+  
+  tmp <- lapply(sign_f$sign_f_id, function(z) {
+    addcts <- get_adducts(ft = z, matches_mat, info_stds[, c("name", "formula")])
+  })
+  
+  matchings <- do.call(rbind, tmp)
+  rownames(matchings) <- NULL
+  matchings
 }
-## get_adducts(ft="FT0463", matches_mat, info_stds[,c("name", "formula")])
 ```
 
 ```{r}
-tmp <- lapply(sign_f$sign_f_id, function(z) {
-    addcts <- get_adducts(ft = z, matches_mat, info_stds[, c("name", "formula")])
-})
-matchings <- do.call(rbind, tmp)
-rownames(matchings) <- NULL
+matchings_WP <- get_matchings(std_dilution01, sign_f_WP, "POS")
+matchings_WN <- get_matchings(std_dilution01, sign_f_WN, "NEG")
+```
+
+TODO
+	- for each standard, create overlapping EIC plots (like in code block
+      *feature_group_plots*) for the assigned features.
+
+```{r features_by_standards, echo = FALSE}
+## order feature groups by retention time and plot each.
+plot_groups_of_features(matchings_WP$feature_id, matchings_WP$name,
+                       data_WP, paste0(IMAGE_PATH, "features_by_standards/"))
+```
+
+## Standards solved in human serum samples
+
+Features with significant difference among high and low concentration samples
+
+```{r}
+sign_f_SP <- get_sign_f(data_SP)
+pandoc.table(data.frame(sign_f_SP), style = "rmarkdown", 
+             caption = "Significant features")
+```
+
+```{r}
+sign_f_SN <- get_sign_f(data_SN)
+pandoc.table(data.frame(sign_f_SN), style = "rmarkdown", 
+             caption = "Significant features")
+```
+
+```{r plotfeatures-serum}
+plotfeatures(sign_f_SP$sign_f_id, data_SP, "Serum_POS")
+plotfeatures(sign_f_SN$sign_f_id, data_SN, "Serum_NEG")
+```
+
+Feature grouping in serum samples with positive polarity
+
+```{r}
+plot(sign_f_SP$rtmed, sign_f_SP$mzmed,
+     xlab = "retention time", ylab = "m/z", main = "features",
+     col = "#00000060")
+abline(v= table1$RT, lty = 2)
+grid()
+```
+
+```{r, eval = !file.exists(paste0(RDATA_PATH, "data_post_groupingSerum_POS.RData"))}
+featureGroups(data_SP) <- NA_character_
+featureDefinitions(data_SP)[sign_f_SP$sign_f_id, "feature_group"] <- "FG"
+data_SP <- groupFeatures(data_SP, param = SimilarRtimeParam(diffRt = 4))
+data_SP <- groupFeatures(data_SP, 
+                           AbundanceSimilarityParam(threshold = 0.5, 
+                                                    transform = log2), 
+                           filled = TRUE, method = "sum")
+data_SP <- groupFeatures(data_SP, EicCorrelationParam(threshold = 0.7, n = 2,
+                                                          clean = TRUE))
+save(data_SP, file = paste0(RDATA_PATH, "data_post_groupingSerum_POS.RData"))
+```
+
+```{r, eval = file.exists(paste0(RDATA_PATH, "data_post_groupingSerum_POS.RData"))}
+load(file = paste0(RDATA_PATH, "data_post_groupingSerum_POS.RData"))
+```
+
+```{r, echo = FALSE, results = "asis"}
+sign_f_SP$feature_group <-
+    featureDefinitions(data_SP)[sign_f_SP$sign_f_id, "feature_group"]
+sign_f_SP <- sign_f_SP[order(sign_f_SP$feature_group, sign_f_SP$mzmed), ]
+pandoc.table(as.data.frame(sign_f_SP), style = "rmarkdown")
+```
+
+Feature grouping in serum samples with negative polarity
+
+```{r, eval = !file.exists(paste0(RDATA_PATH, "data_post_groupingSerum_NEG.RData"))}
+featureGroups(data_SN) <- NA_character_
+featureDefinitions(data_SN)[sign_f_SN$sign_f_id, "feature_group"] <- "FG"
+data_SN <- groupFeatures(data_SN, param = SimilarRtimeParam(diffRt = 4))
+data_SN <- groupFeatures(data_SN, 
+                           AbundanceSimilarityParam(threshold = 0.5, 
+                                                    transform = log2), 
+                           filled = TRUE, method = "sum")
+data_SN <- groupFeatures(data_SN, EicCorrelationParam(threshold = 0.7, n = 2,
+                                                          clean = TRUE))
+save(data_SN, file = paste0(RDATA_PATH, "data_post_groupingSerum_NEG.RData"))
+```
+
+```{r, eval = file.exists(paste0(RDATA_PATH, "data_post_groupingSerum_NEG.RData"))}
+load(file = paste0(RDATA_PATH, "data_post_groupingSerum_NEG.RData"))
+```
+
+```{r, echo = FALSE, results = "asis"}
+sign_f_SN$feature_group <-
+    featureDefinitions(data_SN)[sign_f_SN$sign_f_id, "feature_group"]
+sign_f_SN <- sign_f_SN[order(sign_f_SN$feature_group, sign_f_SN$mzmed), ]
+pandoc.table(as.data.frame(sign_f_SN), style = "rmarkdown")
+```
+
+Matching the features with significant difference between low and high 
+concentration samples in serum
+
+```{r}
+matchings_SP <- get_matchings(std_dilution01, sign_f_SP, "POS")
+matchings_SN <- get_matchings(std_dilution01, sign_f_SN, "NEG")
 ```
 
 We next store this mapping information into a SQLite database.
 
 ```{r}
-compound <- table1[, c("name", "formula", "RT", pol)]
-feature_to_compound <- matchings[, c("feature_id", "adduct", "name")]
-feature <- as.data.frame(sign_f)
+compound <- cbind(table1, mix = mix, pk = paste0(table1$name, "_", mix))
+ft_WP <- cbind(as.data.frame(sign_f_WP), pk = paste0(sign_f_WP$sign_f_id, "_", mix))
+ft_WN <- cbind(as.data.frame(sign_f_WN), pk = paste0(sign_f_WN$sign_f_id, "_", mix))
+ft_SP <- cbind(as.data.frame(sign_f_SP), pk = paste0(sign_f_SP$sign_f_id, "_", mix))
+ft_SN <- cbind(as.data.frame(sign_f_SN), pk = paste0(sign_f_SN$sign_f_id, "_", mix))
+ft_to_comp_WP <- cbind(compound_pk = paste0(matchings_WP$name, "_", mix),
+                       feature_pk = paste0(matchings_WP$feature_id, "_", mix),
+                       adduct = matchings_WP$adduct, matrix_pol = "Water_POS")
+ft_to_comp_WN <- cbind(compound_pk = paste0(matchings_WN$name, "_", mix),
+                       feature_pk = paste0(matchings_WN$feature_id, "_", mix),
+                       adduct = matchings_WN$adduct, matrix_pol = "Water_NEG")
+ft_to_comp_SP <- cbind(compound_pk = paste0(matchings_SP$name, "_", mix),
+                       feature_pk = paste0(matchings_SP$feature_id, "_", mix),
+                       adduct = matchings_SP$adduct, matrix_pol = "Serum_POS")
+ft_to_comp_SN <- cbind(compound_pk = paste0(matchings_SN$name, "_", mix),
+                       feature_pk = paste0(matchings_SN$feature_id, "_", mix),
+                       adduct = matchings_SN$adduct, matrix_pol = "Serum_NEG")
+feature <- rbind(ft_WP, ft_WN, ft_SP, ft_SN)
+feature_to_compound <- as.data.frame(rbind(ft_to_comp_WP, ft_to_comp_WN, 
+                                           ft_to_comp_SP, ft_to_comp_SN))
 colnames(feature)[1] <- "feature_id"
+```
 
+```{r}
 library(RSQLite)
+#con <- dbConnect(RSQLite::SQLite(), paste0(RDATA_PATH," database.sqlite"))
 con <- dbConnect(RSQLite::SQLite(), ":memory:")
 dbWriteTable(con, "feature", feature, append = TRUE)
 dbWriteTable(con, "compound", compound, append = TRUE)
@@ -620,11 +750,12 @@ The table below summarizes the mapping of features to adducts of standards.
 ```{r, results = "asis", echo = FALSE}
 stab <- dbGetQuery(
     con, paste0("select compound.name, adduct, feature.feature_id, ",
-                "feature_group, rtmed, RT from feature_to_compound ",
+                "feature_group, rtmed, RT, POS, NEG, matrix_pol, mix ",
+                "from feature_to_compound ",
                 "join compound on ",
-                "(feature_to_compound.name = compound.name) join feature on ",
-                "(feature_to_compound.feature_id = feature.feature_id)"))
-stab <- stab[order(tab$name), ]
+                "(feature_to_compound.compound_pk = compound.pk) join feature on",
+                " (feature_to_compound.feature_pk = feature.pk)"))
+stab <- stab[order(stab$name), ]
 rownames(stab) <- NULL
 pandoc.table(stab, style = "rmarkdown", split.table = "Inf",
              caption = paste0("Matching of theoretical adducts of standards ",
@@ -632,22 +763,30 @@ pandoc.table(stab, style = "rmarkdown", split.table = "Inf",
                               "difference of abundances."))
 ```
 
-For the standards below now feature was identified.
+For the standards below no feature was identified.
 
 ```{r, results = "asis", echo = FALSE}
 pandoc.table(compound[!compound$name %in% stab$name, ],
              style = "rmarkdown", caption = "Standards without features.")
 ```
 
-TODO
-	- for each standard, create overlapping EIC plots (like in code block
-      *feature_group_plots*) for the assigned features.
 
-
-## Standards solved in human serum samples
-
-Next we evaluate the data for the lab standards solved in human serum samples.
-
+```{r, results = "asis", echo = FALSE}
+stab2 <- dbGetQuery(
+    con, paste0("select feature.feature_id, feature_group, ",
+                "compound.name, adduct, rtmed, RT, matrix_pol, mix ",
+                "from feature_to_compound ",
+                "join feature on ",
+                "(feature_to_compound.feature_pk = feature.pk) join compound on",
+                " (feature_to_compound.compound_pk = compound.pk)"))
+stab2 <- stab2[order(stab2$rtmed), ]
+rownames(stab2) <- NULL
+pandoc.table(stab2, style = "rmarkdown", split.table = "Inf",
+             caption = paste0("Matching of theoretical adducts of standards ",
+                              "with m/z of features with a significant ",
+                              "difference of abundances."))
+```
+# Get for each feature the assigned standard
 
 # Session information
 
