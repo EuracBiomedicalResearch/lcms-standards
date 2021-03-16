@@ -1,0 +1,91 @@
+---
+title: "Counting the number of C, H, N, O, P, S for compounds in HMDB"
+author: "Andrea Vicini, Johannes Rainer"
+output:
+  rmarkdown::html_document:
+    highlight: pygments
+    toc: true
+    toc_depth: 3
+    fig_width: 5
+---
+
+```{r style, echo = FALSE, results = 'asis', message = FALSE}
+library(BiocStyle)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+```
+
+**Last modified:** `r file.info("CHNOPSinHMDB.Rmd")$mtime`<br />
+**Compiled**: `r date()`
+
+
+```{r libraries, warning = FALSE}
+library("CompoundDb")
+library("MetaboCoreUtils")
+```
+
+We load the HMDB database and extract the related compounds.
+
+```{r}
+cdb <- CompDb("~/CompDb.Hsapiens.HMDB.4.0.sqlite")
+cmps <- compounds(cdb, columns = c("compound_id", "name", "formula", "exactmass"))
+```
+
+
+```{r}
+frmls <- cmps$formula
+counts <- lapply(frmls, function(frml) countElements(frml))
+names(counts) <- cmps$compound_id
+#head(counts)
+```
+
+```{r}
+t1=Sys.time()
+dfinal <- data.frame(compound_id = names(counts))
+CHNOPS <- c("C", "H", "N", "O", "P", "S")
+dfinal[, CHNOPS] <- 0
+for (i in 1:length(counts))
+{
+  only <- intersect(CHNOPS, names(counts[[i]]))
+  dfinal[i, only] <- unname(counts[[i]][only])
+}
+t2=Sys.time()
+```
+
+```{r}
+colMeans(dfinal[,-1])
+```
+```{r}
+apply(dfinal[,-1], 2, sd)
+```
+
+```{r bpc-mix01, fig.path = IMAGE_PATH, fig.cap = "Base peak chromatogram. Different colours for polarity and matrix. The vertical grey dotted lines indicate the retention time where an ion of a standard present in the current mix is expected.", fig.width = 10, fig.height = 5}
+par(mfrow =c (3,2))
+for (el in CHNOPS)
+{
+  barplot(table(dfinal[, el]), xlab = paste0("Number of counted ",el),
+          ylab = "Number of molecules")
+}
+#barplot(log10(table(dfinal[, element])))
+```
+
+
+```{r}
+d <- density(dfinal$C) # returns the density data
+plot(d) # plots the results 
+```
+
+
+In the Rmd file, you should describe how you generate the result table mentioned 
+above and also calculate the average and sd for the individual elements - and 
+maybe show the distribution of the element count for each element in the whole 
+HMDB. Try to use the functions from the MetaboCoreUtils package to parse the 
+chemical formula and get the number/count of elements.
+
+
+# Session information
+
+The R version and packages used in this analysis are listed below.
+
+```{r sessioninfo}
+sessionInfo()
+```
