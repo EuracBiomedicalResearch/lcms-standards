@@ -21,6 +21,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 ```{r libraries, warning = FALSE}
 library("CompoundDb")
 library("MetaboCoreUtils")
+library("pander")
 ```
 
 We load the HMDB database and extract the related compounds.
@@ -30,56 +31,48 @@ cdb <- CompDb("~/CompDb.Hsapiens.HMDB.4.0.sqlite")
 cmps <- compounds(cdb, columns = c("compound_id", "name", "formula", "exactmass"))
 ```
 
+For each compound in the human metabolom database (HMDB) we compute how many 
+atoms of C, H, N, O, P and S are present in it. 
+We collect the counts in a data frame with a column for each element and a row 
+for each compound in HMDB.
 
 ```{r}
-frmls <- cmps$formula
-counts <- lapply(frmls, function(frml) countElements(frml))
-names(counts) <- cmps$compound_id
-#head(counts)
-```
-
-```{r}
-t1=Sys.time()
-dfinal <- data.frame(compound_id = names(counts))
 CHNOPS <- c("C", "H", "N", "O", "P", "S")
-dfinal[, CHNOPS] <- 0
-for (i in 1:length(counts))
-{
-  only <- intersect(CHNOPS, names(counts[[i]]))
-  dfinal[i, only] <- unname(counts[[i]][only])
-}
-t2=Sys.time()
+counts <- lapply(cmps$formula, function(frml) {
+  res <- countElements(frml)
+  row <- data.frame(matrix(0, nrow = 1, ncol = length(CHNOPS)))
+  names(row) <- CHNOPS
+  only <- intersect(CHNOPS, names(res))
+  row[1, only] <- res[only]
+  row
+  })
+counts_df <- do.call(rbind, counts)
+rownames(counts_df) <- cmps$compound_id
 ```
 
+We compute the mean and standard deviation for the number of each element in the 
+molecules of HMDB.
+
 ```{r}
-colMeans(dfinal[,-1])
-```
-```{r}
-apply(dfinal[,-1], 2, sd)
+m_sd <- rbind(colMeans(counts_df), apply(counts_df, 2, sd))
+rownames(m_sd) = c("mean", "standard deviation")
+pandoc.table(m_sd, style = "rmarkdown")
 ```
 
-```{r bpc-mix01, fig.path = IMAGE_PATH, fig.cap = "Base peak chromatogram. Different colours for polarity and matrix. The vertical grey dotted lines indicate the retention time where an ion of a standard present in the current mix is expected.", fig.width = 10, fig.height = 5}
-par(mfrow =c (3,2))
+We plot, for each of the considered elements,the distribution of the number of 
+atoms of the given element in the compounds of HMDB.
+
+```{r distribution-counts, fig.cap = "distribution of the number of atoms of CHNOPS element in the compounds of HMDB.", fig.width = 7, fig.height = 12}
+par(mfrow = c(6,1))
 for (el in CHNOPS)
 {
-  barplot(table(dfinal[, el]), xlab = paste0("Number of counted ",el),
-          ylab = "Number of molecules")
+  barplot(table(counts_df[, el]), xlab = paste0("Number of counted ", el),
+          ylab = "Number of compounds")
 }
-#barplot(log10(table(dfinal[, element])))
+# It's not clear to me why particularly for H the number of compounds  
+# oscillates between odd and even numbers or almost seems like 
+# there are two different behaviours
 ```
-
-
-```{r}
-d <- density(dfinal$C) # returns the density data
-plot(d) # plots the results 
-```
-
-
-In the Rmd file, you should describe how you generate the result table mentioned 
-above and also calculate the average and sd for the individual elements - and 
-maybe show the distribution of the element count for each element in the whole 
-HMDB. Try to use the functions from the MetaboCoreUtils package to parse the 
-chemical formula and get the number/count of elements.
 
 
 # Session information
