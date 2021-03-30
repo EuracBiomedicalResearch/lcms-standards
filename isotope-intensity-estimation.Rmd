@@ -14,9 +14,38 @@ library(BiocStyle)
 knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 ```
 
-**Last modified:** `r file.info("CHNOPSinHMDB.Rmd")$mtime`<br />
+**Last modified:** `r file.info("isotope-intensity-estimation.Rmd")$mtime`<br />
 **Compiled**: `r date()`
 
+# Introduction
+
+In this document we evaluate possibilities to estimate abundances for isotopes
+without knowing the chemical formula for the compound. To this end we analyze
+the element composition of all compounds in the human metabolome database.
+
+The ultimate goal would be to have one or more functions that allow to identify
+peaks in (MS1) spectra representing isotopes of the same compound based
+exclusively on the m/z and intensity values, i.e. without knowing the chemical
+formula of the compound. The functions should be modular and customizable.
+
+# Isotope detection approaches
+
+## CAMERA
+
+CAMERA takes a simple approach based on hard coded lower and upper limits
+for isotope peaks. How this limits were defined is unclear. For the m/z
+differences of the peaks simple lower and upper limits are used, not
+discriminating between e.g. C13 and N15 isotopes.
+
+
+@Andrea, could you please describe here each other method (ideally the ones from
+the papers I sent) briefly?
+
+
+# Element counts in HMDB
+
+In this section we analyze element compositions of compounds from the Human
+Metabolome Database.
 
 ```{r libraries, warning = FALSE}
 library("CompoundDb")
@@ -27,7 +56,7 @@ library("pander")
 We load the HMDB database and extract the related compounds.
 
 ```{r}
-cdb <- CompDb("~/CompDb.Hsapiens.HMDB.4.0.sqlite")
+cdb <- CompDb("data/CompDb.Hsapiens.HMDB.4.0.sqlite")
 cmps <- compounds(cdb, columns = c("compound_id", "name", "formula", "exactmass"))
 ```
 
@@ -64,18 +93,29 @@ We plot, for each of the considered elements,the distribution of the number of
 atoms of the given element in the compounds of HMDB.
 
 ```{r distribution-counts, fig.cap = "distribution of the number of atoms of CHNOPS element in the compounds of HMDB.", fig.width = 7, fig.height = 14}
-par(mfrow = c(7, 1))
-for (el in CHNOPS)
-{
-  barplot(table(counts_df[, el]), xlab = paste0("Number of counted ", el),
-          ylab = "Number of compounds")
+par(mfrow = c(7, 1), mar = c(3, 4, 1, 0.5))
+for (el in CHNOPS) {
+    hist(counts_df[, el], xlab = "", main = el, breaks = 256)
 }
 # It's not clear to me why particularly for H the number of compounds  
 # oscillates between odd and even numbers or almost seems like 
 # there are two different behaviours
 ```
 
+We next evaluate what the relationship between the compound's mass and its
+number of specific atoms. We could use this later to determine a mass-dependent
+factor to estimate the expected intensity of a certain isotope.
+
+
+Idea:
+- for each atom: plot compound masses against number of atoms, fit a linear
+  model and get the coefficients from that model.
+- for a given mass (m/z) of a peak we can use these to estimate the "expected
+  average" number of e.g. C atoms in the formula of this unknown compound and
+  use that to guess what the intensity of the isotope peak would be.
+
 We define the absolute abundances of the isotopes for C, N, O, S, Cl.
+
 ```{r}
 isotopes <- list(C = c(0.9893, 0.0107), 
                  N = c(0.99636, 0.00364), 
@@ -86,6 +126,7 @@ isotopes <- list(C = c(0.9893, 0.0107),
 
 We compute for each molecule in HMDB the probability that the molecule has 
 certain numbers of the isotopes of a given element. 
+
 ```{r}
 pC13 <- sapply(counts_df$C, 
                function(n) ifelse(n > 0, 
@@ -142,6 +183,15 @@ for (name in names)
   #print(paste0(name," : ", quantile(v, 0.8)))
 }
 ```
+
+Open questions/discussion
+
+- [ ] Instead of considering the isotopes separately (e.g. C13, N15 etc), should
+      we also *aggregate* them in a M+1, M+2 etc where M+1 would be all atoms
+      for which the isotope has a m/z difference of ~ 1?
+- [ ] Can we use the information from HMDB on average counts/proportions of
+      elements in compounds to get a lower/upper estimate of the isotope
+      intensity?
 
 
 
