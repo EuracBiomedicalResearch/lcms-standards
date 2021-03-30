@@ -26,16 +26,27 @@ the element composition of all compounds in the human metabolome database.
 The ultimate goal would be to have one or more functions that allow to identify
 peaks in (MS1) spectra representing isotopes of the same compound based
 exclusively on the m/z and intensity values, i.e. without knowing the chemical
-formula of the compound. The functions should be modular and customizable.
+formula of the compound. The functions should be modular and customizable and
+should support low as well as high resolution instruments that would allow to
+discriminate between isotope peaks from different elements.
+
 
 # Isotope detection approaches
 
-## CAMERA
 
-CAMERA takes a simple approach based on hard coded lower and upper limits
-for isotope peaks. How this limits were defined is unclear. For the m/z
-differences of the peaks simple lower and upper limits are used, not
-discriminating between e.g. C13 and N15 isotopes.
+## `CAMERA`
+
+[`CAMERA`](https://bioconductor.org/packages/release/bioc/html/CAMERA.html)
+takes a simple approach based on hard coded lower and upper limits for isotope
+peaks. How this limits were defined is unclear. For the m/z differences of the
+peaks simple lower and upper limits are used, not discriminating between
+e.g. C13 and N15 isotopes.
+
+## `envipat`
+
+[`envipat`](https://cran.r-project.org/web/packages/enviPat/) does not seem to
+allow identifying isotopes in MS data but does predict an isotope (intensity)
+distribution from a chemical formula.
 
 
 @Andrea, could you please describe here each other method (ideally the ones from
@@ -110,9 +121,20 @@ factor to estimate the expected intensity of a certain isotope.
 Idea:
 - for each atom: plot compound masses against number of atoms, fit a linear
   model and get the coefficients from that model.
+- Select top and bottom 20% (10%?) of compounds with highest or lowest
+  proportion of a certain element, plot the data and fit the linear model as
+  above.
 - for a given mass (m/z) of a peak we can use these to estimate the "expected
   average" number of e.g. C atoms in the formula of this unknown compound and
   use that to guess what the intensity of the isotope peak would be.
+- define a function that takes a mass and an element (such as `"C"`) as input
+  and calculates the expected relative intensity for that
+  (relative to 1 which would be the e.g. C12 peak). This function needs the
+  coefficents from the linear model (dependency between mass and number of
+  atoms) and calculates the expected number of atoms and based on that, using
+  a binomial distribution and the number/proportion of naturally occurring
+  isotope atoms, calculates the expected intensity.
+
 
 We define the absolute abundances of the isotopes for C, N, O, S, Cl.
 
