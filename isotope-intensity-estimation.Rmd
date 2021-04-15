@@ -263,11 +263,14 @@ q_slp <- apply(slp, 2, function(x) quantile(x, c(0.01, 0.999))) # values to be c
 For each element we fit a regression to the points with top and low (?%) 
 of the value of slp.
 ```{r, fig.width = 7, fig.height = 20}
+#I’m not sure if maybe it would be best to fit a regression line through the 
+# origin (i.e removing the intercept from the lm estimation).
 par(mfrow = c(5, 1), mar = c(3, 4, 1, 0.5))
 for (el in c("C", "N" , "O", "S", "Cl")) {
 high <- which(slp[, el] > q_slp[2, el])
 low <- which(slp[, el] <= q_slp[1, el])
-plot(cmps$exactmass, counts_df[, el])
+plot(cmps$exactmass, counts_df[, el], ylab = "counts", xlab = "exactmass", 
+     main = el)
 points(cmps$exactmass[low], counts_df[low, el], col = "green")
 points(cmps$exactmass[high], counts_df[high, el], col = "blue")
 lm_l <- lm(counts_df[low, el] ~ cmps$exactmass[low])
@@ -345,14 +348,14 @@ for (name in names)
 Another possible approach to define bounds for the intensities could be the
 following.
 The probability to observe a mz difference related to atom X in a compound 
-depends on nX (number of atoms of type X in the molecule). We can determine two 
-quantiles q1 and q2 such that a certain percentage (e.g 95%) of molecules in 
+depends on nX (number of atoms of type X in the compound). We can determine two 
+quantiles q1 and q2 such that a certain percentage (e.g 95%) of compounds in 
 HMBD have q1<nX<q2 and based on q1 and q2 compute an upper bound and a lower 
 bound for the relative intensities. Equivalently we could look directly at the 
 distribution of probabilities of observing a given mz difference in HMBD 
 compounds. In this case we could select as upper and lower bound for the 
 relative intensity two quantiles q1 and q2 such that a certain percentage 
-(e.g 95%) of molecules in HMBD have q1<P(observe mz)<q2.
+(e.g 95%) of compounds in HMBD have q1<P(observe mz)<q2.
 
 
 ```{r}
@@ -371,9 +374,14 @@ bounds_int <- lapply(1 : ncol(p_mat),
 bounds_int <- do.call(cbind, bounds_int)
 ```
 
-Graphical representation
+
 ```{r, fig.width = 7, fig.height = 20}
-names <- colnames(p_mat)
+# Maybe this plot is a bit confusing and can be removed and also the block above. 
+# The probability of observing  a given mz is a function of the count of atoms 
+# that originates it in the compound. This function for the counts in HMBD is 
+# plotted below. I did it to visualize it quickly and see where the upper bounds_n 
+# would fall.
+
 par(mfrow = c(8, 1))
 for (i in seq_along(names))
 {
@@ -384,12 +392,24 @@ for (i in seq_along(names))
 }
 ```
 
+Or analogously we could work directly on probabilities obtaining the same results.
 ```{r}
 alpha <- 0.05
 bounds_int2 <- as.data.frame(apply(p_mat, 2, 
                                 function(x) quantile(x, c(alpha/2, 1-alpha/2))))
+rownames(bounds_int2) <- c("min_intensity","max_intensity")
 bounds_int2
 ```
+
+Here we create and save the resulting isotope definition.
+```{r}
+mzd <- c(1.003354842, 2.00670968, 0.997034966, 1.004216878, 2.004245778, 
+         0.99938781, 1.99579614, 1.99704989)
+isodef <- cbind(mzd, t(bounds_int2))
+isodef <- isodef[order(isodef[, 1]),]
+write.table(isodef, file = "~/Spectra/isotopeDefinition.txt") #Not sure where to save it
+```
+
 
 
 Open questions/discussion
