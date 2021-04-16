@@ -401,34 +401,8 @@ plotfeatures(sign_f_WN$sign_f_id, data_WN, "Water_NEG")
 ### Annotating significant features using MS2 data
 
 Next we extract for all significant features potentially measured MS2 spectra
-and match them against MassBank in order to annotate them. Below we extract MS2
-spectra for all significant features that are present also in the LC-MS/MS data.
-
-```{r}
-ids_WP <- intersect(rownames(featureDefinitions(data_ms2_WP)), 
-                    sign_f_WP$sign_f_id)
-ids_WN <- intersect(rownames(featureDefinitions(data_ms2_WN)), 
-                    sign_f_WN$sign_f_id)
-
-sign_f_WP_ms2 <- featureSpectra(data_ms2_WP, msLevel = 2L,
-                                return.type = "Spectra", ppm = 10,
-                                features = ids_WP)
-sign_f_WN_ms2 <- featureSpectra(data_ms2_WN, msLevel = 2L,
-                                return.type = "Spectra", ppm = 10,
-                                features = ids_WN)
-```
-
-From the `r nrow(sign_f_WP)` features `r length(ids_WP)` are also present in the
-LC-MS/MS data set and for `r length(unique(sign_f_WP_ms2$feature_id))` of them
-MS2 spectra are available.
-
-TODO:
-- Compare each against MassBank and get the `$compound_name` of all MassBank
-  spectra with a similarity > 0.7
-- Add this information to the `sign_f_WP` table.
-- Note: I'm currently working on a code to simplify this - but that's not yet
-  finished.
-  
+and match them against MassBank in order to annotate them. We first extract 
+spectra from MassBank database.
 
 ```{r}
 library(RMariaDB)
@@ -437,40 +411,49 @@ library(MsBackendMassbank)
 co <- dbConnect(MariaDB(), user = "avwork", dbname = "MassBank",
                  host = "localhost", pass = "massbank")
 mbank <- Spectra(co, source = MsBackendMassbankSql())
-#dbDisconnect(co)
+mbank <- setBackend(mbank, MsBackendDataFrame())
 ```
 
-```{r, echo = FALSE, eval = !file.exists(paste0(RDATA_PATH, "comp_W_ms2_MassBank.RData"))}
-comp_WP <- Spectra::compareSpectra(sign_f_WP_ms2, mbank, ppm = 20)
-comp_WN <- Spectra::compareSpectra(sign_f_WN_ms2, mbank, ppm = 20)
-save(comp_WP,comp_WN, file = paste0(RDATA_PATH, "comp_W_ms2_MassBank.RData"))
-```
-
-```{r, echo = FALSE, eval = file.exists(paste0(RDATA_PATH, "comp_W_ms2_MassBank.RData"))}
-load(file = paste0(RDATA_PATH, "comp_W_ms2_MassBank.RData"))
-```
+The following function (to avoid code repetition) takes the ids of significant 
+features `sign_f_id` check which ones are also available for the given MS2 data
+`data_ms2`. For these it extracts the corresponding spectra and matches them 
+against a reference database `mbank`. It returns a vector. Each entry contains 
+for a given feature the compound names of the spectra in `mbank` that were
+matched to the spectra related to the feature. 
 
 ```{r}
-idx_WP <- which(comp_WP > 0.7, arr.ind = TRUE)
-idx_WN <- which(comp_WN > 0.7, arr.ind = TRUE)
-cn_WP <- mbank[idx_WP[, 2]]$compound_name
-cn_WN <- mbank[idx_WN[, 2]]$compound_name
+sign_f_ms2_mtch <- function(data_ms2, sign_f_id, mbank, case, recompute = FALSE)
+{
+  ids <- intersect(rownames(featureDefinitions(data_ms2)), sign_f_id)
+  sign_f_ms2 <- featureSpectra(data_ms2, msLevel = 2L,
+                               return.type = "Spectra", ppm = 10,
+                               features = ids)
+  fn <- paste0(RDATA_PATH, "comp_", case, "_ms2_MassBank.RData")
+  if(!file.exists(fn) | recompute)
+  {
+    mtches <- matchSpectra(sign_f_ms2, mbank,
+                         param = CompareSpectraParam(requirePrecursor = FALSE,
+                                                     ppm = 20))
+    save(mtches, file = fn)
+  }
+  else load(fn)
+  not_NA <- which(!is.na(mtches$target_compound_name))
+  tmp <- aggregate(mtches$target_compound_name[not_NA],
+                   by = list(feature = mtches$feature_id[not_NA]),
+                   function(x) paste0(unique(x), collapse = ";"))
+  #tmp[tmp[, 2] == ""] <- NA
+  res <- rep(NA, length(sign_f_id))
+  res[match(tmp[, 1], sign_f_id)] <- tmp[, 2]
+  res
+}
 ```
 
-```{r}
-res_WP <- aggregate(cn_WP, 
-                    by = list(feature = sign_f_WP_ms2$feature_id[idx_WP[, 1]]), 
-                    function(x) paste0(unique(x), collapse = ";"))
-res_WN <- aggregate(cn_WN, 
-                    by = list(feature = sign_f_WN_ms2$feature_id[idx_WN[, 1]]), 
-                    function(x) paste0(unique(x), collapse = ";"))
-```
 
 ```{r}
-sign_f_WP$compound_names <- NA
-sign_f_WP$compound_names[match(res_WP[, 1], sign_f_WP$sign_f_id)] <- res_WP[, 2]
-sign_f_WN$compound_names <- NA
-sign_f_WN$compound_names[match(res_WN[, 1], sign_f_WN$sign_f_id)] <- res_WN[, 2]
+sign_f_WP$compound_names <- sign_f_ms2_mtch(data_ms2_WP, sign_f_WP$sign_f_id, 
+                                            mbank, "WP")
+sign_f_WN$compound_names <- sign_f_ms2_mtch(data_ms2_WN, sign_f_WN$sign_f_id, 
+                                            mbank, "WN")
 ```
 
 ### Grouping of features
@@ -735,23 +718,8 @@ plotfeatures(sign_f_SN$sign_f_id, data_SN, "Serum_NEG")
 ```
 
 ```{r}
-ids_SP <- intersect(rownames(featureDefinitions(data_ms2_SP)), 
-                    sign_f_SP$sign_f_id)
-ids_SN <- intersect(rownames(featureDefinitions(data_ms2_SN)), 
-                    sign_f_SN$sign_f_id)
-
-sign_f_SP_ms2 <- featureSpectra(data_ms2_SP, msLevel = 2L,
-                                return.type = "Spectra", ppm = 10,
-                                features = ids_SP)
-sign_f_SN_ms2 <- featureSpectra(data_ms2_SN, msLevel = 2L,
-                                return.type = "Spectra", ppm = 10,
-                                features = ids_SN)
-```
-
-```{r, echo = FALSE, eval = !file.exists(paste0(RDATA_PATH, "comp_S_ms2_MassBank.RData"))}
-comp_SP <- Spectra::compareSpectra(sign_f_SP_ms2, mbank, ppm = 20)
-comp_SN <- Spectra::compareSpectra(sign_f_SN_ms2, mbank, ppm = 20)
-save(comp_SP,comp_SN, file = paste0(RDATA_PATH, "comp_S_ms2_MassBank.RData"))
+a <- sign_f_ms2_mtch(data_ms2_SP, sign_f_SP$sign_f_id, mbank, "SP")
+a <- sign_f_ms2_mtch(data_ms2_SN, sign_f_SN$sign_f_id, mbank, "SN")
 ```
 
 ```{r, echo = FALSE, eval = file.exists(paste0(RDATA_PATH, "comp_S_ms2_MassBank.RData"))}
@@ -759,32 +727,12 @@ load(file = paste0(RDATA_PATH, "comp_S_ms2_MassBank.RData"))
 ```
 
 
-
 ```{r}
-idx_SP <- which(comp_SP > 0.7, arr.ind = TRUE)
-idx_SN <- which(comp_SN > 0.7, arr.ind = TRUE)
-cn_SP <- mbank[idx_SP[, 2]]$compound_name
-cn_SN <- mbank[idx_SN[, 2]]$compound_name
-```
-
-```{r}
+sign_f_SP$compound_names <- sign_f_ms2_mtch(data_ms2_SP, sign_f_SP$sign_f_id, 
+                                            mbank, "SP")
+sign_f_SN$compound_names <- sign_f_ms2_mtch(data_ms2_SN, sign_f_SN$sign_f_id, 
+                                        mbank, "SN")
 dbDisconnect(co)
-```
-
-```{r}
-res_SP <- aggregate(cn_SP, 
-                    by = list(feature = sign_f_SP_ms2$feature_id[idx_SP[, 1]]), 
-                    function(x) paste0(unique(x), collapse = ";"))
-res_SN <- aggregate(cn_SN, 
-                    by = list(feature = sign_f_SN_ms2$feature_id[idx_SN[, 1]]), 
-                    function(x) paste0(unique(x), collapse = ";"))
-```
-
-```{r}
-sign_f_SP$compound_names <- NA
-sign_f_SP$compound_names[match(res_SP[, 1], sign_f_SP$sign_f_id)] <- res_SP[, 2]
-sign_f_SN$compound_names <- NA
-sign_f_SN$compound_names[match(res_SN[, 1], sign_f_SN$sign_f_id)] <- res_SN[, 2]
 ```
 
 Feature grouping in serum samples with positive polarity
@@ -907,12 +855,13 @@ The table below summarizes the mapping of features to adducts of standards.
 
 ```{r, results = "asis", echo = FALSE}
 stab <- dbGetQuery(
-    con, paste0("select compound.name, adduct, feature.feature_id, feature.compound_names ",
-                "feature_group, rtmed, RT, POS, NEG, matrix_pol, mix ",
-                "from feature_to_compound ",
-                "join compound on ",
-                "(feature_to_compound.compound_pk = compound.pk) join feature on",
-                " (feature_to_compound.feature_pk = feature.pk)"))
+  con, paste0("select compound.name, adduct, feature.feature_id, ",
+              "feature.compound_names, ",
+              "feature_group, rtmed, RT, POS, NEG, matrix_pol, mix ",
+              "from feature_to_compound ",
+              "join compound on ",
+              "(feature_to_compound.compound_pk = compound.pk) join feature on",
+              " (feature_to_compound.feature_pk = feature.pk)"))
 stab <- stab[order(stab$name), ]
 rownames(stab) <- NULL
 pandoc.table(stab, style = "rmarkdown", split.table = "Inf",
@@ -953,17 +902,6 @@ sign_f_WP_ms2 <- intersect(f_ms2_WP, sign_f_WP$sign_f_id)
 obJ <- featureSpectra(data_ms2_WP, msLevel = 2L,
                       return.type = "Spectra",
                       features = sign_f_WP_ms2)
-```
-
-```{r}
-library(RMariaDB)
-library(MsBackendMassbank)
-
-co <- dbConnect(MariaDB(), user = "avwork", dbname = "MassBank",
-                 host = "localhost", pass = "massbank")
-mbank <- Spectra(co, source = MsBackendMassbankSql())
-mbank
-#dbDisconnect(co)
 ```
 
 
