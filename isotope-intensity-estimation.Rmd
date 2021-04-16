@@ -157,11 +157,11 @@ isotopes <- data.frame(
 )
 
 
-## isotopes <- list(C = c(0.9893, 0.0107), 
-##                  N = c(0.99636, 0.00364), 
-##                  O = c(0.99757, 0.00038, 0.00205),
-##                  S = c(0.9499, 0.0075, 0.0425),
-##                  Cl = c(0.7576, 0.2424))
+isotopes_2 <- list(C = c(0.9893, 0.0107), 
+                   N = c(0.99636, 0.00364), 
+                   O = c(0.99757, 0.00038, 0.00205),
+                   S = c(0.9499, 0.0075, 0.0425),
+                   Cl = c(0.7576, 0.2424))
 ```
 
 For each compound in the human metabolom database (HMDB) we compute how many 
@@ -218,36 +218,42 @@ low.
 
 ```{r}
 counts_df <- counts_df[, colnames(counts_df) != "H"]
-res <- lapply(seq_len(nrow(isotopes)), function(i) {
-    niso <- isotopes$number_isotopes[i]
-    sapply(counts_df[, isotopes$element[i]], function(n)
-        ifelse(n > 0, dmultinom(c(n - niso, niso),
-                                prob = c(isotopes$element_abundance[i],
-                                         isotopes$isotope_abundance[i])), 0))
-})
-prob_df <- do.call(cbind, res)
-colnames(prob_df) <- isotopes$isotope
+
+#' Simple helper function to calculate probabilities from counts
+prob_from_counts <- function(x, def) {
+    res <- lapply(seq_len(nrow(def)), function(i) {
+        niso <- def$number_isotopes[i]
+        sapply(x[, def$element[i]], function(n)
+            ifelse(n > (niso - 1),
+                   dmultinom(c(n - niso, niso),
+                             prob = c(def$element_abundance[i],
+                                      def$isotope_abundance[i])), 0))
+    })
+    res <- do.call(cbind, res)
+    colnames(res) <- def$isotope
+    res
+}
+prob_df <- prob_from_counts(counts_df, isotopes)
 
 ## ??? Is the above correct???
 
-prob_df <- data.frame(
+prob_df_2 <- cbind(
     `C13` = sapply(counts_df$C, function(n)
-        ifelse(n > 0, dmultinom(c(n - 1, 1), prob = isotopes$C), 0)),
+        ifelse(n > 0, dmultinom(c(n - 1, 1), prob = isotopes_2$C), 0)),
     `2C13` = sapply(counts_df$C, function(n)
-        ifelse(n > 1, dmultinom(c(n - 2, 2), prob = isotopes$C), 0)),
+        ifelse(n > 1, dmultinom(c(n - 2, 2), prob = isotopes_2$C), 0)),
     `N15` = sapply(counts_df$N, function(n)
-        ifelse(n > 0, dmultinom(c(n - 1, 1), prob = isotopes$N), 0)),
+        ifelse(n > 0, dmultinom(c(n - 1, 1), prob = isotopes_2$N), 0)),
     `O17` = sapply(counts_df$O, function(n)
-        ifelse(n > 0, dmultinom(c(n - 1, 1, 0), prob = isotopes$O), 0)),
+        ifelse(n > 0, dmultinom(c(n - 1, 1, 0), prob = isotopes_2$O), 0)),
     `O18` = sapply(counts_df$O, function(n)
-        ifelse(n > 0, dmultinom(c(n - 1, 0, 1), prob = isotopes$O), 0)),
+        ifelse(n > 0, dmultinom(c(n - 1, 0, 1), prob = isotopes_2$O), 0)),
     `S33` = sapply(counts_df$S, function(n)
-        ifelse(n > 0, dmultinom(c(n - 1, 1, 0), prob = isotopes$S), 0)),
+        ifelse(n > 0, dmultinom(c(n - 1, 1, 0), prob = isotopes_2$S), 0)),
     `S34` = sapply(counts_df$S, function(n)
-        ifelse(n > 0, dmultinom(c(n - 1, 0, 1), prob = isotopes$S), 0)),
+        ifelse(n > 0, dmultinom(c(n - 1, 0, 1), prob = isotopes_2$S), 0)),
     `Cl37` = sapply(counts_df$Cl, function(n)
-        ifelse(n > 0, dmultinom(c(n - 1, 1), prob = isotopes$Cl), 0)),
-    check.names = FALSE)
+        ifelse(n > 0, dmultinom(c(n - 1, 1), prob = isotopes_2$Cl), 0)))
 ```
 
 ```{r, fig.width = 7, fig.height = 20, fig.cap = "Distribution of probabilities for a certain isotope."}
@@ -287,24 +293,7 @@ We next define for these lower and upper element count limits the probability of
 a certain isotope.
 
 ```{r}
-prob_limits <- data.frame(
-    `C13` = sapply(count_limits[, "C"], function(n)
-        ifelse(n > 0, dmultinom(c(n - 1, 1), prob = isotopes$C), 0)),
-    `2C13` = sapply(count_limits[, "C"], function(n)
-        ifelse(n > 1, dmultinom(c(n - 2, 2), prob = isotopes$C), 0)),
-    `N15` = sapply(count_limits[, "N"], function(n)
-        ifelse(n > 0, dmultinom(c(n - 1, 1), prob = isotopes$N), 0)),
-    `O17` = sapply(count_limits[, "O"], function(n)
-        ifelse(n > 0, dmultinom(c(n - 1, 1, 0), prob = isotopes$O), 0)),
-    `O18` = sapply(count_limits[, "O"], function(n)
-        ifelse(n > 0, dmultinom(c(n - 1, 0, 1), prob = isotopes$O), 0)),
-    `S33` = sapply(count_limits[, "S"], function(n)
-        ifelse(n > 0, dmultinom(c(n - 1, 1, 0), prob = isotopes$S), 0)),
-    `S34` = sapply(count_limits[, "S"], function(n)
-        ifelse(n > 0, dmultinom(c(n - 1, 0, 1), prob = isotopes$S), 0)),
-    `Cl37` = sapply(count_limits[, "Cl"], function(n)
-        ifelse(n > 0, dmultinom(c(n - 1, 1), prob = isotopes$Cl), 0)),
-    check.names = FALSE)
+prob_limits <- prob_from_counts(count_limits, isotopes)
 ```
 
 Below we plot the probability for a certain isotope against the number of atoms
@@ -327,7 +316,13 @@ compounds in HMDB regardless of their mass:
   threshold will be too large for all compounds with less C atoms.
 - for *Cl37* both the lower and upper intensity limit is 0, thus we will never
   identify any such isotope.
-  
+
+```{r}
+prob_limits <- t(prob_limits)
+colnames(prob_limits) <- c("intensity_low", "intensity_high")
+isotopes <- cbind(isotopes, prob_limits)
+```
+
 TODO:
 
 - [ ] Should we consider to lower the count for C13?
