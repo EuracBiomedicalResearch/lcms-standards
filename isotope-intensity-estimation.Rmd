@@ -84,27 +84,27 @@ they use a quotient of polynomials (with degree k+1 and k for the k-th R)
 
 The algorithm to cluster isotopic peaks after peak peaking) involves:
 
-- pseudocluster identification. It requires to loop over all the peaks and for 
-each of them find groups of peaks starting with the current peak and separated 
-by +1 (in the single charged case) for each peak. They first enumerate 
-pseudoclusters with two peaks, then pseudoclusters with more peaks and then 
-proceed by considering different charged states.
-- isotopic cluster identification. Among the pseudoclusters, they identify 
-isotopic clusters whose intensity patterns are similar to those of the isotopic 
-distributions in terms of R and RP in the pseudocluster.
-- duplicate cluster removal. In case two clusters overlap they remove the one 
-whose most abundant peak is smaller. If the most abundant peaks are the same, 
-the one with the lowest charge state is removed. If their charge states are 
-also the same, the cluster with the lower "similarity score" is removed.
+- pseudocluster identification. It requires to loop over all the peaks and for
+  each of them find groups of peaks starting with the current peak and separated
+  by +1 (in the single charged case) for each peak. They first enumerate
+  pseudoclusters with two peaks, then pseudoclusters with more peaks and then
+  proceed by considering different charged states.
+- isotopic cluster identification. Among the pseudoclusters, they identify
+  isotopic clusters whose intensity patterns are similar to those of the
+  isotopic distributions in terms of R and RP in the pseudocluster.
+- duplicate cluster removal. In case two clusters overlap they remove the one
+  whose most abundant peak is smaller. If the most abundant peaks are the same,
+  the one with the lowest charge state is removed. If their charge states are
+  also the same, the cluster with the lower "similarity score" is removed.
 
 ## Valkenborg et al. 2008. A Model-Based Method for the Prediction of the Isotopic Distribution of Peptides
 
 Also in this article the authors consider the ratios between peak heights.
-They model it as a polynomial model in m (monoisotipic mass) whose order 
+They model it as a polynomial model in m (monoisotopic mass) whose order 
 is empirically determined by looking at the improvements obtained by adding 
 higher order terms.
 The parameters of the polynomial model are estimated using the least-squares 
-ethod on different sets of theoretical peptides (and the model is valid in the 
+method on different sets of theoretical peptides (and the model is valid in the 
 corresponding mass range).
 By comparing the ratios between a series of peaks observed in a spectrum with 
 the ratios predicted from the model and selecting a treshold for the allowed 
@@ -112,6 +112,7 @@ the ratios predicted from the model and selecting a treshold for the allowed
 or not.
 
 ## sgibb
+
 As far as I have understood sgibb uses a mixed approach. He uses the approach of 
 Park et al. 2008 but for checking if a candidate cluster is a isotope cluster, 
 for which he uses the Poisson approach of Breen et al. 2000.
@@ -130,8 +131,8 @@ library("pander")
 We load the HMDB database and extract the related compounds.
 
 ```{r}
-#cdb <- CompDb("data/CompDb.Hsapiens.HMDB.4.0.sqlite")
-cdb <- CompDb("~/CompDb.Hsapiens.HMDB.4.0.sqlite")
+cdb <- CompDb("data/CompDb.Hsapiens.HMDB.4.0.sqlite")
+#cdb <- CompDb("~/CompDb.Hsapiens.HMDB.4.0.sqlite")
 cmps <- compounds(cdb, columns = c("compound_id", "name", "formula", "exactmass"))
 ```
 
