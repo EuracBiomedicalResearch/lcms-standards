@@ -1,5 +1,5 @@
 ---
-title: "Counting the number of C, H, N, O, P, S for compounds in HMDB"
+title: "Estimating isotope peak intensities for compounds defined in HMDB"
 author: "Andrea Vicini, Johannes Rainer"
 output:
   rmarkdown::html_document:
@@ -21,7 +21,8 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 
 In this document we evaluate possibilities to estimate abundances for isotopes
 without knowing the chemical formula for the compound. To this end we analyze
-the element composition of all compounds in the human metabolome database.
+the element composition of all compounds in the human metabolome database
+([HMDB](https://hmdb.ca)).
 
 The ultimate goal would be to have one or more functions that allow to identify
 peaks in (MS1) spectra representing isotopes of the same compound based
@@ -81,7 +82,6 @@ they compute R. Then, the interval of interest is divided in two regions
 its coefficients are found by fitting a regression line whereas for low masses
 they use a quotient of polynomials (with degree k+1 and k for the k-th R)
 
-
 The algorithm to cluster isotopic peaks after peak peaking) involves:
 
 - pseudocluster identification. It requires to loop over all the peaks and for
@@ -117,6 +117,7 @@ As far as I have understood sgibb uses a mixed approach. He uses the approach of
 Park et al. 2008 but for checking if a candidate cluster is a isotope cluster, 
 for which he uses the Poisson approach of Breen et al. 2000.
 
+
 # Element counts in HMDB
 
 In this section we analyze element compositions of compounds from the Human
@@ -128,12 +129,39 @@ library("MetaboCoreUtils")
 library("pander")
 ```
 
-We load the HMDB database and extract the related compounds.
+We load the HMDB database and extract the chemical formula and exact mass of all
+compounds.
 
 ```{r}
 cdb <- CompDb("data/CompDb.Hsapiens.HMDB.4.0.sqlite")
 #cdb <- CompDb("~/CompDb.Hsapiens.HMDB.4.0.sqlite")
-cmps <- compounds(cdb, columns = c("compound_id", "name", "formula", "exactmass"))
+cmps <- compounds(cdb, columns = c("compound_id", "name",
+                                   "formula", "exactmass"))
+```
+
+We next define the (**single charged**) isotopes which we will consider along
+with their natural occurring relative abundance.
+
+```{r}
+isotopes <- data.frame(
+    element = c("C", "C", "N", "O", "O", "S", "S", "Cl"),
+    isotope = c("C13", "2C13", "N15", "O17", "O18", "S33", "S34", "Cl37"),
+    number_neutrons = c(1, 1, 1, 1, 2, 1, 2, 1),
+    number_isotopes = c(1, 2, 1, 1, 1, 1, 1, 1),
+    mass_diff = c(1.00335484, 2.00670968, 0.997034965599999, 1.0042168777,
+                  2.0042457777, 0.999387810000002, 1.99579614, 1.99704989),
+    element_abundance = c(0.9893, 0.9893, 0.99636, 0.99757,
+                          0.99757, 0.9499, 0.9499, 0.7576),
+    isotope_abundance = c(0.0107, 0.0107, 0.00364, 0.00038,
+                          0.00205, 0.0075, 0.0425, 0.2424)
+)
+
+
+## isotopes <- list(C = c(0.9893, 0.0107), 
+##                  N = c(0.99636, 0.00364), 
+##                  O = c(0.99757, 0.00038, 0.00205),
+##                  S = c(0.9499, 0.0075, 0.0425),
+##                  Cl = c(0.7576, 0.2424))
 ```
 
 For each compound in the human metabolom database (HMDB) we compute how many 
@@ -142,7 +170,7 @@ We collect the counts in a data frame with a column for each element and a row
 for each compound in HMDB.
 
 ```{r}
-cmps <- cmps[- which(is.na(cmps$exactmass)), ]
+cmps <- cmps[-which(is.na(cmps$exactmass)), ]
 ```
 
 ```{r}
@@ -159,30 +187,160 @@ counts_df <- do.call(rbind, counts)
 rownames(counts_df) <- cmps$compound_id
 ```
 
-
-We compute the mean and standard deviation for the number of each element in the 
+We compute the mean and standard deviation for the number of each element in the
 molecules of HMDB.
 
-```{r}
+```{r, echo = FALSE, results = "asis"}
 m_sd <- rbind(colMeans(counts_df), 
-              apply(counts_df, 2, sd))
-rownames(m_sd) = c("mean", "standard deviation")
+              apply(counts_df, 2, sd),
+              100 * colSums(counts_df > 0) / nrow(counts_df))
+rownames(m_sd) = c("mean", "standard deviation", "% compounds with count > 0")
 pandoc.table(m_sd, style = "rmarkdown")
 ```
 
-We plot, for each of the considered elements,the distribution of the number of 
+We plot, for each of the considered elements, the distribution of the number of 
 atoms of the given element in the compounds of HMDB.
 
-```{r distribution-counts, fig.cap = "distribution of the number of atoms of CHNOPS element in the compounds of HMDB.", fig.width = 7, fig.height = 14}
+```{r distribution-counts, fig.cap = "Distribution of the number of atoms of CHNOPS elements in compounds of HMDB.", fig.width = 7, fig.height = 14, echo = FALSE}
 par(mfrow = c(7, 1), mar = c(3, 4, 1, 0.5))
 for (el in CHNOPS) {
   hist(counts_df[, el], xlab = "", main = el, breaks = 256)
-  abline(v = quantile(counts_df[, el], c(0.025,0.975)))
+  abline(v = quantile(counts_df[, el], c(0.025, 0.975)))
 }
 ```
 
+## Define lower and upper intensity limits covering most compounds
+
+We compute for each molecule in HMDB the probability that the molecule has 
+a certain number (e.g. 1) of isotopes of a given element. Note that we drop
+below the count for *H* because the natural occurrence of it's isotope(s) is too
+low.
+
+```{r}
+counts_df <- counts_df[, colnames(counts_df) != "H"]
+res <- lapply(seq_len(nrow(isotopes)), function(i) {
+    niso <- isotopes$number_isotopes[i]
+    sapply(counts_df[, isotopes$element[i]], function(n)
+        ifelse(n > 0, dmultinom(c(n - niso, niso),
+                                prob = c(isotopes$element_abundance[i],
+                                         isotopes$isotope_abundance[i])), 0))
+})
+prob_df <- do.call(cbind, res)
+colnames(prob_df) <- isotopes$isotope
+
+## ??? Is the above correct???
+
+prob_df <- data.frame(
+    `C13` = sapply(counts_df$C, function(n)
+        ifelse(n > 0, dmultinom(c(n - 1, 1), prob = isotopes$C), 0)),
+    `2C13` = sapply(counts_df$C, function(n)
+        ifelse(n > 1, dmultinom(c(n - 2, 2), prob = isotopes$C), 0)),
+    `N15` = sapply(counts_df$N, function(n)
+        ifelse(n > 0, dmultinom(c(n - 1, 1), prob = isotopes$N), 0)),
+    `O17` = sapply(counts_df$O, function(n)
+        ifelse(n > 0, dmultinom(c(n - 1, 1, 0), prob = isotopes$O), 0)),
+    `O18` = sapply(counts_df$O, function(n)
+        ifelse(n > 0, dmultinom(c(n - 1, 0, 1), prob = isotopes$O), 0)),
+    `S33` = sapply(counts_df$S, function(n)
+        ifelse(n > 0, dmultinom(c(n - 1, 1, 0), prob = isotopes$S), 0)),
+    `S34` = sapply(counts_df$S, function(n)
+        ifelse(n > 0, dmultinom(c(n - 1, 0, 1), prob = isotopes$S), 0)),
+    `Cl37` = sapply(counts_df$Cl, function(n)
+        ifelse(n > 0, dmultinom(c(n - 1, 1), prob = isotopes$Cl), 0)),
+    check.names = FALSE)
+```
+
+```{r, fig.width = 7, fig.height = 20, fig.cap = "Distribution of probabilities for a certain isotope."}
+names <- c("C13", "2C13", "N15", "O17", "O18", "S33", "S34", "Cl37")
+
+par(mfrow = c(ncol(prob_df), 2), mar = c(2, 4, 1, 0.5))
+for (name in names(prob_df)) {
+  hist(prob_df[, name], probability = TRUE, main = name, xlab = "", breaks = 64)
+  boxplot(v, main = name)
+  #print(paste0(name," : ", quantile(v, 0.8)))
+}
+```
+
+The lower and upper intensity threshold for a certain isotope is defined on the
+probability of observing the isotope for most of the compounds from HMDB
+(regardless of their total number of atoms or mass).
+
+The probability to observe a mz difference related to atom X in a compound 
+depends on nX (number of atoms of type X in the compound). We can determine two 
+quantiles q1 and q2 such that a certain percentage (e.g 95%) of compounds in 
+HMBD have q1<nX<q2 and based on q1 and q2 compute an upper bound and a lower 
+bound for the relative intensities. Equivalently we could look directly at the 
+distribution of probabilities of observing a given mz difference in HMBD 
+compounds. In this case we could select as upper and lower bound for the 
+relative intensity two quantiles q1 and q2 such that a certain percentage 
+(e.g 95%) of compounds in HMBD have q1<P(observe mz)<q2.
+
+Below we define for each element the 2.5 and 97.5% quantile of element counts
+for all compounds in HMDB. These limits cover thus the intensity range for 95%
+of all HMDB compounds.
+
+```{r}
+count_limits <- apply(counts_df, 2, quantile, probs = c(0.025, 0.975))
+```
+
+We next define for these lower and upper element count limits the probability of
+a certain isotope.
+
+```{r}
+prob_limits <- data.frame(
+    `C13` = sapply(count_limits[, "C"], function(n)
+        ifelse(n > 0, dmultinom(c(n - 1, 1), prob = isotopes$C), 0)),
+    `2C13` = sapply(count_limits[, "C"], function(n)
+        ifelse(n > 1, dmultinom(c(n - 2, 2), prob = isotopes$C), 0)),
+    `N15` = sapply(count_limits[, "N"], function(n)
+        ifelse(n > 0, dmultinom(c(n - 1, 1), prob = isotopes$N), 0)),
+    `O17` = sapply(count_limits[, "O"], function(n)
+        ifelse(n > 0, dmultinom(c(n - 1, 1, 0), prob = isotopes$O), 0)),
+    `O18` = sapply(count_limits[, "O"], function(n)
+        ifelse(n > 0, dmultinom(c(n - 1, 0, 1), prob = isotopes$O), 0)),
+    `S33` = sapply(count_limits[, "S"], function(n)
+        ifelse(n > 0, dmultinom(c(n - 1, 1, 0), prob = isotopes$S), 0)),
+    `S34` = sapply(count_limits[, "S"], function(n)
+        ifelse(n > 0, dmultinom(c(n - 1, 0, 1), prob = isotopes$S), 0)),
+    `Cl37` = sapply(count_limits[, "Cl"], function(n)
+        ifelse(n > 0, dmultinom(c(n - 1, 1), prob = isotopes$Cl), 0)),
+    check.names = FALSE)
+```
+
+Below we plot the probability for a certain isotope against the number of atoms
+for that element in HMDB.
+
+```{r, fig.width = 7, fig.height = 20}
+par(mfrow = c(ncol(prob_df), 1), mar = 4, 4, 1, 0.5)
+for (name in colnames(prob_df)) {
+    el <- gsub('[0-9]+', '', name)
+    plot(counts_df[, el], prob_df[, name], 
+         main = name, xlab = "counts", ylab = "probability")
+    abline(v = count_limits[, el], col = "red")
+}
+```
+
+This approach has the following limitations, mostly because it is based on all
+compounds in HMDB regardless of their mass:
+- the lower limit for C13 might be too large, because of the lower limit of
+  carbon atom counts used (i.e. `r count_limits[1, "C"]`). The lower intensity
+  threshold will be too large for all compounds with less C atoms.
+- for *Cl37* both the lower and upper intensity limit is 0, thus we will never
+  identify any such isotope.
+  
+TODO:
+
+- [ ] Should we consider to lower the count for C13?
+- [ ] For Cl37, should we increase the upper count?
+- [ ] Should we use the `range` instead of the quantiles?
+- [ ] Maybe better to define a `function` to calculate the probabilities instead
+      of doing it manually for each isotope.
 
 
+## Define mass-dependent lower and upper intensity limits
+
+The higher the compounds mass the larger the number of its atoms and hence also
+the probability of an isotope of a specific element.
 
 We next evaluate what the relationship between the compound's mass and its
 number of specific atoms. We could use this later to determine a mass-dependent
@@ -283,124 +441,10 @@ abline(lm_h)
 }
 ```
 
-We define the absolute abundances of the isotopes for C, N, O, S, Cl.
+TODO
 
-```{r}
-isotopes <- list(C = c(0.9893, 0.0107), 
-                 N = c(0.99636, 0.00364), 
-                 O = c(0.99757, 0.00038, 0.00205),
-                 S = c(0.9499, 0.0075, 0.0425),
-                 Cl = c(0.7576, 0.2424))
-```
+- [ ] @jo, think over it again.
 
-
-We compute for each molecule in HMDB the probability that the molecule has 
-certain numbers of the isotopes of a given element. 
-
-```{r}
-pC13 <- sapply(counts_df$C, 
-               function(n) ifelse(n > 0, 
-                                  dmultinom(c(n - 1, 1), prob = isotopes$C), 
-                                  0))
-p2C13 <- sapply(counts_df$C,
-                function(n) ifelse(n > 1, 
-                                   dmultinom(c(n - 2, 2), prob = isotopes$C), 
-                                   0))
-pN15 <- sapply(counts_df$N, 
-               function(n) ifelse(n > 0, 
-                                  dmultinom(c(n - 1, 1), prob = isotopes$N), 
-                                  0))
-pO17 <- sapply(counts_df$O, 
-               function(n) ifelse(n > 0, 
-                                  dmultinom(c(n - 1, 1, 0), prob = isotopes$O), 
-                                  0))
-pO18 <- sapply(counts_df$O, 
-               function(n) ifelse(n > 0, 
-                                  dmultinom(c(n - 1, 0, 1), prob = isotopes$O), 
-                                  0))
-pS33 <- sapply(counts_df$S, 
-               function(n) ifelse(n > 0, 
-                                  dmultinom(c(n - 1, 1, 0), prob = isotopes$S), 
-                                  0))
-pS34 <- sapply(counts_df$S, 
-               function(n) ifelse(n > 0, 
-                                  dmultinom(c(n - 1, 0, 1), prob = isotopes$S), 
-                                  0))
-pCl37 <- sapply(counts_df$Cl, 
-                function(n) ifelse(n > 0, 
-                                   dmultinom(c(n - 1, 1), prob = isotopes$Cl), 
-                                   0))
-```
-
-
-```{r, fig.width = 7, fig.height = 20}
-names <- c("C13", "2C13", "N15", "O17", "O18", "S33", "S34", "Cl37")
-par(mfrow = c(8, 2))
-for (name in names)
-{
-  namev <- paste0("p", name)
-  v <- get(namev)[get(namev) > 0]
-  hist(v, probability = TRUE, main = name, xlab = namev)
-  boxplot(v, main = name)
-  #print(paste0(name," : ", quantile(v, 0.8)))
-}
-```
-
-Another possible approach to define bounds for the intensities could be the
-following.
-The probability to observe a mz difference related to atom X in a compound 
-depends on nX (number of atoms of type X in the compound). We can determine two 
-quantiles q1 and q2 such that a certain percentage (e.g 95%) of compounds in 
-HMBD have q1<nX<q2 and based on q1 and q2 compute an upper bound and a lower 
-bound for the relative intensities. Equivalently we could look directly at the 
-distribution of probabilities of observing a given mz difference in HMBD 
-compounds. In this case we could select as upper and lower bound for the 
-relative intensity two quantiles q1 and q2 such that a certain percentage 
-(e.g 95%) of compounds in HMBD have q1<P(observe mz)<q2.
-
-
-```{r}
-alpha <- 0.05
-bounds_n <- as.data.frame(apply(counts_df[c("C", "N", "O", "S", "Cl")], 2, 
-                                function(x) quantile(x, c(alpha/2, 1-alpha/2))))
-# maximum of pC13 is at n = 93
-
-p_mat <- cbind(pC13, p2C13, pN15, pO17, pO18, pS33, pS34, pCl37)
-bounds_int <- lapply(1 : ncol(p_mat), 
-                     function(i) {
-                       el <- substring(gsub('[0-9]+', '', colnames(p_mat)[i]), 2) 
-                       c(p_mat[which(counts_df[, el] == bounds_n[1, el])[1], i],
-                         p_mat[which(counts_df[, el] == bounds_n[2, el])[1], i])
-                     })
-bounds_int <- do.call(cbind, bounds_int)
-```
-
-
-```{r, fig.width = 7, fig.height = 20}
-# Maybe this plot is a bit confusing and can be removed and also the block above. 
-# The probability of observing  a given mz is a function of the count of atoms 
-# that originates it in the compound. This function for the counts in HMBD is 
-# plotted below. I did it to visualize it quickly and see where the upper bounds_n 
-# would fall.
-
-par(mfrow = c(8, 1))
-for (i in seq_along(names))
-{
-  el <- substring(gsub('[0-9]+', '', colnames(p_mat)[i]), 2)
-  plot(counts_df[, el], p_mat[, i], 
-       main = substring(names[i],2), xlab = "counts", ylab = "probability")
-  abline(v = bounds_n[, el], col = "red")
-}
-```
-
-Or analogously we could work directly on probabilities obtaining the same results.
-```{r}
-alpha <- 0.05
-bounds_int2 <- as.data.frame(apply(p_mat, 2, 
-                                function(x) quantile(x, c(alpha/2, 1-alpha/2))))
-rownames(bounds_int2) <- c("min_intensity","max_intensity")
-bounds_int2
-```
 
 Here we create and save the resulting isotope definition.
 ```{r}
@@ -411,16 +455,6 @@ isodef <- isodef[order(isodef[, 1]),]
 write.table(isodef, file = "~/Spectra/isotopeDefinition.txt") #Not sure where to save it
 ```
 
-
-
-Open questions/discussion
-
-- [ ] Instead of considering the isotopes separately (e.g. C13, N15 etc), should
-      we also *aggregate* them in a M+1, M+2 etc where M+1 would be all atoms
-      for which the isotope has a m/z difference of ~ 1?
-- [ ] Can we use the information from HMDB on average counts/proportions of
-      elements in compounds to get a lower/upper estimate of the isotope
-      intensity?
 
 
 
