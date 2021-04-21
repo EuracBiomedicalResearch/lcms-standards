@@ -220,7 +220,7 @@ for (el in CHNOPS) {
 
 We next define a lower and upper intensity limit for a given isotope of an
 element based on the probability of such an isotope independently of the
-chemical formula or the mass of the ion. Thus, the limits have to be thus set to
+chemical formula or the mass of the ion. Thus, the limits have to be set to
 span a rather large range to cover most compounds in HMDB.
 
 We below compute for each molecule in HMDB the probability that the molecule has 
