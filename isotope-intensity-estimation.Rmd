@@ -354,26 +354,6 @@ We next evaluate what the relationship between the compound's mass and its
 number of specific atoms. We could use this later to determine a mass-dependent
 factor to estimate the expected intensity of a certain isotope.
 
-
-Idea:
-- for each atom: plot compound masses against number of atoms, fit a linear
-  model and get the coefficients from that model.
-- Select top and bottom 20% (10%?) of compounds with highest or lowest
-  proportion of a certain element, plot the data and fit the linear model as
-  above.
-- for a given mass (m/z) of a peak we can use these to estimate the "expected
-  average" number of e.g. C atoms in the formula of this unknown compound and
-  use that to guess what the intensity of the isotope peak would be.
-- define a function that takes a mass and an element (such as `"C"`) as input
-  and calculates the expected relative intensity for that
-  (relative to 1 which would be the e.g. C12 peak). This function needs the
-  coefficents from the linear model (dependency between mass and number of
-  atoms) and calculates the expected number of atoms and based on that, using
-  a binomial distribution and the number/proportion of naturally occurring
-  isotope atoms, calculates the expected intensity.
-
-
-
 We try to fit a regression line for masses of molecules versus the number of 
 atoms for the elements C, N, O, S, Cl.
 
@@ -451,8 +431,17 @@ abline(lm_h)
 
 TODO
 
-- [ ] @jo, think over it again.
-
+- [ ] decide how to define the lower and upper bound. Should we exclude count of
+      0 (since if we look for an isotope of a certain element we (should) expect
+      that the compound contains at least one atom - otherwise we would anyway
+      not detect/find the isotope)?
+- [ ] define intercept and slope for lower and upper bound (number of atoms
+      depending on mass).
+- [ ] isotope detection function: have a function that takes that and, given a
+      mass (or m/z) calculates the lower and upper count of atoms and from that
+      calculates the probability. The *isotope definition* `data.frame` should
+      contain all the required information to perform that calculation and
+      should be passed along to this function.
 
 
 
