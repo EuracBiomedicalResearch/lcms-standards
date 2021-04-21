@@ -164,6 +164,13 @@ isotopes_2 <- list(C = c(0.9893, 0.0107),
                    Cl = c(0.7576, 0.2424))
 ```
 
+The table below lists the defined isotopes.
+
+```{r, echo = FALSE, results = "asis"}
+pandoc.table(isotopes, style = "rmarkdown",
+             caption = "Isotope definitions.")
+```
+
 For each compound in the human metabolom database (HMDB) we compute how many 
 atoms of C, H, N, O, P and S are present in it. 
 We collect the counts in a data frame with a column for each element and a row 
@@ -211,7 +218,12 @@ for (el in CHNOPS) {
 
 ## Define lower and upper intensity limits covering most compounds
 
-We compute for each molecule in HMDB the probability that the molecule has 
+We next define a lower and upper intensity limit for a given isotope of an
+element based on the probability of such an isotope independently of the
+chemical formula or the mass of the ion. Thus, the limits have to be thus set to
+span a rather large range to cover most compounds in HMDB.
+
+We below compute for each molecule in HMDB the probability that the molecule has 
 a certain number (e.g. 1) of isotopes of a given element. Note that we drop
 below the count for *H* because the natural occurrence of it's isotope(s) is too
 low.
@@ -257,12 +269,10 @@ prob_df_2 <- cbind(
 ```
 
 ```{r, fig.width = 7, fig.height = 20, fig.cap = "Distribution of probabilities for a certain isotope."}
-names <- c("C13", "2C13", "N15", "O17", "O18", "S33", "S34", "Cl37")
-
 par(mfrow = c(ncol(prob_df), 2), mar = c(2, 4, 1, 0.5))
-for (name in names(prob_df)) {
+for (name in colnames(prob_df)) {
   hist(prob_df[, name], probability = TRUE, main = name, xlab = "", breaks = 64)
-  boxplot(v, main = name)
+  boxplot(prob_df[, name], main = name)
   #print(paste0(name," : ", quantile(v, 0.8)))
 }
 ```
@@ -300,7 +310,7 @@ Below we plot the probability for a certain isotope against the number of atoms
 for that element in HMDB.
 
 ```{r, fig.width = 7, fig.height = 20}
-par(mfrow = c(ncol(prob_df), 1), mar = 4, 4, 1, 0.5)
+par(mfrow = c(ncol(prob_df), 1), mar = c(4, 4, 1, 0.5))
 for (name in colnames(prob_df)) {
     el <- gsub('[0-9]+', '', name)
     plot(counts_df[, el], prob_df[, name], 
@@ -321,15 +331,18 @@ compounds in HMDB regardless of their mass:
 prob_limits <- t(prob_limits)
 colnames(prob_limits) <- c("intensity_low", "intensity_high")
 isotopes <- cbind(isotopes, prob_limits)
+
+dr <- paste0("data/txt/isotope-intensity-estimation/")
+dir.create(dr, showWarnings = FALSE, recursive = TRUE)
+write.table(isotopes, file = paste0(dr, "hmdb_isotopes_constant_range.txt"),
+            sep = "\t", row.names = FALSE)
 ```
 
 TODO:
 
-- [ ] Should we consider to lower the count for C13?
+- [ ] Should we consider to lower the count for C13 (i.e. set it manually to 1)?
 - [ ] For Cl37, should we increase the upper count?
 - [ ] Should we use the `range` instead of the quantiles?
-- [ ] Maybe better to define a `function` to calculate the probabilities instead
-      of doing it manually for each isotope.
 
 
 ## Define mass-dependent lower and upper intensity limits
@@ -440,15 +453,6 @@ TODO
 
 - [ ] @jo, think over it again.
 
-
-Here we create and save the resulting isotope definition.
-```{r}
-mzd <- c(1.003354842, 2.00670968, 0.997034966, 1.004216878, 2.004245778, 
-         0.99938781, 1.99579614, 1.99704989)
-isodef <- cbind(mzd, t(bounds_int2))
-isodef <- isodef[order(isodef[, 1]),]
-write.table(isodef, file = "~/Spectra/isotopeDefinition.txt") #Not sure where to save it
-```
 
 
 
