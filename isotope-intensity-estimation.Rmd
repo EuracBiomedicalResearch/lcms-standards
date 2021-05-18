@@ -341,6 +341,10 @@ Or do the same based on the mz differences with respect to monoisotopic mass
 load(paste0(dr, "cnf_frequencies.RData"))
 ```
 
+We thus defined `r length(cnf_frequency)` isotopologues considering all
+compounds from HMDB which would yield an intensity higher than 0.01% of the
+monoisotopic's intensity.
+
 
 ```{r}
 cnf_proportion <- sort(cnf_frequency / nrow(cmps), decreasing = TRUE)
