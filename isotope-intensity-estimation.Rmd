@@ -17,22 +17,17 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 **Last modified:** `r file.info("isotope-intensity-estimation.Rmd")$mtime`<br />
 **Compiled**: `r date()`
 
+$\require{mhchem}$
+
 # Introduction
 
-In this document we evaluate possibilities to estimate m/z and intensities for
-isotopes without knowing the chemical formula for the compound. To this end we
-analyze the element composition of all compounds in the human metabolome
-database ([HMDB](https://hmdb.ca)).
-
-The ultimate goal would be to have one or more functions that allow to identify
-peaks in (MS1) spectra representing isotopes of the same compound based
-exclusively on the m/z and intensity values, i.e. without knowing the chemical
-formula of the compound. The functions should be modular and customizable and
-should support low as well as high resolution instruments that would allow to
-discriminate between isotope peaks from different elements.
+In this document we evaluate possibilities to estimate m/z and intensities of
+compounds' isotopologues without knowing the chemical formula of the
+compound. Ultimately, this should allow to identify groups of mass peaks in a
+spectrum that represents isotopologues of the same compound.
 
 
-# Isotope detection approaches
+# Isotope detection or definition approaches
 
 
 ## `CAMERA`
@@ -118,6 +113,153 @@ Park et al. 2008 but for checking if a candidate cluster is a isotope cluster,
 for which he uses the Poisson approach of Breen et al. 2000.
 
 
+# Identification of isotopologue peaks in MS1 data
+
+**Given**\
+
+An MS1 spectrum with paired m/z and intensity values.
+
+**Goal**\
+
+Identify all mass peaks (i.e. m/z and intensity pairs) in a spectrum that
+could represent signal from
+[isotopologues](https://goldbook.iupac.org/terms/view/I03351) of the same
+compound.
+
+**Required**\
+
+- Difference in m/z $mzd$ between a monoisotopic peak and the peak of an
+  isotopologue.
+- Expected intensity $x_{I}$ for the isotopologue peak (e.g. relative to the
+  monoisotopic peak intensity $x_{0}$).
+  
+## Definitions and approach
+
+The overall mass difference $md$ to the monoisotopic mass is determined by the
+isotopic substitution defining the isotopologue $I$, i.e. by the number and
+variants of present isotopes $I_{i}$ (such as $\ce{{13}^C}$ and/or
+$\ce{{15}^N}$) in the isotopologue. It is defined as the sum of mass differences
+of the individual isotope
+
+$$md = \sum md_{I_{i}}$$ 
+
+with the mass differences of isotopes $md_{I_{i}}$ being known.
+
+The frequency of observing an isotope of a certain element in nature is
+known. For each such isotope $I_{i}$ it is thus possible to calculate the
+probability of observing it based on the total number of atoms $n_{X}$ from the
+respective element $X$ in a compound using a multinomial distribution. Further,
+the probability of observing an isotopologue $P(I)$ (including the probability
+of its monoisotopic form $P(I)$) is equal to the product of probabilities of
+each of the isotopes $P(I_{i})$ it constitutes
+
+$$P(I) = \prod P(I_{i})$$
+
+Finally, the ratio between the intensities of the monoisotopic peak $x_0$ and a
+peak of an isotopologue $x_I$ is supposed to be equivalent to the ratio of their
+probabilities
+
+$$R_{I} = \frac{x_{I}}{x_{0}} = \frac{P(I)}{P(0)}$$
+
+This ratio $R_{I}$ depends only on the ratio of probabilities of the isotopes in
+which the isotopologues differ, i.e. which are part of the isotopic substitution
+(all other probabilities will cancel themselves in the ratio above). 
+
+Thus, given the chemical formula and hence total numbers of atoms of each
+elements of a compound would be known, both the intensity $x_{I}$ and the mass
+difference $md$ of each of its isotopologues could be determined.
+
+Without prior knowledge of the measured compounds (and hence chemical formulas)
+or defined isotopologues, we need make some simplifications and approximations
+to allow the identification of isotopologue peaks from m/z and intensity values
+alone. For metabolomics in human samples only a reduced set of compounds
+consisting mostly of CHNOPS atoms (C, H, N, O, P, S as well as Cl), are expected
+to be present. Based on all compounds present in the human metabolome database
+we first identified all isotopic substitutions that would result in an
+isotopologue peak with an intensity larger than 0.01% of the highest intensity
+in the compounds isosope pattern (see [Section](#isotopologues)). We further
+restricted this set to the *most frequent* isotopic substitutions and calculate
+their mass difference $md$. This would already enable us to look for
+isotopologue *candidate peaks* in an MS1 spectrum, but to determine whether the
+signal indeed results from an isotopologue we would in addition also need to
+evaluate whether its relative intensity the assumed *monoisotopic peak* matches
+the ratio $R_{I} = P(I)/P(0)$. The isotope probabilities depend however on the
+total number of atoms of each element from the matching isotopic substitution
+(which is however unknown for a given mass peak). We thus next determined for
+all compounds in HMDB the number of atoms of each CHNOPS(+Cl) element (see
+[Section](#elementcounts)). We used this data to evaluate and define a (linear)
+relationship between the number of atoms of a certain element of a compounds and
+its mass. The resulting slopes (linear models) allow to estimate a lower and
+upper atom count for each element based on the mass (or m/z) of a tentative
+isotopologue peak (or for a compound with unknown chemical formula). These
+counts can then be used to calculate (lower and upper bounds of) isotope
+probabilities $P(I_{i})$ and subsequently a lower and upper bound for the
+intensity ratio $R_{I}$. This information hence allows to determine whether the
+tested peak's intensity matches the intensity expected from the isotopic
+substitution (within given boundaries).
+
+
+## Limitations
+
+- The present definitions base on compounds from HMDB and the presented approach
+  would hence fail to identify isotopes of e.g. anorganic compounds. Parameters
+  would have to be estimated based on corresponding collection of compounds.
+- By using only the most frequent isotopic substitutions we might miss detection
+  of less frequent isotopologues.
+
+## Parameter estimation
+
+### Identification of the most frequent isotopic substitutions {#isotopologues}
+
+### Definition of mass-dependent element counts {#elementcounts}
+
+# Evaluation
+
+
+
+## Questions and discussion
+
+- [ ] Change the way to describe isotopic substitutions: use [13]C2 instead of
+      2[13C] to describe 2 isotopes C13.
+- [ ] Use `isopattern(..., rel_to = 4)` which uses intensities relative to the
+      monoisotopic peak.
+- So far we subset the isotopic substitutions to the most frequently observed
+  ones. Should we maybe also consider the intensity of the resulting
+  isotopologue? Maybe a plot frequency against average intensity would be
+  helpful.
+- **Alternative approach**: for the evaluation whether a peak is from an
+  isotopologue we need: the mass difference $md$ and an intensity boundary. The
+  latter depends on the ratio of the probabilities of the monoisotopic peak to
+  the isotopologue $R_{I} = P(I)/P(0)$. With $P(I)/P(0) = x_{I}/x_{0}$ and
+  knowing the intensity of the monoisotopic peak $x_{0}$ we can get an estimate
+  of the isotopologues intensity $x_{I} = x_{0} * R_{I}$. From the
+  `enviPar::isopattern` function we should in fact already get everything we
+  need: the returned `matrix` contains the peaks' m/z and the abundances which
+  are equivalent to the probabilities. The $md$ for an isotopologue can be
+  calculated from the column `"m/z"` between the monoisotopic peak (first row)
+  and any of the isotopologues and the $R_{I}$ can be calculated from the column
+  `"abundance"` (ratio between any row and the first row). Thus we could:
+  - calculate the isopattern for each compound in HMDB. Then for each compound:
+  - calculate $md$ and $R_{I}$ for each isotopologue peak
+  - define the character string of the isotopic substitution
+    (e.g. `"[13]C1[16]O2"`).
+  - save this information along with the m/z of the monoisotopic peak to a
+    `data.frame` (or any other object?).
+  - Select the most frequent isotopic substitutions. For each of them: plot
+    $R_{I}$ against m/z. This should allow us to define an $R_{I}(mz)$ for an
+    isotopic substitution that is a function of the mass (ideally a lower and
+    upper bound/linear relationship). Also, for each isotopic substitution we
+    get the minimal m/z for which such an isotopologue is observed. That can be
+    helpful to skip calculations of some isotopic substitution if they are
+    simply not possible/observed in *real life*.
+
+
+@andrea, please copy respective code blocks and documentation from below into
+the appropriate sections above.
+
+
+
+
 # Element counts in HMDB
 
 In this section we analyze element compositions of compounds from the Human
@@ -127,7 +269,7 @@ Metabolome Database.
 library("CompoundDb")
 library("MetaboCoreUtils")
 library("pander")
-library(enviPat)
+library("enviPat")
 ```
 
 We load the HMDB database and extract the chemical formula and exact mass of all
@@ -213,7 +355,6 @@ is only very low.
 ## Isotopes
 
 We focus here on elements which have isotopes (which excludes P). 
-$\require{mhchem}$
 
 The presence of heavier elemental isotopes in a compound will result in a mass 
 difference $md$ with respect to the monoisotopic mass of the compound.
