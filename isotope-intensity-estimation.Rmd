@@ -277,7 +277,6 @@ compounds.
 
 ```{r}
 cdb <- CompDb("data/CompDb.Hsapiens.HMDB.4.0.sqlite")
-## cdb <- CompDb("~/CompDb.Hsapiens.HMDB.4.0.sqlite")
 cmps <- compounds(cdb, columns = c("compound_id", "name",
                                    "formula", "exactmass"))
 ```
@@ -413,7 +412,9 @@ data(isotopes)
 ## Ensure that element order is correct
 chemforms <- sapply(cmps$formula, standardizeFormula)
 threshold = 0.01
-iso_ps <- isopattern(isotopes, chemforms , threshold = threshold)
+iso_ps <- isopattern(isotopes, chemforms , threshold = threshold) 
+# should rel_to = 2 be used above? I would say that the most correct thing is to
+# use absolute probabilities
 
 ## Process the isotope pattern to define a character string for each
 ## isotopologue - ensuring the order of isotopes to be the same across
@@ -429,20 +430,43 @@ subst_per_cmpd <- lapply(iso_ps, function(iso_p) {
         paste0(row[row >0], "[", cn[row > 0], "]", collapse = ""))
 })
 subst_frequency <- table(unlist(subst_per_cmpd, use.names = FALSE))
-
-save(subst_frequency, subst_per_cmpd, file = paste0(dr, "subst_frequencies.RData"))
+save(subst_frequency, subst_per_cmpd, 
+     iso_ps, chemforms, file = paste0(dr, "subst_frequencies.RData"))
 ```
 
 ```{r, echo = FALSE, eval = file.exists(paste0(dr, "subst_frequencies.RData"))}
 load(paste0(dr, "subst_frequencies.RData"))
 ```
 
-We thus defined `r length(cnf_frequency)` isotopologues considering all
+We thus defined `r length(subst_frequency)` isotopologues considering all
 compounds from HMDB which would yield an intensity higher than 0.01% of the
 monoisotopic's intensity.
 
 
+For each given substitution we compute the mean intensity that a substitution 
+has in the compounds of HMBD where it is significant.
 ```{r}
+intens <- unlist(lapply(iso_ps, function(iso_p) iso_p[,"abundance"][-1]),
+                      use.names = FALSE)
+m_intens_subs <- tapply(intens, unlist(subst_per_cmpd, use.names = FALSE), mean)
+```
+and plot it against the frequency of the substitution in HMBD. Most of the 
+substitution present a small mean intensity. Most of the substitution with mean 
+intensity higher than 5 are those realted to Cl (these are not very frequent) 
+and C.
+```{r}
+library(ggplot2)
+library(plotly)
+p <- data.frame(subst_name = names(m_intens_subs),
+  subst_frequency = as.numeric(subst_frequency), 
+                intens = m_intens_subs) %>%
+ggplot(aes(subst_frequency, intens, label = subst_name)) + geom_point()
+ggplotly(p)
+```
+
+First approach. Here we plot the proportion (frequency divided for the number of compounds in 
+HMBD) 
+```{r, fig.height = 5, fig.width = 9, "Substitutions with proportion > 0.5 using approach 1"}
 subst_proportion <- sort(subst_frequency / nrow(cmps), decreasing = TRUE)
 par(mar = c(8, 4.1, 4.1, 2.1))
 barplot(subst_proportion[subst_proportion > 0.5], las = 2)
@@ -458,7 +482,7 @@ times a family related to N, S or Cl is found to be significant is limited by
 the fact that the number of compounds in HMBD that contain these elements is
 much lower than those that contain C, H, or O.
 
-We thus next compare the isotopologue frequency not against the total number of
+Second approach. We thus next compare the isotopologue frequency not against the total number of
 compounds in HMDB, but against the number of compounds in HMDB that contain each
 of the elements from the isotopologue definition in their chemical formula.
 
@@ -472,14 +496,22 @@ ncomps <- vapply(names(subst_frequency), function(x) {
 }, integer(1))
 ```
 
-```{r, fig.height = 5, fig.width = 17}
+```{r, fig.height = 5, fig.width = 17, fig.cap= "Substitutions with proportion > 0.5 using approach 2"}
 subst_proportion_var <- sort(subst_frequency/ncomps, decreasing = TRUE)
 par(mar = c(10, 4.1, 4.1, 2.1))
 barplot(subst_proportion_var[subst_proportion_var > 0.5], las = 2)
 ```
 
+```{r, fig.height = 5, fig.width = 10, fig.cap = "Proportions computed according the second approach and mean intensities for the substitutions. The substitutions on the right of the red line correspond to the columns in the previous barplot"}
+p <- data.frame( subst_name = names(m_intens_subs),
+  proportion_var = as.numeric(subst_frequency/ncomps), 
+                intens = m_intens_subs) %>%
+ggplot(aes(proportion_var, intens, label = subst_name)) + geom_point()
+ggplotly(p + geom_vline(xintercept = 0.5, color = "red", size = .1))
+```
 
-Here I also try to divide the counts of the times a family is found to be 
+
+Third approach. Here I also try to divide the counts of the times a family is found to be 
 significant in the HMBD compounds for the times that this family can be 
 observed across the HMBD compounds. In other words these ratios represent the 
 likelihood to find a family significant among the subset of HMBD compounds that 
@@ -507,10 +539,10 @@ nvar <- sapply(names(subst_frequency), function(subst) {
 ```
 
 
-```{r, fig.height = 5, fig.width = 17}
-subst_proportion_var <- sort(subst_frequency/nvar, decreasing = TRUE)[-1]
+```{r, fig.height = 5, fig.width = 17, fig.cap = "Substitutions with proportion > 0.5 using approach 3"}
+subst_proportion_var2 <- sort(subst_frequency/nvar, decreasing = TRUE)
 par(mar = c(10, 4.1, 4.1, 2.1))
-barplot(subst_proportion_var[subst_proportion_var > 0.5], las = 2)
+barplot(subst_proportion_var2[subst_proportion_var2 > 0.5], las = 2)
 ```
 
 In the plot above we can see the substitutions that produce a significant 
@@ -522,6 +554,47 @@ To exemplify the difference, all molecules (the proportion in the above plot is
 significant peaks corresponding to 1[13C]1[37Cl]. However, since the number of 
 such compounds in HMBD is very low the probability of observing the effect of 
 such a substitution is very very low if we randomly pick one compound in HMBD.
+
+In the following plot I show also the mean intensity of the substitutions. 
+According to the third approach we select substitutions of Cl which have high 
+mean intensity bu were excluded with the first two approaches.
+
+```{r, fig.height = 5, fig.width = 10, fig.cap = "Proportions computed according the third approach and mean intensities for the substitutions. The substitutions on the right of the red line correspond to the columns in the previous barplot"}
+library(ggplot2)
+library(plotly)
+par(mfrow= c(1,2))
+p <- data.frame( subst_name = names(m_intens_subs),
+  proportion_var2 = as.numeric(subst_frequency/nvar), 
+                intens = m_intens_subs) %>%
+ggplot(aes(proportion_var2, intens, label = subst_name)) + geom_point()
+ggplotly(p + geom_vline(xintercept = 0.5, color = "red", size= .1))
+```
+Here I compute the ratios R directly from enviPat::isopattern output.
+```{r}
+Rs <- lapply(iso_ps, function(iso_p) iso_p[-1, "abundance"]/iso_p[1, "abundance"])
+selected_substs <- names(subst_proportion_var2[subst_proportion_var2 > 0.5])
+temp <- lapply(chemforms, function (frml){
+  Rs[[frml]][match(selected_substs, subst_per_cmpd[[frml]])]
+})
+R_df <- do.call(rbind, temp)
+colnames(R_df) <- selected_substs
+```
+
+and I plot those related to the selected substitutions against the mass of the compounds. The plots of R when 
+only a single element appears in the configuration with multiplicity 1 
+(e.g. 1[13C], 1[15N]) are very similar to the plot of the counts vs mass 
+(in that case R is equal to a constant times the counts). However, for some 
+other configuration the relationship is quadratic or cubic etc. The same linear 
+regression or linear bounds maybe wouldn’t be very accurate in every case but we 
+can see how the approximation works.
+
+```{r, fig.width = 15, fig.height = 90, fig.cap = "R against mass for HMBD compounds."}
+s_to_plot <- selected_substs# c("1[13C]", "2[13C]", "1[13C]1[33S]1[37Cl]")
+par(mfrow = c(ceiling(length(s_to_plot)/3), 3), mar = c(5, 4, 1, 0.5))
+for (name in s_to_plot) {
+  plot(cmps$exactmass, R_df[, name], xlab = "mass", ylab = "R", main = name)
+}
+```
 
 ### Discussion
 
@@ -537,7 +610,7 @@ the previous section. I convert each strings to a list (but we can also change
 this representation) as used by the functions in the rest of the file. 
 
 ```{r}
-selected_names <- names(subst_proportion_var[subst_proportion_var > 0.5])
+selected_names <- names(subst_proportion_var2[subst_proportion_var2 > 0.5])
 h_iso_forms <- list(C = c("13C"), H = c("2H"), N = c("15N"), O = c("17O", "18O"), 
                     S = c("33S", "34S", "36S"), Cl = c("37Cl"))
 
