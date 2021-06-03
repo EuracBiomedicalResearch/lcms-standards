@@ -293,43 +293,44 @@ cmps <- cmps[-which(is.na(cmps$exactmass)), ]
 ```
 
 ```{r}
-CHNOPS <- c("C", "H", "N", "O", "P", "S", "Cl")
-counts0 <- lapply(cmps$formula, function(frml) {
-  res <- countElements(frml)
-  row <- numeric(length(CHNOPS) + 1)
-  names(row) <- c(CHNOPS, "onlyCHNOPS")
-  only <- intersect(CHNOPS, names(res))
-  row[only] <- res[only]
-  row["onlyCHNOPS"] <- length(only) == length(res)
+tmp <- lapply(cmps$formula, function(frml) res <- countElements(frml))
+elements_names <- unique(names(unlist(tmp)))
+counts <- lapply(tmp, function(x) {
+  row <- numeric(length(elements_names))
+  names(row) <- elements_names
+  row[names(x)] <- x
   row
   })
-counts_df0 <- do.call(rbind, counts0)
-rownames(counts_df0) <- cmps$compound_id
-onlyCHNOPS <- counts_df0[, "onlyCHNOPS"]
-counts_df <- data.frame(counts_df0[, CHNOPS])
+counts_df <- data.frame(do.call(rbind, counts))
+rownames(counts_df) <- cmps$compound_id
+```
+
+```{r}
+CHNOPSCl <- c("C", "H", "N", "O", "P", "S", "Cl")
+counts_CHNOPSCl <- data.frame(counts_df[ , CHNOPSCl])
+```
+
+```{r}
+onlyCHNOPSCl <- rowSums(counts_df[, setdiff(elements_names, CHNOPSCl)]) == 0
+
+# With the following lines we can exclude compounds that have some atoms of 
+# elements different from CHNOPSCl. 
+cmps <- cmps[onlyCHNOPSCl, ]
+counts_df <- counts_df[onlyCHNOPSCl, ]
 ```
 
 From the `r nrow(counts_df)` compounds in HMDB 
-`r sum(onlyCHNOPS != 1)` contain elements other than 
-`r paste(CHNOPS, collapse = ",")`.
-
-```{r}
-# Here I excluded compounds that have elements different from CHNOPS because at 
-# first I thought they could cause problems in the estimates. I'm still not 
-# completely sure but maybe they can be added back
-onlyCHNOPS <- as.logical(onlyCHNOPS)
-cmps <- cmps[onlyCHNOPS, ]
-counts_df <- counts_df[onlyCHNOPS, ]
-```
+`r sum(onlyCHNOPSCl != 1)` contain elements other than 
+`r paste(CHNOPSCl, collapse = ",")`.
 
 We compute the mean and standard deviation for the number of each element in the
 molecules of HMDB. For each element we also report the percentage of compounds 
 which have at least one atom of the given element.
 
 ```{r, echo = FALSE, results = "asis"}
-m_sd <- rbind(colMeans(counts_df), 
-              apply(counts_df, 2, sd),
-              100 * colSums(counts_df > 0) / nrow(counts_df))
+m_sd <- rbind(colMeans(counts_CHNOPSCl), 
+              apply(counts_CHNOPSCl, 2, sd),
+              100 * colSums(counts_CHNOPSCl > 0) / nrow(counts_CHNOPSCl))
 rownames(m_sd) = c("mean", "standard deviation", "% compounds with count > 0")
 pandoc.table(m_sd, style = "rmarkdown")
 ```
@@ -337,11 +338,11 @@ pandoc.table(m_sd, style = "rmarkdown")
 We plot, for each of the considered elements, the distribution of the number of 
 atoms of the given element in the compounds of HMDB.
 
-```{r distribution-counts, fig.cap = "Distribution of the number of atoms of CHNOPS elements in compounds of HMDB.", fig.width = 7, fig.height = 14, echo = FALSE}
+```{r distribution-counts, fig.cap = "Distribution of the number of atoms of CHNOPSCl elements in compounds of HMDB.", fig.width = 7, fig.height = 14, echo = FALSE}
 par(mfrow = c(7, 1), mar = c(3, 4, 1, 0.5))
-for (el in CHNOPS) {
-  hist(counts_df[, el], xlab = "", main = el, breaks = 256)
-  abline(v = quantile(counts_df[, el], c(0.025, 0.975)))
+for (el in CHNOPSCl) {
+  hist(counts_CHNOPSCl[, el], xlab = "", main = el, breaks = 256)
+  abline(v = quantile(counts_CHNOPSCl[, el], c(0.025, 0.975)))
 }
 ```
 
@@ -407,53 +408,61 @@ dr <- paste0("data/RData/isotope-intensity-estimation/")
 dir.create(dr, showWarnings = FALSE, recursive = TRUE)
 ```
 
-```{r, eval = !file.exists(paste0(dr, "subst_frequencies.RData"))}
+```{r}
 data(isotopes)
+# isos <- c("13C", "2H", "15N", "17O", "18O", "33S", "34S", "35S", "36S",
+#           "36Cl", "37Cl")
+isos <- isotopes$isotope[-match(unique(isotopes$element), isotopes$element)]
+```
+
+
+```{r, eval = !file.exists(paste0(dr, "subst_frequencies.RData"))}
 ## Ensure that element order is correct
 chemforms <- sapply(cmps$formula, standardizeFormula)
-threshold = 0.01
-iso_ps <- isopattern(isotopes, chemforms , threshold = threshold) 
-# should rel_to = 2 be used above? I would say that the most correct thing is to
-# use absolute probabilities
+threshold = 0.01*10^(-2)
+iso_ps <- isopattern(isotopes, chemforms , threshold = threshold, rel_to = 2) 
 
 ## Process the isotope pattern to define a character string for each
 ## isotopologue - ensuring the order of isotopes to be the same across
 ## compounds
-isos <- c("13C", "2H", "15N", "17O", "18O", "33S", "34S", "35S", "36S", 
-          "36Cl", "37Cl")
 subst_per_cmpd <- lapply(iso_ps, function(iso_p) {
     idx <- match(colnames(iso_p), isos)
     tmp <- iso_p[, !is.na(idx), drop = FALSE]
     tmp <- tmp[rowSums(tmp) > 0, order(idx[!is.na(idx)]), drop = FALSE]
     cn <- colnames(tmp)
+    elname <- gsub('[0-9]', '', cn)
+    isonumb <- gsub('[^0-9]', '', cn)
     apply(tmp, 1, function(row)
-        paste0(row[row >0], "[", cn[row > 0], "]", collapse = ""))
+        paste0("[", isonumb[row >0],  "]", elname[row >0], row[row >0], 
+               collapse = ""))
 })
 subst_frequency <- table(unlist(subst_per_cmpd, use.names = FALSE))
 save(subst_frequency, subst_per_cmpd, 
      iso_ps, chemforms, file = paste0(dr, "subst_frequencies.RData"))
 ```
 
+
 ```{r, echo = FALSE, eval = file.exists(paste0(dr, "subst_frequencies.RData"))}
 load(paste0(dr, "subst_frequencies.RData"))
 ```
 
-We thus defined `r length(subst_frequency)` isotopologues considering all
-compounds from HMDB which would yield an intensity higher than 0.01% of the
-monoisotopic's intensity.
-
+We thus defined `r length(subst_frequency)` substitutions that in at least a 
+compound in HMBD would yield a probability higher than 10^(-4).
 
 For each given substitution we compute the mean intensity that a substitution 
 has in the compounds of HMBD where it is significant.
 ```{r}
-intens <- unlist(lapply(iso_ps, function(iso_p) iso_p[,"abundance"][-1]),
-                      use.names = FALSE)
+intens <- unlist(lapply(iso_ps, function(iso_p) 
+  iso_p[rowSums(iso_p[, intersect(colnames(iso_p), isos), drop = FALSE]) != 0,
+        "abundance"]), use.names = FALSE)
 m_intens_subs <- tapply(intens, unlist(subst_per_cmpd, use.names = FALSE), mean)
 ```
+
 and plot it against the frequency of the substitution in HMBD. Most of the 
 substitution present a small mean intensity. Most of the substitution with mean 
 intensity higher than 5 are those realted to Cl (these are not very frequent) 
 and C.
+
 ```{r}
 library(ggplot2)
 library(plotly)
@@ -488,10 +497,7 @@ of the elements from the isotopologue definition in their chemical formula.
 
 ```{r}
 ncomps <- vapply(names(subst_frequency), function(x) {
-    x <- unlist(strsplit(x, split = "\\]"))
-    x <- gsub("[0-9\\[]+", "", x)
-    ## require at least one element for each element in the
-    ## isotopologue definition
+    x <- strsplit(gsub("[0-9\\[]+", "", x), split = "\\]")[[1]][-1]
     sum(rowSums(counts_df[, x, drop = FALSE] > 0) == length(x))
 }, integer(1))
 ```
@@ -510,7 +516,6 @@ ggplot(aes(proportion_var, intens, label = subst_name)) + geom_point()
 ggplotly(p + geom_vline(xintercept = 0.5, color = "red", size = .1))
 ```
 
-
 Third approach. Here I also try to divide the counts of the times a family is found to be 
 significant in the HMBD compounds for the times that this family can be 
 observed across the HMBD compounds. In other words these ratios represent the 
@@ -521,12 +526,10 @@ numbers ${n_X}_2$, ..., ${n_X}_q$ of heavier isotopes associated to the
 substitution).
 
 ```{r}
-count_heavy_iso <- function(subst_str)
-{
-  tmp <- strsplit(subst_str, "]")[[1]]
-  names(tmp) <- sapply(tmp, function(s) strsplit(s, "\\[")[[1]][2])
-  heavy_iso <- sapply(tmp, function(s) as.numeric(strsplit(s, "\\[")[[1]][1])) 
-  tapply(heavy_iso, gsub('[0-9]+', '', names(heavy_iso)), sum)
+count_heavy_iso <- function(subst_str){
+  tmp <- sapply(strsplit(subst_str, split = "\\[")[[1]][-1], 
+                function(s) strsplit(s, split ="\\]")[[1]][2])
+  tapply(as.numeric(gsub('[^0-9]+', '', tmp)), gsub('[0-9]+', '', tmp), sum)
 }
 
 nvar <- sapply(names(subst_frequency), function(subst) {
@@ -537,7 +540,6 @@ nvar <- sapply(names(subst_frequency), function(subst) {
   sum(var)
 })
 ```
-
 
 ```{r, fig.height = 5, fig.width = 17, fig.cap = "Substitutions with proportion > 0.5 using approach 3"}
 subst_proportion_var2 <- sort(subst_frequency/nvar, decreasing = TRUE)
@@ -569,33 +571,125 @@ p <- data.frame( subst_name = names(m_intens_subs),
 ggplot(aes(proportion_var2, intens, label = subst_name)) + geom_point()
 ggplotly(p + geom_vline(xintercept = 0.5, color = "red", size= .1))
 ```
-Here I compute the ratios R directly from enviPat::isopattern output.
+
+We choose the substitutions according to approach 3
 ```{r}
-Rs <- lapply(iso_ps, function(iso_p) iso_p[-1, "abundance"]/iso_p[1, "abundance"])
 selected_substs <- names(subst_proportion_var2[subst_proportion_var2 > 0.5])
-temp <- lapply(chemforms, function (frml){
-  Rs[[frml]][match(selected_substs, subst_per_cmpd[[frml]])]
-})
-R_df <- do.call(rbind, temp)
+```
+
+and we compute their mass differences with respect to the monoisotopic form
+that they they produce. 
+
+```{r}
+# Here I loop over the isotope patterns until I encounter all the selected 
+# substitutions and for each of them I compute the related md.
+md <- rep(0, length(selected_substs)); i=1
+while (any(md == 0) & i<= length(iso_ps)){
+not_mono <- which(rowSums(iso_ps[[i]][, intersect(colnames(iso_ps[[i]]), isos), drop = FALSE]) != 0)
+I <- match(subst_per_cmpd[[i]], selected_substs[md == 0])
+md[md == 0][na.omit(I)] = iso_ps[[i]][not_mono[!is.na(I)], "m/z"] - cmps$exactmass[i]
+i=i+1
+}
+```
+
+We compute the probability to observe the monoisotopic form of each compound
+and we use it to compute the ratios R (for the selected substitutions) from 
+the probabilities of the substitutions obtained through enviPat::isopattern.
+
+```{r}
+# I computed this separately because for some compounds containing elements
+# different from CHNOSCl the monoisotopic peak doesn't appear in the output
+# of enviPat::isopattern being its probabilty lower than the threshold 
+monois_p <- sapply(chemforms, function(form) {
+  ns <- countElements(form)
+  ps <- isotopes[match(unique(names(ns)), isotopes$element), "abundance"]
+  prod(ps^ns)
+  })
+```
+
+```{r}
+Rs <- lapply(seq_along(iso_ps), 
+             function(i){
+               not_mono <- which(rowSums(iso_ps[[i]][, intersect(colnames(iso_ps[[i]]), isos), drop = FALSE]) != 0)
+               iso_ps[[i]][not_mono[match(selected_substs, subst_per_cmpd[[i]])], 
+                           "abundance"]/monois_p[i]
+               })
+R_df <- do.call(rbind, Rs)
 colnames(R_df) <- selected_substs
 ```
 
-and I plot those related to the selected substitutions against the mass of the compounds. The plots of R when 
-only a single element appears in the configuration with multiplicity 1 
-(e.g. 1[13C], 1[15N]) are very similar to the plot of the counts vs mass 
-(in that case R is equal to a constant times the counts). However, for some 
-other configuration the relationship is quadratic or cubic etc. The same linear 
-regression or linear bounds maybe wouldn’t be very accurate in every case but we 
-can see how the approximation works.
+By writing and manipulating the analytical formula of the ratio R it is possible 
+to see that if the relation between the mass of compounds and the counts of a 
+given element (for each element appearing in the substitution) is linear then 
+also R has a polynomial form in the mass and the degree of the polynomial is 
+determined by the number of atoms in the substitution.
+
+Here we plot the counts of C, H, N, O, S, Cl against the mass of HMBD compounds.
+For some elements a linear trend is clearly visible, for others it's not that 
+evident (and as a result of that I expect that for the substitutions containing 
+these element the polynomial trend could be less pronounced).
+```{r, fig.width = 15, fig.height = 10}
+par(mfrow = c(3, 2), mar = c(3, 4, 1, 0.5))
+for (el in c("C", "H", "N" , "O", "S", "Cl")) {
+counts_el <- counts_df[counts_df[, el] > 0, el]
+exactmass <- cmps$exactmass[counts_df[, el] > 0]
+plot(counts_el ~ exactmass, ylab = "counts", xlab = "exactmass", main = el)
+}
+```
+
+In view of what we observed before we compute the degree of the expected 
+polynomial trend by computing the number of atoms which appear in the 
+substitutions.
+
+```{r}
+sbst_degree <- sapply(selected_substs, function(string) sum(count_heavy_iso(string)))
+```
+
+We transform the data taking the sbst_degree-th root of the values of R and we
+compute the slope of the lines through (0,0) and each point (mass, transformed R).
+We compute an upper and lower quantile for the slopes representing the slopes
+of a upper and lower bound line for the values of the transformed R.
+```{r}
+R_trnsf <- t(t(R_df)^(1/sbst_degree))
+colnames(R_trnsf) <- colnames(R_df)
+slp <- R_trnsf/cmps$exactmass
+q_slp <- apply(slp, 2, function(x) quantile(x, c(0.005, 0.995), na.rm = TRUE)) # values to be chosen
+```
+
+Below we plot the results. We can observe a linear trend for each substitution 
+in the transformed data (especially for the substitutions containing only 
+elements with clear linear trend of the counts in the mass as observed before).
 
 ```{r, fig.width = 15, fig.height = 90, fig.cap = "R against mass for HMBD compounds."}
 s_to_plot <- selected_substs# c("1[13C]", "2[13C]", "1[13C]1[33S]1[37Cl]")
 par(mfrow = c(ceiling(length(s_to_plot)/3), 3), mar = c(5, 4, 1, 0.5))
 for (name in s_to_plot) {
-  plot(cmps$exactmass, R_df[, name], xlab = "mass", ylab = "R", main = name)
+  plot(cmps$exactmass, R_trnsf[, name], xlab = "mass", ylab = "R", main = name)
+  abline(0, q_slp[2, name], col = "blue")
+  abline(0, q_slp[1, name], col = "green")
 }
 ```
+Finally, we create the substitution definition data.frame. For each substitution 
+(row) we report its name, degree, mass difference and bounds on R. 
+```{r}
+# subst_degree column is not strictly necessary and could be 
+# also computed inside .isotope_peaks function from subst_name
+subst_def <- data.frame(
+  subst_name = selected_substs,
+  subst_degree = sbst_degree,
+  md = md,
+  min_slope = q_slp[1, ],
+  max_slope = q_slp[2, ]
+)
+```
 
+
+```{r}
+dr_txt <- paste0("data/txt/isotope-intensity-estimation/")
+dir.create(dr, showWarnings = FALSE, recursive = TRUE)
+write.table(subst_def, file = paste0(dr_txt, "subst_def.txt"),
+            sep = "\t", row.names = TRUE)
+```
 ### Discussion
 
 - [ ] m/z dependent isotopologues: check if the m/z matches ~ the mass of the
@@ -603,296 +697,7 @@ for (name in s_to_plot) {
       not make sense for an m/z that is lower than the mass of this
       isotopologue.
 
-## Isotopes related definitions
 
-Here I construct a list of substitutions based on the substitutions selected in 
-the previous section. I convert each strings to a list (but we can also change 
-this representation) as used by the functions in the rest of the file. 
-
-```{r}
-selected_names <- names(subst_proportion_var2[subst_proportion_var2 > 0.5])
-h_iso_forms <- list(C = c("13C"), H = c("2H"), N = c("15N"), O = c("17O", "18O"), 
-                    S = c("33S", "34S", "36S"), Cl = c("37Cl"))
-
-substs <- lapply(selected_names, function(name) {
-  splt1 <- strsplit(name, "]")[[1]]
-  subst_v <- sapply(splt1, function(s) as.numeric(strsplit(s, "\\[")[[1]][1]))
-  names(subst_v) <- sapply(splt1, function(s) strsplit(s, "\\[")[[1]][2])
-  elements <- gsub('[0-9]', '', names(subst_v))
-  subst <- lapply(unique(elements), function(el) {
-    el_subst_names <- h_iso_forms[[el]]
-    el_subst <- rep(0, length(el_subst_names))
-    names(el_subst) <- el_subst_names
-    tmp <- subst_v[elements == el]
-    el_subst[names(tmp)] <- tmp
-    el_subst
-  })
-  names(subst) <- unique(elements)
-  subst
-})
-names(substs) <- selected_names
-```
-
-
-We define the elements we consider together with the natural abundances 
-of their isotopic forms. I also define mass differences of isotopes of each 
-element and a simple function to get from them the md originated by a given 
-substitution. 
-
-```{r}
-# Here I added H and 36S and the related information. I took the values from 
-# envipat. I wonder why some values are known with more precision
-elements_ab <- list(C = c(0.9893, 0.0107),
-                    H = c(0.99988500, 0.00011500),
-                    N = c(0.99636, 0.00364),
-                    O = c(0.99757, 0.00038, 0.00205),
-                    S = c(0.9499, 0.0075, 0.0425, 0.0001),
-                    Cl = c(0.7576, 0.2424))
-
-elements_md <- list(C = c(1.00335484),
-                    H = c(1.006277), 
-                    N = c(0.997034965599999),
-                    O = c(1.0042168777, 2.0042457777),
-                    S = c(0.999387810000002, 1.99579614, 3.027929),
-                    Cl = c(1.99704989))
-
-getmd <- function(subst, elements_md) 
-  sum(sapply(names(subst), function(el) sum(subst[[el]] * elements_md[[el]])))
-```
-
-Here we compute the md for the considered substitutions.
-```{r}
-md_substs <- sapply(substs, function(subst) getmd(subst, elements_md))
-```
-
-## Define lower and upper intensity ratio between candidate isotope peaks and the monoisotopic peak
-
-To determine isotope groups in a spectrum we loop over its peaks. We consider 
-the current peak and suppose it is the monoisotopic peak of a certain compound. 
-We then find peaks that have a mzd compatible with some of the possible sums 
-$md = md_{C_X}+ md_{C_Y} ... +md_{C_Z}$.
-We finally determine if these peaks are actually compatible with the intensity 
-${Ic}_0$ of the current peak (assumed to be monoisotopic peak of a certain 
-compound) and if so we group them together as a isotopic group. To check such 
-compatibility we can proceed as follows.
-In a isotope group spectrum the intensity $I_{md}$ of the peak associated to 
-$md$ is of course equal to $I_{md}/ I_0*I_0$ where $I_0$ is the intensity 
-associated to the monoisotopic mass. 
-Since $I_{md}/ I_0$ approximates $P(md)/ P(0)$ we can check the compatibility of 
-the candidate peak intensity ${Ic}_{md}$ with ${Ic}_0$* $P(md)/ P(0)$.
-
-We next define a lower and upper bound for the ratio $R$ between a candidate 
-isotopic peak and the assumed monoisotopic peak. This will be used to decide 
-weather the two can be grouped together in an isotopic group or not.
-
-Let be $(I_X,I_Y,...I_Z)$ the isotopologue of a compound related to the mass 
-difference $md$. Then
-$$R_{md} = \frac{P(md)}{P(0)} = \frac{P(I_X)* P(I_Y)... * P(I_Z)}
-{P((n_X,0...,0))* P((n_Y,0...,0))... *P((n_Z,0...,0))}$$.
-In all the cases we consider, many simplifications occur between numerator and 
-denominator terms. As a result of that $R_md$ will depend only on the elemental 
-isoltoplogues different from those of the $md = 0$ isotopologue of the 
-monoisotopic peak.
-
-We define some helper functions to do what we just described. 
-`P` computes the probability of the elemental isotopologue (or how should we call 
-$I_X$ etc?) of `c(n-sum(subst), subst)` related to the corresponding isotope probabilities 
-in `prob`. It works also if `n`is a vector. In that case each value of `n` 
-originates a different elemental isotopologue and the associated probabilities 
-are returned as a vector.`R` computes the ratio between a given isotopologue
-`subst` and and the isotopologue related to the md = 0 
-(i.e the one related to the monoisotopic peak). `elements_ab` is the list of 
-abundances of the isotopes of the considered elements.`n` is a matrix with 
-`length(subst)` columns . Each row of n specifies the number of atoms of the 
-considered elements in a given compound.
-
-```{r}
-P <- function(n, subst, prob){
-  n0 <- n - sum(subst)
-  sapply(n0, function(n0_) ifelse(n0_ >= 0, 
-                                  dmultinom(c(n0_, subst), prob = prob), 0))
-}
-
-R <- function(n, subst, elements_ab){
-  el_names <- names(subst)
-  res <- lapply(seq_along(subst), function(i){
-    subst0_el <- rep(0, length(subst[[i]]))
-    P(n[, i], subst[[i]], elements_ab[[el_names[i]]])/
-      P(n[, i], subst0_el, elements_ab[[el_names[i]]])
-  })
-  apply(do.call(rbind, res), 2, prod)
-}
-
-R_from_counts <- function(counts, substs, elements_ab){
-  do.call(cbind, lapply(substs, function(subst) R(counts[, names(subst), 
-                                                         drop = FALSE], 
-                                                 subst, elements_ab)))}
-```
-
-As we saw, $R_{md}$ depends on the counts of elements in the compound. We can 
-determine lower and upper bounds on those and then obtain the 
-corresponding bounds on R. We consider two different approaches: one which 
-considers what the count is for most elements of HMBD, the other which considers 
-the counts of the elements in HMBD as dependent on the mass.
-
-## Mass-independent bounds
-
-For a given element $X$ we can determine two quantiles ${q_1}_X$ and ${q_2}_X$ 
-such that a certain percentage (e.g 95%) of compounds in HMBD have 
-${q_1}_X<n_X<{q_2}_X$ and repeat the same for all the elements. In this first 
-approach we consider the obtained quantiles as the upper and lower bounds on 
-counts.
-
-```{r}
-count_limits <- apply(counts_df, 2, quantile, probs = c(0.025, 0.975))
-```
-
-We next compute the corresponding bounds on $R$
-
-```{r}
-R_limits <- R_from_counts(count_limits, substs, elements_ab)
-```
-
-and save them in a txt file together with the names of the substitutions and
-the related mass differences.
-
-```{r}
-R_limits <- t(R_limits)
-colnames(R_limits) <- c("min_ratio", "max_ratio")
-isodef <- data.frame(name = names(substs), mzd = md_substs, R_limits)
-isodef <- isodef[order(isodef[, "mzd"]), ]
-
-dr_txt <- paste0("data/txt/isotope-intensity-estimation/")
-dir.create(dr, showWarnings = FALSE, recursive = TRUE)
-write.table(isodef, file = paste0(dr_txt, "hmdb_isotopes_constant_range.txt"),
-            sep = "\t", row.names = FALSE)
-```
-
-## Define mass-dependent bounds
-
-We next evaluate what the relationship between the compound's mass and its
-number of specific atoms. We use this later to determine a mass-dependent
-factor to estimate the expected intensity of a certain isotope.
-
-We try to fit a regression line for masses of molecules versus the number of 
-atoms for the elements $C, N, O, S, Cl$ in the HMBD compounds. We expect in 
-general to have higher counts of the elements for a higher mass. 
-
-```{r, fig.width = 7, fig.height = 20}
-par(mfrow = c(5, 1), mar = c(3, 4, 1, 0.5))
-for (el in c("C", "N" , "O", "S", "Cl")) {
-counts_el <- counts_df[, el]
-exactmass <- cmps$exactmass
-lm <- lm(counts_el ~ exactmass)
-plot(counts_el ~ exactmass, ylab = "counts", xlab = "exactmass", main = el)
-abline(lm , col = "red")
-}
-```
-The regression doesn't appear to work very well apart from $C$ and maybe $O$. We 
-try to construct two lines representing mass dependent lower and upper bounds for 
-the counts. First, for each element, we compute the slope of the line through the 
-origin and each (count, mass) point.
-
-```{r}
-slp <- counts_df/cmps$exactmass
-q_slp <- apply(slp, 2, function(x) quantile(x, c(0.01, 0.999))) # values to be chosen
-```
-
-Then we fit a regression to the points with top and low (?%) of the value of the 
-slope (actually, in principle we could directly use the value of the quantile as 
-a value of the slope of the lower/upper bound line). We plot the results, 
-store the values of the slopes.
-
-```{r, fig.width = 7, fig.height = 20}
-slp_bounds <- list()
-par(mfrow = c(5, 1), mar = c(3, 4, 1, 0.5))
-for (el in c("C", "H", "N" , "O", "S", "Cl")) {
-high <- which(slp[, el] > q_slp[2, el])
-low <- which(slp[, el] <= q_slp[1, el])
-plot(cmps$exactmass, counts_df[, el], ylab = "counts", xlab = "exactmass", 
-     main = el)
-points(cmps$exactmass[low], counts_df[low, el], col = "green")
-points(cmps$exactmass[high], counts_df[high, el], col = "blue")
-lm_l <- lm(counts_df[low, el] ~ cmps$exactmass[low] -1)
-lm <- lm(counts_df[, el] ~ cmps$exactmass -1)
-lm_h <- lm(counts_df[high, el] ~ cmps$exactmass[high] -1 )
-abline(lm_l, col)
-abline(lm, col = "red")
-abline(lm_h)
-
-slp_bounds[[el]] <- c(low = unname(lm_l$coefficients), 
-                        high = unname(lm_h$coefficients))
-}
-```
-
-and save them to a txt file.
-
-```{r}
-slp_bounds <- data.frame(slp_bounds)
-```
-
-Here we try to exclude the points with count = 0. This can be justified by the
-following fact. Suppose that in a spectrum the mass difference between a peak 
-and the assumed monoisotopic peak is matched to a certain $md$. We know 
-that $md$ is associated to a certain substitution and therefore to a
-certain number of heavier isotopic forms of certain elements. It follows that if 
-the candidate peak is from the isotopic pattern it must have at least a number of 
-each element equal to the sum of the numbers of heavier isotopic form in the 
-substitution.
-
-```{r}
-# Based on the plots, we could decide to use different quantiles for each element
-pq <- data.frame(C = c(0.01, 0.99),
-                 H = c(0.01, 0.99),
-                 N = c(0.01, 0.99),
-                 O = c(0.01, 0.99),
-                 P = c(0.01, 0.99),
-                 S = c(0.01, 0.99),
-                 Cl = c(0.01, 0.99))
-pos_idxs <- apply(counts_df, 2, function(col) unname(which(col > 0)))
-q_slp2 <- lapply(names(pos_idxs), function(el) quantile(slp[pos_idxs[[el]], el], 
-                                                        pq[, el]))
-q_slp2 <- do.call(cbind, q_slp2)
-colnames(q_slp2) <- names(pos_idxs)
-```
-
-Then we fit a regression to the points with top and low (?%) of the value of the 
-slope.
-
-```{r, fig.width = 7, fig.height = 20}
-slp_bounds2 <- list()
-par(mfrow = c(6, 1), mar = c(3, 4, 1, 0.5))
-for (el in c("C", "H", "N" , "O", "S", "Cl")) {
-high <- intersect(which(slp[, el] > q_slp2[2, el]), pos_idxs[[el]])
-low <- intersect(which(slp[, el] <= q_slp2[1, el]), pos_idxs[[el]])
-plot(cmps$exactmass[pos_idxs[[el]]], counts_df[pos_idxs[[el]], el], 
-     ylab = "counts", xlab = "exactmass", main = el, 
-     ylim = c(0, max(counts_df[pos_idxs[[el]], el])))
-points(cmps$exactmass[low], counts_df[low, el], col = "green")
-points(cmps$exactmass[high], counts_df[high, el], col = "blue")
-lm_l <- lm(counts_df[low, el] ~ cmps$exactmass[low] -1)
-lm_h <- lm(counts_df[high, el] ~ cmps$exactmass[high] -1 )
-abline(lm_l, col)
-abline(lm_h)
-
-slp_bounds2[[el]] <- c(low = unname(lm_l$coefficients), 
-                        high = unname(lm_h$coefficients))
-}
-```
-
-Here is a first tentative function to get the bounds on R for a specific mass
-```{r}
-get_R_bound <- function(mass, slp_bounds){
-  count_bounds <-  slp_bounds*mass 
-  R_from_counts(count_bounds, substs, elements_ab)
-}
-```
-
-```{r}
-slope_bounds <- do.call(rbind, slp_bounds2)
-write.table(slope_bounds, file = paste0(dr_txt, "slope_bounds.txt"),
-            sep = "\t", row.names = TRUE)
-```
 
 # Session information
 
