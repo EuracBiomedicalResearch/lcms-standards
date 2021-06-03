@@ -313,8 +313,8 @@ counts_CHNOPSCl <- data.frame(counts_df[ , CHNOPSCl])
 ```{r}
 onlyCHNOPSCl <- rowSums(counts_df[, setdiff(elements_names, CHNOPSCl)]) == 0
 
-# With the following lines we can exclude compounds that have some atoms of 
-# elements different from CHNOPSCl. 
+# With the following lines we can exclude compounds that have some atoms of
+# elements different from CHNOPSCl.
 cmps <- cmps[onlyCHNOPSCl, ]
 counts_df <- counts_df[onlyCHNOPSCl, ]
 ```
@@ -600,9 +600,11 @@ the probabilities of the substitutions obtained through enviPat::isopattern.
 # I computed this separately because for some compounds containing elements
 # different from CHNOSCl the monoisotopic peak doesn't appear in the output
 # of enviPat::isopattern being its probabilty lower than the threshold 
-monois_p <- sapply(chemforms, function(form) {
-  ns <- countElements(form)
-  ps <- isotopes[match(unique(names(ns)), isotopes$element), "abundance"]
+monois_p <- apply(counts_df, 1, function(row) {
+  I <- row > 0
+  ns <- row[I]
+  ps <- isotopes[match(unique(names(counts_df)[I]), isotopes$element), 
+                 "abundance"]
   prod(ps^ns)
   })
 ```
