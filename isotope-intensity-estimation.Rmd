@@ -683,6 +683,7 @@ subst_def <- data.frame(
   min_slope = q_slp[1, ],
   max_slope = q_slp[2, ]
 )
+subst_def <- subst_def[order(subst_def[, "md"]), ]
 ```
 
 
