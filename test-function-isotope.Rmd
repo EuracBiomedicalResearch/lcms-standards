@@ -1,0 +1,348 @@
+---
+title: "Testing .isotope_peaks"
+author: "Andrea Vicini"
+output:
+  rmarkdown::html_document:
+    highlight: pygments
+    toc: true
+    toc_depth: 3
+    fig_width: 5
+---
+
+```{r style, echo = FALSE, results = 'asis', message = FALSE}
+library(BiocStyle)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+```
+
+**Last modified:** `r file.info("isotope-intensity-estimation.Rmd")$mtime`<br />
+**Compiled**: `r date()`
+
+
+```{r, echo = FALSE}
+source('~/Spectra/R/function-isotope.R')
+#source('~/Spectra/R/Prove.R')
+library(enviPat)
+library(Rdisop)
+library(MetaboCoreUtils)
+library(MsCoreUtils)
+data(isotopes)
+subst_def <- read.table(paste0("~/lcms-standards/data/txt/isotope-intensity-",
+                            "estimation/subst_def.txt"), header = TRUE)
+```
+
+In this document I will test the .isotope_peaks function firstly on simulated
+peak matrices from true isotope patterns and then on measured spectra.
+
+Before that, I define a tentative function to visualize the groups returned by 
+.isotope_peaks function.
+```{r}
+plot_groups <- function(x, i_groups = list(), cex = 0.7, pos = 3, xlim = NULL, ...){
+  if(!is.null(xlim)){
+    idxs <- which(x[, 1] >= xlim[1] & x[, 1] <= xlim[2])
+  } else
+    idxs <- seq_len(nrow(x))
+  plot(x[idxs, ], type = "h", ylim = c(0, 1.1 * max(x[idxs, 2])), ...)
+  col <- rainbow(length(i_groups))
+  for(i in seq_along(i_groups)){
+    group <- intersect(i_groups[[i]], idxs)
+    points(x[group,], type = "h", col = col[i])
+    text(x[group,], labels = rep(i, length(group)), cex = cex, pos = pos) 
+  }
+}
+```
+
+## Testing on simulated peak matrices
+
+Here I define another helper function to create peak matrices from isotope 
+patterns of compounds with formula in `chemforms` (keeping for each of them the 
+peaks with absolute intensity grater than `treshold`). The isotope patterns are 
+concatenated one after the other and then sorted increasingly according to the 
+mass.
+
+```{r}
+artificial_pm <- function(isotopes, chemforms, threshold = 0.001)
+{
+  iso_p <- isopattern(isotopes, chemforms , threshold = threshold, rel_to = 2)
+  x <- do.call(rbind, lapply(iso_p, function(p) p[, 1:2]))
+  frmls <- do.call(c, lapply(names(iso_p), function(nm) rep(nm, nrow(iso_p[[nm]]))))
+  ord <- order(x[, "m/z"])
+  x <- x[ord, ]
+  frmls <- frmls[ord]
+  colnames(x)<- c("mz", "intensity")
+  data.frame(x, frmls)
+}
+```
+
+I load HMBD data
+```{r, warning = FALSE}
+library(CompoundDb)
+cdb <- CompDb("/Users/avwork/lcms-standards/data/CompDb.Hsapiens.HMDB.4.0.sqlite")
+cmps <- compounds(cdb, columns = c("compound_id", "name",
+                                   "formula", "exactmass"))
+cmps <- cmps[which(!is.na(cmps$exactmass)), ]
+```
+
+and restrict to the compounds whose mass is in a not so large mass range 
+(only because when plotting the results the single peaks can be distingushed)
+
+```{r, warning = FALSE}
+cmps_sbs <- cmps[which(cmps$exactmass > 500 & cmps$exactmass < 600), ]
+```
+
+
+```{r, fig.width = 15, fig.height = 5}
+set.seed(123)
+i_smpl <- sample(1:nrow(cmps_sbs), 10)
+smpl <- cmps_sbs[i_smpl, 3:4]
+smpl <- smpl[order(smpl$exactmass), ]
+threshold = 10^(-3)
+x <- artificial_pm(isotopes, smpl$formula, threshold)
+expected_groups <- lapply(smpl$formula, function(f) which(x[,"frmls"] == f))
+
+i_groups <- .isotope_peaks(x[, 1:2], substDefinition = subst_def, ppm = 1)
+
+plot_groups(x[, 1:2], i_groups)
+i_groups
+```
+All the peaks are correctly identified. 
+
+In the previous example the ppm was set to 1. With a higher ppm some problems 
+may occurr as shown in the example below (everything is the same as before
+but the tolerance has been set to a higher value). When two simulated isotope 
+patterns are close it may happen that the one on the left (whose first peak is 
+processed first) subtracts peaks from the one the left (which became compatible 
+after increasing the ppm). From the plot below it is not visible but from the
+indices it is.
+
+```{r, fig.width = 15, fig.height = 5}
+i_groups <- .isotope_peaks(x[, 1:2], substDefinition = subst_def, ppm = 20)
+
+plot_groups(x[, 1:2], i_groups)
+i_groups
+```
+
+Now I add a error on the mz values of the peak matrix. The result is affected 
+by this operation. Firstly we have to use a higher ppm in such a way that the 
+function can match the new mzs. But increasing the ppm doesn't always allow to 
+capture all the peaks as in the case without error addition. A reason can be the 
+fact that some mz values related to different substitutions, say A and B, of 
+the same compound are really close. When a small error is added to them the 
+function might see as closest to the substitution A the peak related to 
+substitution B and viceversa. So it expects that peak related to substitution B 
+has intensity of a peak corresponding to substitution A and as a result of that 
+the peak is not selected.
+
+```{r, fig.width = 15, fig.height = 5}
+set.seed(123)
+i_smpl <- sample(1:nrow(cmps_sbs), 10)#[1]
+smpl <- cmps_sbs[i_smpl, 3:4]
+smpl <- smpl[order(smpl$exactmass), ]
+expected_groups <- lapply(smpl$formula, function(f) which(x[,"frmls"] == f))
+threshold = 10^(-3)
+x <- artificial_pm(isotopes, smpl$formula, threshold)
+x$mz <- x$mz + rnorm(n = nrow(x), mean = 0, sd = 0.001)
+x <- x[order(x$mz), ]
+i_groups <- .isotope_peaks(x[, 1:2], substDefinition = subst_def,
+                           tolerance = 0, ppm = 20)
+
+plot_groups(x[, 1:2], i_groups)
+i_groups
+```
+I also try adding an error on the intensity values of the peak matrix and it 
+seems to affect the results less than a deviation on mz.
+```{r, fig.width = 15, fig.height = 5}
+set.seed(123)
+i_smpl <- sample(1:nrow(cmps_sbs), 10)
+smpl <- cmps_sbs[i_smpl, 3:4]
+smpl <- smpl[order(smpl$exactmass), ]
+expected_groups <- lapply(smpl$formula, function(f) which(x[,"frmls"] == f))
+threshold = 10^(-3)
+x <- artificial_pm(isotopes, smpl$formula, threshold)
+x$intensity <- x$intensity * ( 1 + rnorm(n = nrow(x), mean = 0, sd = 0.1))
+x <- x[order(x$mz), ] 
+i_groups <- .isotope_peaks(x[, 1:2], substDefinition = subst_def, ppm = 1)
+
+plot_groups(x[, 1:2], i_groups)
+i_groups
+```
+
+## Testing on real data spectra
+
+Here I apply the function to some spectra containing signal of standards (which
+are reported in the table below).
+
+```{r, echo = FALSE, results = "asis"}
+std_dilution <- read.table("data/standards_dilution.txt",
+                           sep= "\t", header = TRUE)
+table1 <- std_dilution[std_dilution$mix == 1, 
+                       c("name", "formula", "RT", "POS", "NEG")]
+pander::pandoc.table(table1, style = "rmarkdown",
+             caption = paste0("Standards of ", 1))
+```
+
+
+```{r}
+library(MSnbase)
+fl <- "~/mix01/2020/2020_01/HighIS_Mix01_3_POS.mzML" 
+data <- readMSData(fl, mode = "onDisk")
+```
+
+We select spectra containing each the signal of a given standard.
+
+```{r}
+# Xanthine: C5H4N4O2
+sps_xan <- spectra(filterRt(data, rt = c(140, 141)))
+pm_xan <- cbind(mz = sps_xan[[1]]@mz, intensity = sps_xan[[1]]@intensity)
+# Acetylhistidine: C8H11N3O3
+sps_ace <- spectra(filterRt(data, rt = c(180, 181)))
+pm_ace <- cbind(mz = sps_ace[[1]]@mz, intensity = sps_ace[[1]]@intensity)
+# Betaine:  C5H11NO2
+sps_beta <- spectra(filterRt(data, rt = c(166, 167)))
+pm_beta <- cbind(mz = sps_beta[[1]]@mz, intensity = sps_beta[[1]]@intensity)
+# Creatine: C4H9N3O2
+sps_crea <- spectra(filterRt(data, rt = c(173, 174)))
+pm_crea <- cbind(mz = sps_crea[[1]]@mz, intensity = sps_crea[[1]]@intensity)
+# Dimethylglycine: C4H9NO2
+sps_dime <- spectra(filterRt(data, rt = c(177, 178)))
+pm_dime <- cbind(mz = sps_dime[[1]]@mz, intensity = sps_dime[[1]]@intensity)
+# L-Glutamic Acid: C5H9NO4
+sps_lglu<- spectra(filterRt(data, rt = c(176, 177)))
+pm_lglu <- cbind(mz = sps_lglu[[1]]@mz, intensity = sps_lglu[[1]]@intensity)
+# Myo-Inositol: C6H12O6 | 193 | [M+Na]+ |
+sps_myo<- spectra(filterRt(data, rt = c(193, 194)))
+pm_myo <- cbind(mz = sps_myo[[1]]@mz, intensity = sps_myo[[1]]@intensity)
+# 3-Phosphoglyceric Acid: C3H7O7P | 267 | [M+H]+  
+sps_phos <- spectra(filterRt(data, rt = c(267, 268)))
+pm_phos <- cbind(mz = sps_phos[[1]]@mz, intensity = sps_phos[[1]]@intensity)
+# Suberic Acid:   C8H14O4    | 37  | [M+Na]+ 
+sps_sub<- spectra(filterRt(data, rt = c(37, 38)))
+pm_sub <- cbind(mz = sps_sub[[1]]@mz, intensity = sps_sub[[1]]@intensity)
+```
+
+Below we apply .isotope_peaks on those spectra.
+```{r} 
+# iso_gr_xan <- .isotope_peaks(pm_xan, substDefinition = subst_def, ppm = 10)
+# iso_gr_ace <- .isotope_peaks(pm_ace, substDefinition = subst_def, ppm = 10)
+# iso_gr_beta <- .isotope_peaks(pm_beta, substDefinition = subst_def, ppm = 10)
+# iso_gr_crea <- .isotope_peaks(pm_crea, substDefinition = subst_def, ppm = 10)
+# 
+# 
+# par(mfrow=c(2, 2))
+# plot_groups(pm_xan, iso_gr_xan, main = "xan ")
+# plot_groups(pm_ace, iso_gr_ace, main = "ace")
+# plot_groups(pm_beta, iso_gr_beta, main = "beta")
+# plot_groups(pm_crea, iso_gr_crea, main = "crea")
+```
+
+We compute the mz of the selected standards.
+```{r}
+mz_xan <- mass2mz(getMolecule("C5H4N4O2")$exactmass, "[M+H]+")[1, 1]
+mz_ace <- mass2mz(getMolecule("C8H11N3O3")$exactmass, "[M+H]+")[1, 1]
+mz_beta <- mass2mz(getMolecule("C5H11NO2")$exactmass, "[M+H]+")[1, 1]
+mz_crea <- mass2mz(getMolecule("C4H9N3O2")$exactmass, "[M+H]+")[1, 1]
+mz_dime <- mass2mz(getMolecule("C4H9NO2")$exactmass, "[M+H]+")[1, 1]
+mz_lglu <- mass2mz(getMolecule("C5H9NO4")$exactmass, "[M+H]+")[1, 1]
+mz_myo <- mass2mz(getMolecule("C6H12O6")$exactmass, "[M+Na]+")[1, 1]
+mz_phos <- mass2mz(getMolecule("C3H7O7P")$exactmass, "[M+H]+")[1, 1]
+mz_sub <- mass2mz(getMolecule("C8H14O4")$exactmass, "[M+Na]+")[1, 1]
+```
+
+With the parameter `seedMz` we look for groups of peaks whose first peak is 
+compatible with the mz of the selected standards. For some of them no group is
+found.
+```{r, fig.height = 8, fig.width=15}
+iso_gr_xan <- .isotope_peaks(pm_xan, substDefinition = subst_def, 
+                             seedMz = mz_xan, ppm = 20)
+iso_gr_ace <- .isotope_peaks(pm_ace, substDefinition = subst_def,
+                             seedMz = mz_ace, ppm = 20)
+iso_gr_beta <- .isotope_peaks(pm_beta, substDefinition = subst_def, 
+                              seedMz = mz_beta, ppm = 20)
+iso_gr_crea <- .isotope_peaks(pm_crea, substDefinition = subst_def, 
+                              seedMz = mz_crea, ppm = 20)
+iso_gr_dime <- .isotope_peaks(pm_dime, substDefinition = subst_def, 
+                              seedMz = mz_dime, ppm = 20)
+iso_gr_lglu <- .isotope_peaks(pm_lglu, substDefinition = subst_def, 
+                              seedMz = mz_lglu, ppm = 20)
+iso_gr_myo <- .isotope_peaks(pm_myo, substDefinition = subst_def, 
+                              seedMz = mz_myo, ppm = 20)
+iso_gr_phos <- .isotope_peaks(pm_phos, substDefinition = subst_def, 
+                              seedMz = mz_phos, ppm = 20)
+iso_gr_sub <- .isotope_peaks(pm_sub, substDefinition = subst_def, 
+                              seedMz = mz_sub, ppm = 20)
+par(mfrow=c(3, 3))
+plot_groups(pm_xan, iso_gr_xan, xlim = mz_xan + c(- 0.5, 6), main = "Xanthine")
+plot_groups(pm_ace, iso_gr_ace, xlim = mz_ace + c(- 0.5, 6), main = "Acetylhistidine") 
+plot_groups(pm_beta, iso_gr_beta, xlim = mz_beta + c(- 0.5, 6), main = "Betaine")
+plot_groups(pm_crea, iso_gr_crea, xlim = mz_crea + c(- 0.5, 6), main = "Creatine")
+plot_groups(pm_dime, iso_gr_dime, xlim = mz_dime + c(- 0.5, 6), main = "Dimethylglycine")
+plot_groups(pm_lglu, iso_gr_lglu, xlim = mz_lglu + c(- 0.5, 6), main = "L-Glutamic Acid")
+plot_groups(pm_myo, iso_gr_myo, xlim = mz_myo + c(- 0.5, 6), main = "Myo-Inositol")
+plot_groups(pm_phos, iso_gr_phos, xlim = mz_phos + c(- 0.5, 6), main = "3-Phosphoglyceric Acid")
+plot_groups(pm_sub, iso_gr_sub, xlim = mz_sub + c(- 0.5, 6), main = "Suberic Acid")
+```
+
+Now we give the found peaks to Rdisop and see if it predicts the right 
+formula. Since I think that Rdisop expects close peaks in the patter to be
+combined, I define the following simple helper function to do that.
+
+```{r}
+combine_close_peaks <- function(x, tolerance = 0, ppm = 0) {
+  gs <- MsCoreUtils::group(x[, 1], tolerance = tolerance, ppm = ppm)
+  res_int <- tapply(x[, 2], gs, sum)
+  res_mz <- tapply(x[, 1]*x[, 2], gs, sum)/res_int
+  cbind(mz = res_mz, intensity = res_int)
+}
+```
+
+```{r}
+# Xanthine C5H4N4O2
+res <- combine_close_peaks(pm_xan[iso_gr_xan[[1]], ], tolerance = 0.1)
+head(decomposeIsotopes(res[, "mz"], res[, "intensity"], z = 1), 3)
+```
+
+```{r}
+# Acetylhistidine C8H11N3O3
+res <- combine_close_peaks(pm_ace[iso_gr_ace[[1]], ], tolerance = 0.1)
+head(decomposeIsotopes(res[, "mz"], res[, "intensity"], z = 1), 3)
+```
+
+```{r}
+# Betaine  C5H11NO2
+res <- combine_close_peaks(pm_beta[iso_gr_beta[[1]], ], tolerance = 0.1)
+head(decomposeIsotopes(res[, "mz"], res[, "intensity"], z = 1), 3)
+```
+
+For the case of Xanthine the right formula is not returned by Rdisop. For the 
+case of Acetylhistidine the its formula with a additional H is among those 
+returned by Rdisop though its score is very low. For the case of Betaine its 
+formula is returned with a additional H and score 1.
+
+<!---
+```{r}
+isop_xan_Rdisop <- getIsotope(getMolecule("C5H4N4O2", z = 1), seq(1,4))
+head(decomposeIsotopes(isop_xan_Rdisop[1, ], isop_xan_Rdisop[2, ], z = 1), 3)
+```
+
+
+```{r}
+isop_xan_enviPat <- isopattern(isotopes, "C5H4N4O2", rel_to = 2)[[1]][, 1:2]
+head(decomposeIsotopes(isop_xan_enviPat[, "m/z"], 
+                       isop_xan_enviPat[, "abundance"], z = 1), 3)
+```
+
+
+```{r}
+isop_xan_combined <- combine_close_peaks(isop_xan_enviPat, tolerance = 0.1)
+head(decomposeIsotopes(isop_xan_combined[, "mz"], 
+                       isop_xan_combined[, "intensity"], z = 1), 3)
+```
+--->
+
+# Session information
+
+The R version and packages used in this analysis are listed below.
+
+```{r sessioninfo}
+sessionInfo()
+```
+
