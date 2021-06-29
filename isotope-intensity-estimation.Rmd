@@ -160,19 +160,20 @@ $$md = \sum md_{I_{i}}$$
 
 Finally the probability of observing the isotopologue $I$ (and the corresponding
 mass difference $md$) is the product of the probabilities of observing each
-isotope variant related to each element.
+combination of isotopes of each element.
 
 $$P(I) = \prod P(I_{i})$$
 
 There is a very high number $N_{I_X} = \binom{q + n_X -1}{n_X}$ of possible
-combinations of isotopes $I_X$ for the atoms of $X$ and a even greater number
+combinations of isotopes $I_X$ for the atoms of $X$, with $q$ being the number
+of different isotopes of element $X$ and a even greater number
 $N_{I_X}* N_{I_Y}...*N_{I_Z}$ of possible isotopologues $I=(I_X, I_Y..., I_Z)$. 
 As a first simplification we keep only isotopologues observed in compounds from
 the Human Metabolome Database HMDB that in addition result in an intensity that
 is higher than a pre-defined proportion of the monoisotopic peak.
 
 Finally, the ratio between the intensities of the monoisotopic peak $x_0$ and a
-peak of an isotopologue $x_I$ is supposed to be equivalent to the ratio of their
+peak of an isotopologue $x_I$ is supposed to approximate the ratio of their
 probabilities
 
 $$R_{I} = \frac{x_{I}}{x_{0}} = \frac{P(I)}{P(0)}$$
@@ -192,18 +193,18 @@ to allow the identification of isotopologue peaks from m/z and intensity values
 alone. 
 
 In the present approach we first determine for each compound in HMDB all
-isotopologues that would result in a peak with an intensity (relative to the
-monoisotopic peak) above a certain threshold. We next identify the most
-frequently observed isotopologues (across all compounds in HMDB). For each of
-these isotopologues we then determine their mass difference and evaluate the
-observed intensity (probability) ratios between the monoisotopic peak and the
-isotopologue of all compounds in HMDB for which the isotopologue was
-reported. The mass difference is constant for the isotopologues but their
-intensity ratio depends on the total number of atoms part of the isotopic
-substitution that are present in the compound. For each isotopologue we have
-however the empirically determined intensity ratios from the whole set of HMDB
-compounds which allows us to define lower and upper bounds of *expected*
-(naturally observed) intensity ratios.
+isotopologues that would result in a peak with absolute probability above a
+certain threshold. We next identify the most frequently observed isotopologues
+(across all compounds in HMDB). For each of these isotopologues we then
+determine their mass difference and evaluate the observed intensity
+(probability) ratios between the monoisotopic peak and the isotopologue of all
+compounds in HMDB for which the isotopologue was reported. While the mass
+difference $md$ of an isotopologue peak depends only on the isotopes of its
+isotopic substitution, its intensity ratio depends also on the total number of
+atoms for the elements of the isotopic substitution that are present in the
+compound. For each isotopologue we have however the empirically determined
+intensity ratios from the whole set of HMDB compounds which allows us to define
+lower and upper bounds of *expected* (naturally observed) intensity ratios.
 
 Further, a dependency between the number of (certain) atoms and the m/z (or
 mass) of a compound can be assumed, and this number of atoms has inherently also
@@ -574,14 +575,14 @@ R <- split(iso_data$R, iso_data$isotopologue)[selected_substs]
 ```
 
 For each isotopologue we have thus defined the observed intensity (probability)
-ratio for compounds in HMDB. The probability of an isotope for a single element
-is depending on the number of atoms of that element in a compound and the
-probability of an isotopologue (i.e. several different isotopes occurring in the
-same compound) is equal to the product of the probabilities of the individual
-isotopes. Also, there needs to be a relationship between a compounds mass and
-the number of atoms its build of, with heavier compounds consisting of a larger
-number of atoms. To evaluate that we plot below the counts of individual
-elements against the mass of HMDB compounds.
+ratio for compounds in HMDB. The probability of the combination of isotopes for
+a single element is depending on the number of atoms of that element in a
+compound and the probability of an isotopologue (i.e. several different isotopes
+occurring in the same compound) is equal to the product of the probabilities of
+the individual isotopes. Also, there needs to be a relationship between a
+compounds mass and the number of atoms its build of, with heavier compounds
+consisting of a larger number of atoms. To evaluate that we plot below the
+counts of individual elements against the mass of HMDB compounds.
 
 ```{r hmdb-element-counts, fig.width = 15, fig.height = 10}
 par(mfrow = c(3, 2), mar = c(3, 4, 1, 0.5))
@@ -596,12 +597,13 @@ for (el in c("C", "H", "N" , "O", "S", "Cl")) {
 For some elements clearly a linear relationship between the element count and
 the compound's mass is visible. The ratio of the probabilities between the
 isotopologue and its monoisotopic form depends only on the probabilities of the
-isotopes forming the substitution. These probabilities are products on the
-individual isotopes' probabilities (which depend on the total number of atoms of
-the isotope's element). Given the relationship between the element count
-and the compounds mass is linear, we can expect the relationship between the
-probability ratio $R$ and the compound's mass to be polynomial with degree
-depending on the number of atoms in the substitution.
+combination of isotopes of a given element forming the substitution. These
+probabilities are products on the individual isotopes' probabilities (which
+depend on the total number of atoms of the isotope's element). Given the
+relationship between the element count and the compounds mass is linear, we can
+expect the relationship between the probability ratio $R$ and the compound's
+mass to be polynomial with degree depending on the number of atoms in the
+substitution.
 
 We thus next determine the degree of the expected polynomial trend by computing
 the number of atoms which appear in the substitutions.
