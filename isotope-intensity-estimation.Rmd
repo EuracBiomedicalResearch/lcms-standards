@@ -145,8 +145,8 @@ overall mass differences.
 In a compound with $n$ atoms of element $X$ ($n_X$) each of the atoms can be in
 a specific isotope form $\ce{ ^{y}X }$ such as $\ce{^{12}C}$ or $\ce{^{13}C}$
 (with the prevalence of each isotope form for each element being known). Each
-combination of such isotopes $I_X$ (e.g. $\ce{^{12}C3}$ $\ce{^{13}C2}$ 
-$\ce{^{14}C4}$ will result in a different shift in mass $md_{I_X}$. 
+combination of such isotopes $I_X$ (e.g. $\ce{^{16}O3}$ $\ce{^{17}02}$ 
+$\ce{^{18}O4}$) will result in a different shift in mass $md_{I_X}$. 
 
 The probability $P(I_X)$ of observing such a combination of isotopes for an
 element $X$ can be computed using the multinomial distribution. The overall mass
@@ -169,8 +169,8 @@ combinations of isotopes $I_X$ for the atoms of $X$, with $q$ being the number
 of different isotopes of element $X$ and a even greater number
 $N_{I_X}* N_{I_Y}...*N_{I_Z}$ of possible isotopologues $I=(I_X, I_Y..., I_Z)$. 
 As a first simplification we keep only isotopologues observed in compounds from
-the Human Metabolome Database HMDB that in addition result in an intensity that
-is higher than a pre-defined proportion of the monoisotopic peak.
+the Human Metabolome Database HMDB that in addition result in a probability that
+is higher than a pre-defined threshold.
 
 Finally, the ratio between the intensities of the monoisotopic peak $x_0$ and a
 peak of an isotopologue $x_I$ is supposed to approximate the ratio of their
@@ -192,17 +192,19 @@ or defined isotopologues, we need make some simplifications and approximations
 to allow the identification of isotopologue peaks from m/z and intensity values
 alone. 
 
-In the present approach we first determine for each compound in HMDB all
-isotopologues that would result in a peak with absolute probability above a
-certain threshold. We next identify the most frequently observed isotopologues
+In the present approach we first determine all substitutions that in some of the
+HMDB compounds would result in a peak with absolute probability above a
+certain threshold. We next identify the most frequently observed substitutions
 (across all compounds in HMDB). For each of these isotopologues we then
-determine their mass difference and evaluate the observed intensity
-(probability) ratios between the monoisotopic peak and the isotopologue of all
-compounds in HMDB for which the isotopologue was reported. While the mass
+determine their mass (i.e the mass difference between a isotopologue with that 
+substitution and the monoisotopic isotopologue) and evaluate the intensity
+(probability) ratios between the monoisotopic peak and the isotopologue peak 
+in all compounds of HMDB (for each of the selected substitutions). While the mass
 difference $md$ of an isotopologue peak depends only on the isotopes of its
 isotopic substitution, its intensity ratio depends also on the total number of
 atoms for the elements of the isotopic substitution that are present in the
-compound. For each isotopologue we have however the empirically determined
+compound. For each substitution we have however the empirically determined 
+<!--- I would remove "empirically" because we computed them theoretically --->
 intensity ratios from the whole set of HMDB compounds which allows us to define
 lower and upper bounds of *expected* (naturally observed) intensity ratios.
 
@@ -214,8 +216,8 @@ lower bound for $R$ to better model this relationship.
 
 ## Properties
 
-- This approach considers isotopologues, i.e. all isotopic substitutions
-  resulting in a peak and not single isotopes of elements separately.
+- This approach considers isotopologues resulting in a peak and not single 
+  isotopes of elements separately.
 - This approach considers both differences in mass as well as ratios between the
   intensities of an candidate isotopologue and monoisotopic peaks for
   isotopologue peak identification.
@@ -326,16 +328,15 @@ is only very low.
 
 ### Identification of the most frequent isotopic substitutions {#isotopologues}
 
-We next aim at identifying the most frequently observed isotopologues for
-compounds in the HMDB.
+We next aim at identifying, for all compounds present in HMDB, the most 
+frequently observed isotopic substitutions considering all possible 
+isotopologues for each molecule.
 
 To this end we calculate the isotope pattern for each compound in HMDB using
 `enviPat` and identify isotopologues which would result in an intensity
-higher than a certain proportion of the monoisotopic form. We use a threshold of
-0.01% of the intensity from the monoisotopic
-mass. For each of these peaks we define its *isotopologue id* which
-consists of the isotopes characterizing this isotopologue,
-e.g. `"[13]C4[15]N2"` and determine the frequency of each isotopologue in HMDB.
+higher than 10^(-4). For each of these peaks we define its *substitution id* which
+consists of the heavier isotopes characterizing the associated isotopologue,
+e.g. `"[13]C4[15]N2"` and determine the frequency of each substitution in HMDB.
 
 ```{r, echo = FALSE}
 dr <- paste0("data/RData/isotope-intensity-estimation/")
@@ -415,10 +416,10 @@ ggplot(aes(subst_frequency, intens, label = subst_name)) + geom_point()
 ggplotly(p)
 ```
 
-We next identify the *most frequently* observed isotopologues in compounds of
+We next identify the *most frequently* observed substitutions in compounds of
 HMDB using 3 different approaches.
 
-In the first approach we simply select the isotopologues found in 50% of
+In the first approach we simply select the substitutions found in 50% of
 compounds to yield an intensity larger than the set threshold.
 
 ```{r, fig.height = 5, fig.width = 9, fig.cap = "Substitutions with proportion > 0.5 using approach 1"}
@@ -427,15 +428,15 @@ par(mar = c(8, 4.1, 4.1, 2.1), mfrow = c(1, 1))
 barplot(subst_proportion[subst_proportion > 0.5], las = 2)
 ```
 
-In the plot above we can see isotopologues for compounds in HMBD that produce a
+In the plot above we can see substitutions for compounds in HMBD that produce a
 *significant* peak for at least a half of the compounds (the height of the bar
 specifies the exact proportion). In other words, if we randomly sample a
-compound in HMBD the chance to observe a significant peak related to the above
-isotopologues will be high. Because of the high frequency of C, H and O elements
-in compounds of HMDB, this selection is heavily biased by isotopes of these
-elements.
+compound in HMBD the chance to observe a significant peak related to the 
+isotopologues associated to the above substitutions will be high. Because of the 
+high frequency of C, H and O elements in compounds of HMDB, this selection is 
+heavily biased by isotopes of these elements.
 
-Thus, in the second approach we compare the frequency of an isotopologue against
+Thus, in the second approach we compare the frequency of a substititution against
 the number of compounds in HMDB that contain each of the elements from the
 isotopologue definition in their chemical formula.
 
@@ -460,13 +461,14 @@ ggplot(aes(proportion_var, intens, label = subst_name)) + geom_point()
 ggplotly(p + geom_vline(xintercept = 0.5, color = "red", size = .1))
 ```
 
-Third approach. Here I also try to divide the counts of the times a family is
-found to be significant in the HMBD compounds for the times that this family can
-be observed across the HMBD compounds. In other words these ratios represent the
-likelihood to find a family significant among the subset of HMBD compounds that
-have it as possible substitution (this happens when, for each element $X$ in the
-compound, the number of atoms of $X$ is >= than the sum of the numbers
-${n_X}_2$, ..., ${n_X}_q$ of heavier isotopes associated to the substitution).
+Third approach. Here we also try to divide the counts of the times a 
+substitution is found to be significant in the HMBD compounds for the times that 
+this substitution can be observed across the HMBD compounds. In other words these 
+ratios represent the likelihood to find a substitution significant among the 
+subset of HMBD compounds that have it as possible substitution (this happens 
+when, for each element $X$ in the compound, the number of atoms of $X$ is >= 
+than the sum of the numbers ${n_X}_2$, ..., ${n_X}_q$ of heavier isotopes 
+associated to the substitution).
 
 ```{r}
 count_heavy_iso <- function(subst_str){
@@ -500,7 +502,7 @@ significant peaks corresponding to [13]C1[37]Cl1. However, since the number of
 such compounds in HMBD is very low the probability of observing the effect of 
 such a substitution is very very low if we randomly pick one compound in HMBD.
 
-In the following plot I show also the mean intensity of the substitutions. 
+In the following plot we show also the mean intensity of the substitutions. 
 According to the third approach we select substitutions of Cl which have high 
 mean intensity but were excluded with the first two approaches.
 
@@ -516,7 +518,7 @@ ggplotly(p + geom_vline(xintercept = 0.5, color = "red", size= .1))
 ```
 
 We thus select substitutions defined by approach 3 as the *most frequently
-observed isotopologues*. 
+observed substitutions*. 
 
 ```{r}
 selected_substs <- names(subst_proportion_var2[subst_proportion_var2 > 0.5])
@@ -524,9 +526,9 @@ selected_substs <- names(subst_proportion_var2[subst_proportion_var2 > 0.5])
 
 ### Defining mass difference and intensity (probability) ratios
 
-We next compute for all of the selected isotopologues their mass difference $md$
-and subsequently also the observed intensity (probability) ratios between
-monoisotopic peak and isotopologue peak.
+We next compute for all of the isotopologues (associated with the selected 
+substitutions) their mass difference $md$ and subsequently also the observed 
+intensity (probability) ratios between monoisotopic peak and isotopologue peak.
 
 ```{r}
 ## Calculate mass differences and intensity (probability) ratios for all
@@ -623,7 +625,7 @@ isotopologue).
 iso_data_sub$`R_` <- iso_data_sub$R^(1 / iso_data_sub$degree)
 ```
 
-We next calculate next the ratios between all such transformed $\hat{R}$ of all
+We next calculate the ratios between all such transformed $\hat{R}$ of all
 isotopologues and the mass of the respective compound. These represent the
 slopes from (0, 0) to each data point in the mass - by - $\hat{R}$ space. For
 each isotopologue we then determine an upper and lower quantile of these slopes
@@ -661,9 +663,9 @@ We can observe a linear trend for each substitution in the transformed data
 trend of the counts in the mass as observed before).
 
 Finally, we create the substitution definition `data.frame`. For each
-isotopologue (row) we report its name, the degree of the polynomial, the mass
-difference $md$, the lowest mass it was observed, and the lower and upper bounds
-on $\hat{R}$.
+substitution (row) we report its name, the degree of the polynomial, the mass
+difference $md$, the lowest monoisotopic mass among the compounds which admit 
+the substitution, and the lower and upper bounds on $\hat{R}$.
 
 ```{r}
 f <- factor(iso_data_sub$isotopologue)
