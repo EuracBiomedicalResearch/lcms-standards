@@ -1,5 +1,5 @@
 ---
-title: "Testing .isotope_peaks"
+title: "Testing isotopologue function"
 author: "Andrea Vicini"
 output:
   rmarkdown::html_document:
@@ -19,22 +19,21 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 
 
 ```{r, echo = FALSE}
-source('~/Spectra/R/function-isotope.R')
-#source('~/Spectra/R/Prove.R')
+library(MetaboCoreUtils)
 library(enviPat)
 library(Rdisop)
 library(MetaboCoreUtils)
 library(MsCoreUtils)
 data(isotopes)
 subst_def <- read.table(paste0("~/lcms-standards/data/txt/isotope-intensity-",
-                            "estimation/subst_def.txt"), header = TRUE)
+                            "estimation/hmdb_subst.txt"), header = TRUE)
 ```
 
-In this document I will test the .isotope_peaks function firstly on simulated
+In this document I will test the isotopologues function firstly on simulated
 peak matrices from true isotope patterns and then on measured spectra.
 
 Before that, I define a tentative function to visualize the groups returned by 
-.isotope_peaks function.
+isotopologues function.
 ```{r}
 plot_groups <- function(x, i_groups = list(), cex = 0.7, pos = 3, xlim = NULL, ...){
   if(!is.null(xlim)){
@@ -45,7 +44,7 @@ plot_groups <- function(x, i_groups = list(), cex = 0.7, pos = 3, xlim = NULL, .
   col <- rainbow(length(i_groups))
   for(i in seq_along(i_groups)){
     group <- intersect(i_groups[[i]], idxs)
-    points(x[group,], type = "h", col = col[i])
+    points(x[group,], type = "h", col = col[i], ...)
     text(x[group,], labels = rep(i, length(group)), cex = cex, pos = pos) 
   }
 }
@@ -73,97 +72,116 @@ artificial_pm <- function(isotopes, chemforms, threshold = 0.001)
 }
 ```
 
-I load HMBD data
-```{r, warning = FALSE}
-library(CompoundDb)
-cdb <- CompDb("/Users/avwork/lcms-standards/data/CompDb.Hsapiens.HMDB.4.0.sqlite")
-cmps <- compounds(cdb, columns = c("compound_id", "name",
-                                   "formula", "exactmass"))
-cmps <- cmps[which(!is.na(cmps$exactmass)), ]
+We select a few compounds that are present in HMBD.
+
+```{r}
+smpl <- data.frame(formula = c("C32H62O4", "C21H20O13S", "C31H60O5", 
+                               "C24H38O12", "C26H34O11", "C25H22O13"), 
+                   exactmass = c(510.4648105, 512.0624619, 512.4440750, 
+                                 518.2363267, 522.2101119, 530.1060408))
 ```
 
-and restrict to the compounds whose mass is in a not so large mass range 
-(only because when plotting the results the single peaks can be distingushed)
-
-```{r, warning = FALSE}
-cmps_sbs <- cmps[which(cmps$exactmass > 500 & cmps$exactmass < 600), ]
-```
-
-
-```{r, fig.width = 15, fig.height = 5}
-set.seed(123)
-i_smpl <- sample(1:nrow(cmps_sbs), 10)
-smpl <- cmps_sbs[i_smpl, 3:4]
-smpl <- smpl[order(smpl$exactmass), ]
+```{r, fig.width = 15, fig.height = 10}
 threshold = 10^(-3)
 x <- artificial_pm(isotopes, smpl$formula, threshold)
 expected_groups <- lapply(smpl$formula, function(f) which(x[,"frmls"] == f))
+i_groups <- isotopologues(x[, 1:2], substDefinition = subst_def, ppm = 1)
 
-i_groups <- .isotope_peaks(x[, 1:2], substDefinition = subst_def, ppm = 1)
-
-plot_groups(x[, 1:2], i_groups)
+par(mfrow = c(2, 1))
+plot_groups(x[, 1:2], i_groups, main = "groups found")
+plot_groups(x[, 1:2], expected_groups, main = "expected groups")
 i_groups
+# expected_groups
 ```
-All the peaks are correctly identified. 
 
-In the previous example the ppm was set to 1. With a higher ppm some problems 
+All the peaks are correctly identified. We add some random noise to the peaks. 
+The function seems to be able to separate the peaks from compounds from the 
+noise most of the times and it still groups the peaks correctly. In general, 
+the higher the ppm we select or the number of generated random peaks the higher 
+is the chance that some of them are found to be compatible
+
+```{r}
+# write.table(x, file = "~/MetaboCoreUtils/tests/simulated_spectrum.txt",
+#             sep = "\t", row.names = TRUE)
+```
+
+```{r, fig.width = 15, fig.height = 10}
+set.seed(123); n_noise = 50
+noise <- data.frame(mz = runif(n_noise, min = min(x$mz), max = max(x$mz)),
+                    intensity = runif(n_noise, min(x$intensity), max(x$intensity)),
+                    frmls = rep("noise", n_noise))
+x_n <- rbind(x, noise)
+x_n <- x_n[order(x_n$mz), ]
+expected_groups_n <- lapply(smpl$formula, function(f) which(x_n[,"frmls"] == f))
+i_groups <- isotopologues(x_n[, 1:2], substDefinition = subst_def, ppm = 1)
+
+par(mfrow = c(2, 1))
+plot_groups(x_n[, 1:2], i_groups, main = "groups found")
+plot_groups(x_n[, 1:2], expected_groups_n, main = "expected groups")
+i_groups
+# expected_groups
+```
+
+In the previous examples the ppm was set to 1. With a higher ppm some problems 
 may occurr as shown in the example below (everything is the same as before
 but the tolerance has been set to a higher value). When two simulated isotope 
 patterns are close it may happen that the one on the left (whose first peak is 
 processed first) subtracts peaks from the one the left (which became compatible 
-after increasing the ppm). From the plot below it is not visible but from the
-indices it is.
+after increasing the ppm). From the plot below it is not clearly visible but 
+from the indexes it is.
 
-```{r, fig.width = 15, fig.height = 5}
-i_groups <- .isotope_peaks(x[, 1:2], substDefinition = subst_def, ppm = 20)
+```{r, fig.width = 15, fig.height = 10}
+i_groups <- isotopologues(x[, 1:2], substDefinition = subst_def, ppm = 20)
 
-plot_groups(x[, 1:2], i_groups)
+par(mfrow = c(2, 1))
+plot_groups(x[, 1:2], i_groups, main = "groups found")
+plot_groups(x[, 1:2], expected_groups, main = "expected groups")
 i_groups
+# expected_groups
 ```
 
-Now I add a error on the mz values of the peak matrix. The result is affected 
-by this operation. Firstly we have to use a higher ppm in such a way that the 
-function can match the new mzs. But increasing the ppm doesn't always allow to 
-capture all the peaks as in the case without error addition. A reason can be the 
+Now I add a error on the mz values in the peak matrix. The result is affected 
+by this operation in a significant way. Firstly we have to use a higher ppm in 
+such a way that the function can match the new perturbed m/zs. But increasing 
+the ppm doesn't always allow to capture all the peaks correctly 
+as in the case without error addition. A reason can be the 
 fact that some mz values related to different substitutions, say A and B, of 
 the same compound are really close. When a small error is added to them the 
 function might see as closest to the substitution A the peak related to 
 substitution B and viceversa. So it expects that peak related to substitution B 
-has intensity of a peak corresponding to substitution A and as a result of that 
-the peak is not selected.
+has intensity within the bounds of substitution A and as a result of that 
+the peak is not selected. This happens in the example below with the peaks that 
+have distance around +1 from the first peak.
 
-```{r, fig.width = 15, fig.height = 5}
-set.seed(123)
-i_smpl <- sample(1:nrow(cmps_sbs), 10)#[1]
-smpl <- cmps_sbs[i_smpl, 3:4]
-smpl <- smpl[order(smpl$exactmass), ]
-expected_groups <- lapply(smpl$formula, function(f) which(x[,"frmls"] == f))
-threshold = 10^(-3)
-x <- artificial_pm(isotopes, smpl$formula, threshold)
-x$mz <- x$mz + rnorm(n = nrow(x), mean = 0, sd = 0.001)
-x <- x[order(x$mz), ]
-i_groups <- .isotope_peaks(x[, 1:2], substDefinition = subst_def,
+```{r, fig.width = 15, fig.height = 10}
+set.seed(1234)
+x_n <- x
+x_n$mz <- x_n$mz + rnorm(n = nrow(x_n), mean = 0, sd = 0.001)
+x_n <- x_n[order(x_n$mz), ]
+i_groups <- isotopologues(x_n[, 1:2], substDefinition = subst_def,
                            tolerance = 0, ppm = 20)
 
-plot_groups(x[, 1:2], i_groups)
+par(mfrow = c(2, 1))
+plot_groups(x_n[, 1:2], i_groups, main = "groups found")
+plot_groups(x_n[, 1:2], expected_groups, main = "expected groups")
 i_groups
+# expected_groups
 ```
-I also try adding an error on the intensity values of the peak matrix and it 
-seems to affect the results less than a deviation on mz.
-```{r, fig.width = 15, fig.height = 5}
-set.seed(123)
-i_smpl <- sample(1:nrow(cmps_sbs), 10)
-smpl <- cmps_sbs[i_smpl, 3:4]
-smpl <- smpl[order(smpl$exactmass), ]
-expected_groups <- lapply(smpl$formula, function(f) which(x[,"frmls"] == f))
-threshold = 10^(-3)
-x <- artificial_pm(isotopes, smpl$formula, threshold)
-x$intensity <- x$intensity * ( 1 + rnorm(n = nrow(x), mean = 0, sd = 0.1))
-x <- x[order(x$mz), ] 
-i_groups <- .isotope_peaks(x[, 1:2], substDefinition = subst_def, ppm = 1)
 
-plot_groups(x[, 1:2], i_groups)
+Now we add an error on the intensity values in the peak matrix and it 
+seems to affect the results less than a deviation on m/z.
+```{r, fig.width = 15, fig.height = 10}
+set.seed(123)
+x_n <- x
+x_n$intensity <- x_n$intensity * ( 1 + rnorm(n = nrow(x_n), mean = 0, sd = 0.05))
+x_n <- x_n[order(x_n$mz), ] 
+i_groups <- isotopologues(x_n[, 1:2], substDefinition = subst_def, ppm = 1)
+
+par(mfrow = c(2, 1))
+plot_groups(x_n[, 1:2], i_groups, main = "groups found")
+plot_groups(x_n[, 1:2], expected_groups, main = "expected groups")
 i_groups
+# expected_groups
 ```
 
 ## Testing on real data spectra
@@ -219,12 +237,12 @@ sps_sub<- spectra(filterRt(data, rt = c(37, 38)))
 pm_sub <- cbind(mz = sps_sub[[1]]@mz, intensity = sps_sub[[1]]@intensity)
 ```
 
-Below we apply .isotope_peaks on those spectra.
+Below we apply isotopologues on those spectra.
 ```{r} 
-# iso_gr_xan <- .isotope_peaks(pm_xan, substDefinition = subst_def, ppm = 10)
-# iso_gr_ace <- .isotope_peaks(pm_ace, substDefinition = subst_def, ppm = 10)
-# iso_gr_beta <- .isotope_peaks(pm_beta, substDefinition = subst_def, ppm = 10)
-# iso_gr_crea <- .isotope_peaks(pm_crea, substDefinition = subst_def, ppm = 10)
+# iso_gr_xan <- isotopologues(pm_xan, substDefinition = subst_def, ppm = 10)
+# iso_gr_ace <- isotopologues(pm_ace, substDefinition = subst_def, ppm = 10)
+# iso_gr_beta <- isotopologues(pm_beta, substDefinition = subst_def, ppm = 10)
+# iso_gr_crea <- isotopologues(pm_crea, substDefinition = subst_def, ppm = 10)
 # 
 # 
 # par(mfrow=c(2, 2))
@@ -251,23 +269,23 @@ With the parameter `seedMz` we look for groups of peaks whose first peak is
 compatible with the mz of the selected standards. For some of them no group is
 found.
 ```{r, fig.height = 8, fig.width=15}
-iso_gr_xan <- .isotope_peaks(pm_xan, substDefinition = subst_def, 
+iso_gr_xan <- isotopologues(pm_xan, substDefinition = subst_def, 
                              seedMz = mz_xan, ppm = 20)
-iso_gr_ace <- .isotope_peaks(pm_ace, substDefinition = subst_def,
+iso_gr_ace <- isotopologues(pm_ace, substDefinition = subst_def,
                              seedMz = mz_ace, ppm = 20)
-iso_gr_beta <- .isotope_peaks(pm_beta, substDefinition = subst_def, 
+iso_gr_beta <- isotopologues(pm_beta, substDefinition = subst_def, 
                               seedMz = mz_beta, ppm = 20)
-iso_gr_crea <- .isotope_peaks(pm_crea, substDefinition = subst_def, 
+iso_gr_crea <- isotopologues(pm_crea, substDefinition = subst_def, 
                               seedMz = mz_crea, ppm = 20)
-iso_gr_dime <- .isotope_peaks(pm_dime, substDefinition = subst_def, 
+iso_gr_dime <- isotopologues(pm_dime, substDefinition = subst_def, 
                               seedMz = mz_dime, ppm = 20)
-iso_gr_lglu <- .isotope_peaks(pm_lglu, substDefinition = subst_def, 
+iso_gr_lglu <- isotopologues(pm_lglu, substDefinition = subst_def, 
                               seedMz = mz_lglu, ppm = 20)
-iso_gr_myo <- .isotope_peaks(pm_myo, substDefinition = subst_def, 
+iso_gr_myo <- isotopologues(pm_myo, substDefinition = subst_def, 
                               seedMz = mz_myo, ppm = 20)
-iso_gr_phos <- .isotope_peaks(pm_phos, substDefinition = subst_def, 
+iso_gr_phos <- isotopologues(pm_phos, substDefinition = subst_def, 
                               seedMz = mz_phos, ppm = 20)
-iso_gr_sub <- .isotope_peaks(pm_sub, substDefinition = subst_def, 
+iso_gr_sub <- isotopologues(pm_sub, substDefinition = subst_def, 
                               seedMz = mz_sub, ppm = 20)
 par(mfrow=c(3, 3))
 plot_groups(pm_xan, iso_gr_xan, xlim = mz_xan + c(- 0.5, 6), main = "Xanthine")
