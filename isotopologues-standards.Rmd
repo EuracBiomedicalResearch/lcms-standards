@@ -1,0 +1,195 @@
+---
+title: "Evaluation of the isotoploogues function using the *standards* data set"
+author: "Andrea Vicini, Johannes Rainer"
+output:
+  rmarkdown::html_document:
+    highlight: pygments
+    toc: true
+    toc_depth: 3
+    fig_width: 5
+---
+
+```{r style, echo = FALSE, results = 'asis', message = FALSE}
+library(BiocStyle)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+```
+
+**Last modified:** `r file.info("isotopologues-standards.Rmd")$mtime`<br />
+**Compiled**: `r date()`
+
+```{r, echo = FALSE}
+library(xcms)
+library(MetaboCoreUtils)
+library(Rdisop)
+#library(MsCoreUtils)
+#library(MSnbase)
+```
+
+We load the data, a table with the standards and a table containing the mapping 
+of features to adducts of standards (found in preprocessing-standards.Rmd). 
+```{r}
+load("data/RData/preprocessing-standards/mix01/data_refined.RData")
+load("data/RData/preprocessing-standards/mix01/stab.RData")
+std_dil <- read.table("data/standards_dilution.txt", sep= "\t", header = TRUE)
+```
+
+We filter the data keeping only MS1 data.
+```{r}
+dataMS1 <- filterFile(data, file = which(data$mode == "FS"))
+```
+
+
+```{r}
+stab$formula <- table1[match(stab$name, table1$name), "formula"]
+```
+<!--
+We create a table `res_table` having as rows the names of the standards in mix1
+and as columns the names of the mzML files containing the MS1 data.
+```{r}
+mzML_names <- dataMS1$mzML 
+std_names <- std_dilution[std_dilution$mix == 1, "name"]
+res_table <- matrix(FALSE, length(mzML_names), length(std_names))
+rownames(res_table) <- mzML_names
+colnames(res_table) <- std_names
+```
+
+```{r}
+fl_path <- "inputdir"
+dir.create(fl_path, showWarnings = FALSE, recursive = TRUE)
+outputdir <- "outputdir"
+if(dir.exists(outputdir))
+  unlink(outputdir, recursive = TRUE)
+dir.create(outputdir)
+
+count = 0
+for (i in 1:nrow(std2ft)) {
+  for (nm in mzML_names) {
+    sp <- spectra(filterRt(filterFile(dataMS1, nm), std2ft[i, "rtmed"] + c(0, 1)))
+    pm <- cbind(mz = sp[[1]]@mz, intensity = sp[[1]]@intensity)
+    formula <- table1[match(std2ft[i, "name"], table1$name), "formula"]
+    mzadduct <- mass2mz(getMolecule(formula)$exactmass, std2ft[i, "adduct"])[1, 1]
+    iso_groups <- isotopologues(pm, seedMz = mzadduct, ppm = 10) # or should I 
+    # use positive/ negative definition according to the mode of the adduct? 
+    std_name <- std2ft[i, "name"]
+    std_name_ <- gsub(" ", "_", std_name)
+    if(length(iso_groups)) {
+      fl <- paste0(fl_path, "/", std_name_, ".ms")
+      ms1 <- pm[iso_groups[[1]], ]
+      writetoms(outputms = fl, 
+                compound = std_name_, parentmass = ms1[1, 1],
+                ion = std2ft[i, "adduct"], ms1 = ms1)
+      system2('/Applications/sirius.app/Contents/MacOS/sirius',
+              args = c('--allow-ms1-only', '--input', fl, '--output', 
+                       outputdir, 'formula'))
+      outputfile <- paste0(outputdir, "/", count, "_", std_name_, "_", 
+                           std_name_, "/formula_candidates.tsv")
+      if (file.exists(outputfile)) {
+        ranking <- read.table(outputfile, sep = "\t", header = TRUE)
+        if(formula %in% ranking[, "molecularFormula"])
+          res_table[nm, std_name] <- TRUE
+      } else {
+        res_table[nm, std_name] <- NA
+      }
+      count <- count + 1
+    }
+  }
+}
+```
+-->
+
+For every mapping in `stab` (of a feature to an adduct of a standard) and for 
+every mzML file we consider the spectrum corresponding to the retention time of
+the feature. Then we use the `isotopologues` function with parameter `seedMz` 
+equal to the mz of the adduct in the mapping. That way we expect to find the
+peaks originated by the adduct. Finally we see which chemical formula SIRIUS 
+predicts from these peaks and if the formula of the adduct is within the 
+top 3 formulas returned by SIRIUS.
+Currently, SIRIUS doesn't support adducts with charge higher than 1 or with
+2M, 3M etc. and skips them during import. Because of that we remove the mappings
+involving these elements.
+
+```{r}
+std2ft <- stab[!grepl("\\dM+|]\\d+", stab$adduct), ]
+```
+
+We create the .ms files to pass to SIRIUS.
+
+```{r}
+fl_path <- "inputdir"
+dir.create(fl_path, showWarnings = FALSE, recursive = TRUE)
+
+for (i in 1:nrow(std2ft)) {
+  for (j in seq_len(length(mzML_names))) {
+    sp <- spectra(filterRt(filterFile(dataMS1, mzML_names[j]), 
+                           std2ft[i, "rtmed"] + c(0, 1)))
+    pm <- cbind(mz = sp[[1]]@mz, intensity = sp[[1]]@intensity)
+    adduct <- std2ft[i, "adduct"]
+    mzadduct <- mass2mz(getMolecule(std2ft$formula[i])$exactmass, adduct)[1, 1]
+    iso_groups <- isotopologues(pm, seedMz = mzadduct, ppm = 10) # or should I 
+    # use positive/ negative definition according to the mode of the adduct? 
+    std_name <- std2ft[i, "name"]
+    std_name_ <- gsub(" ", "_", std_name)
+    if(length(iso_groups)) {
+      #fl <- paste0(fl_path, "/", i, "_", j, ".ms")
+      fl <- paste0(fl_path, "/", std2ft[i, "formula"], "_", adduct, "_",
+                   gsub(".mzML", "", mzML_names[j]), ".ms")
+      ms1 <- pm[iso_groups[[1]], ]
+      writetoms(outputms = fl, 
+                compound = std_name, parentmass = ms1[1, 1],
+                ion = adduct, ms1 = ms1)
+    }
+  }
+}
+```
+
+We call SIRIUS that saves the results in certain folders
+```{r, echo = FALSE}
+outputdir <- "outputdir"
+if(dir.exists(outputdir))
+  unlink(outputdir, recursive = TRUE)
+dir.create(outputdir)
+
+system2('/Applications/sirius.app/Contents/MacOS/sirius',
+        args = c('--allow-ms1-only', '--input', "inputdir",
+                 '--output', outputdir, 'formula'))
+
+```
+
+```{r}
+TAB <- data.frame(name = rep(std2ft$name, each = length(mzML_names)), 
+             adduct = rep(std2ft$adduct, each = length(mzML_names)),
+             formula = rep(std2ft$formula, each = length(mzML_names)),
+             mzML = rep(mzML_names, nrow(std2ft)),
+             sirius_best_hit = NA,
+             sirius_top_3 = FALSE)
+```
+
+We read the results of SIRIUS
+```{r}
+dirs <- list.dirs(outputdir, recursive = FALSE)
+
+I <- match(gsub(paste0(outputdir, "/[0-9]+_"), "", 
+             gsub("((POS|NEG)).*","\\1", dirs)), 
+           paste(TAB$formula, TAB$adduct, gsub(".mzML", "", TAB$mzML), sep = "_"))
+
+for (i in seq_len(length(dirs))) {
+    outputfile <- paste0(dirs[i], "/formula_candidates.tsv")
+    formula <- strsplit(dirs[i], "_")[[1]][2]
+      if (file.exists(outputfile)) {
+        ranking <- read.table(outputfile, sep = "\t", header = TRUE)
+        if(formula %in% head(ranking[, "molecularFormula"], 3))
+          TAB$sirius_top_3[I[i]] <- TRUE
+        TAB$sirius_best_hit[I[i]] <- ranking[1, "molecularFormula"]
+      }
+}
+```
+
+
+
+# Session information
+
+The R version and packages used in this analysis are listed below.
+
+```{r sessioninfo}
+sessionInfo()
+```
