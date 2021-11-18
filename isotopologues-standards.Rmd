@@ -27,6 +27,7 @@ source("~/lcms-standards/R/writetoms.R")
 We load the data, a table with the standards and a table (`stab`) containing the
 mapping of features to adducts of standards (found in
 preprocessing-standards.Rmd).
+
 ```{r}
 load("data/RData/preprocessing-standards/mix01/data_refined.RData")
 load("data/RData/preprocessing-standards/mix01/stab.RData")
@@ -57,34 +58,35 @@ involving these elements.
 std2ft <- stab[!grepl("\\dM+|]\\d+", stab$adduct), ]
 ```
 
+We prepare a table summarizing the results.
+```{r}
+TAB <- data.frame(std2ft[rep(seq_len(nrow(std2ft)), each = length(mzML_names)), 
+                         c("name", "adduct", "formula", "feature_id", "rtmed")],
+                  mzML = rep(mzML_names, nrow(std2ft)),
+                  number_peaks = 0,
+                  sirius_best_hit = NA,
+                  sirius_top_3 = FALSE)
+```
+
 Next we create the .ms files to pass to SIRIUS and compute the number of peaks 
 for each file.
-
 ```{r}
 fl_path <- "inputdir"
 dir.create(fl_path, showWarnings = FALSE, recursive = TRUE)
-number_peaks = numeric(0)
 
-for (i in 1:nrow(std2ft)) {
-  for (j in seq_len(length(mzML_names))) {
-    sp <- spectra(filterRt(filterFile(dataMS1, mzML_names[j]), 
-                           std2ft[i, "rtmed"] + c(0, 1)))
-    pm <- cbind(mz = sp[[1]]@mz, intensity = sp[[1]]@intensity)
-    adduct <- std2ft[i, "adduct"]
-    mzadduct <- mass2mz(getMolecule(std2ft$formula[i])$exactmass, adduct)[1, 1]
-    iso_groups <- isotopologues(pm, seedMz = mzadduct, ppm = 10) # or should I 
-    # use positive/ negative definition according to the mode of the adduct? 
-    std_name <- std2ft[i, "name"]
-    std_name_ <- gsub(" ", "_", std_name)
-    if(length(iso_groups)) {
-      fl <- paste0(fl_path, "/", std2ft[i, "formula"], "_", adduct, "_",
-                   std2ft[i, "feature_id"], "_", j, ".ms")
-      ms1 <- pm[iso_groups[[1]], ]
-      number_peaks <- c(number_peaks, length(iso_groups[[1]]))
-      writetoms(outputms = fl, 
-                compound = std_name, parentmass = ms1[1, 1],
-                ion = adduct, ms1 = ms1)
-    }
+for (i in seq_len(nrow(TAB))) {
+  sp <- spectra(filterRt(filterFile(dataMS1, TAB[i, "mzML"]), 
+                         TAB[i, "rtmed"] + c(0, 1)))
+  pm <- cbind(mz = sp[[1]]@mz, intensity = sp[[1]]@intensity)
+  adduct <- TAB[i, "adduct"]
+  mzadduct <- mass2mz(getMolecule(TAB[i, "formula"])$exactmass, adduct)[1, 1]
+  iso_groups <- isotopologues(pm, seedMz = mzadduct, ppm = 10) # or should I 
+  # use positive/ negative definition according to the mode of the adduct? 
+  if(length(iso_groups)) {
+    fl <- paste0(fl_path, "/", i, ".ms")
+    ms1 <- pm[iso_groups[[1]], ]
+    TAB[i, "number_peaks"] <- length(iso_groups[[1]])
+    writetoms(outputms = fl, ms1 = ms1, compound = TAB[i, "name"], ion = adduct)
   }
 }
 ```
@@ -102,49 +104,27 @@ system2(PATH_TO_SIRIUS, args = c('--allow-ms1-only', '--input', "inputdir",
 
 ```
 
-I prepare a table where each row refers to a certain mzML file and a certain 
-mapping of a feature to an adduct of a standard. For each row the number of 
-peaks detected by the isotopologue function in the mzML file will be reported 
-as well as the top predictions from SIRIUS.
-
-```{r}
-TAB <- data.frame(std2ft[rep(seq_len(nrow(std2ft)), each = length(mzML_names)), 
-                         c("name", "adduct", "formula", "feature_id")],
-                  mzML = rep(seq_len(length(mzML_names)), nrow(std2ft)),
-                  number_peaks = 0,
-                  sirius_best_hit = NA,
-                  sirius_top_3 = FALSE)
-```
-
 We read the results obtained with SIRIUS and fill the above table .
 ```{r}
 dirs <- list.dirs(outputdir, recursive = FALSE)
 
-I <- match(sapply(strsplit(dirs, "_"), 
-                  function(x) paste(x[2], x[3], x[4], x[5], sep = "_")), 
-           paste(TAB$formula, TAB$adduct, TAB$feature_id, 
-                  TAB$mzML, sep = "_"))
-
-for (i in seq_len(length(dirs))) {
-    outputfile <- paste0(dirs[i], "/formula_candidates.tsv")
-    formula <- strsplit(dirs[i], "_")[[1]][2]
-      if (file.exists(outputfile)) {
-        ranking <- read.table(outputfile, 
-                              sep = "\t", header = TRUE)[, "molecularFormula"]
-        if(formula %in% head(ranking, 3))
-          TAB$sirius_top_3[I[i]] <- TRUE
-        TAB$sirius_best_hit[I[i]] <- ranking[1]
-      }
+for (dir in dirs) {
+  outputfile <- paste0(dir, "/formula_candidates.tsv")
+  i <- as.numeric(strsplit(dir, "_")[[1]][2])
+  if (file.exists(outputfile)) {
+    ranking <- read.table(outputfile, sep = "\t",
+                          header = TRUE)[, "molecularFormula"]
+    if(TAB[i, "formula"] %in% head(ranking, 3))
+      TAB[i, "sirius_top_3"] <- TRUE
+    TAB[i, "sirius_best_hit"] <- ranking[1]
+  }
 }
-TAB$number_peaks[I] <- number_peaks
 ```
 
 ```{r , results = "asis", echo = FALSE}
 library(pander)
 pandoc.table(TAB, style = "rmarkdown")
 ```
-
-
 
 # Session information
 
