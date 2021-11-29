@@ -53,6 +53,11 @@ data). The goal of this analysis is now to:
 - extract EICs and plot them.
 - extract MS/MS spectra for all feature above and match them against MassBank.
 
+# Final result
+
+- Final result would be a table, one row per ion of a standard with retention
+  time, adduct definition, difference in concentration high/low.
+
 
 # Session information
 
