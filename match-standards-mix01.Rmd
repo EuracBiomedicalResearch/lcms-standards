@@ -1,0 +1,69 @@
+---
+title: "Identifying standards from mix01"
+author: "Andrea Vicini, Johannes Rainer"
+output:
+  rmarkdown::html_document:
+    highlight: pygments
+    toc: true
+    toc_depth: 3
+    fig_width: 5
+---
+
+# Introduction
+
+Mixes of standards have been solved in water or added to human serum sample
+pools in two different concentration and these samples were measured with the
+LC-MS setup from Eurac (used also to generate the CHRIS untargeted metabolomics
+data). The goal of this analysis is now to:
+
+- Determine the retention time of each standard in water and serum.
+- Define which ions/adducts are measured for each standard (with relative
+  abundances, i.e. which is most highly abundant ion etc).
+- Extract all MS/MS spectra for each standard and store that in a database.
+
+# Identifying standards in sample mix 01
+
+- load standards
+- calculate exact mass for each standard (based on the provided formula)
+- subset to mix01
+
+## Data import
+
+- load the data (separate for pos and neg, water and serum)
+
+## Chromatographic peak detection
+
+- perform chromatogramphic peak detection.
+
+## Correspondence analysis
+
+- perform correspondence analysis.
+
+## Identification of features matching standards
+
+- identify all features matching one adduct of a standard (use `matchMz`)
+- subsection for each standard
+
+
+### Standard:
+
+- table with all features (incl. m/z, retention time, adduct information, their
+  difference in average abundance in low vs high. Goal is to potentially remove
+  matched features (if their concentration is not different).
+- extract EICs and plot them.
+- extract MS/MS spectra for all feature above and match them against MassBank.
+
+# Final result
+
+- Final result would be a table, one row per ion of a standard with retention
+  time, adduct definition, difference in concentration high/low.
+
+
+# Session information
+
+The R version and packages used in this analysis are listed below.
+
+```{r sessioninfo}
+sessionInfo()
+```
+
