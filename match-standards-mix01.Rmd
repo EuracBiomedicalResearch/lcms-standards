@@ -9,6 +9,34 @@ output:
     fig_width: 5
 ---
 
+```{r libraries, message = FALSE, warning = FALSE, echo = FALSE}
+library(xcms)
+library(pander)
+library(MetaboCoreUtils)
+library(MetaboAnnotation)
+library(BiocParallel)
+```
+
+```{r general-settings, echo = FALSE}
+mix <- 1
+mix_name <- paste0("Mix", ifelse(mix < 10, paste0(0, mix), mix)) 
+IMAGE_PATH <- paste0("images/match-standards-", tolower(mix_name),"/")
+RDATA_PATH <- paste0("data/RData/match-standards-/", tolower(mix_name), "/")
+dir.create(IMAGE_PATH, showWarnings = FALSE, recursive = TRUE)
+dir.create(RDATA_PATH, showWarnings = FALSE, recursive = TRUE)
+
+# Define the mzML files *base* path (/data/massspec/mzML/ on the cluster)
+MZML_PATH <- "~/mix01/"
+# MZML_PATH <- "/data/massspec/mzML/"
+
+# Set up parallel processing using 2 cores
+if (.Platform$OS.type == "unix") {
+    register(bpstart(MulticoreParam(2)))
+} else {
+    register(bpstart(SnowParam(2)))
+}
+```
+
 # Introduction
 
 Mixes of standards have been solved in water or added to human serum sample
@@ -23,41 +51,239 @@ data). The goal of this analysis is now to:
 
 # Identifying standards in sample mix 01
 
-- load standards
-- calculate exact mass for each standard (based on the provided formula)
-- subset to mix01
+We get all the standards, calculate their exact mass (based on their
+formula) and subset to those from mix01.
+
+```{r, echo = FALSE, results = "asis"}
+std_dilution <- read.table("data/standards_dilution.txt",
+                           sep = "\t", header = TRUE)
+std_dilution$exactmass <- vapply(std_dilution$formula, 
+                                  function(z) calculateMass(z), numeric(1))
+std_dilution01 <- std_dilution[std_dilution$mix == mix, ]
+```
+
+The list of standards that constitute the present sample mix are listed below
+along with the expected retention time and the most abundant adduct for positive
+and negative polarity as defined in a previous analysis.
+
+```{r, echo = FALSE, results = "asis"}
+pandoc.table(std_dilution01[, c("name", "formula", "RT", "POS", "NEG")], 
+             style = "rmarkdown", split.tables = Inf,
+             caption = paste0("Standards of ", mix_name))
+```
 
 ## Data import
 
-- load the data (separate for pos and neg, water and serum)
+We load the data and split it according to matrix and polarity.
 
-## Chromatographic peak detection
+```{r}
+std_files <- read.table("data/std_serum_files.txt", header = TRUE)
+std_files <- std_files[which(std_files$type == mix_name), ]
+fls <- paste0(MZML_PATH, std_files$folder, "/", std_files$mzML)
+data <- readMSData(fls, pdata = new("NAnnotatedDataFrame", std_files),
+                   mode = "onDisk")
+```
 
-- perform chromatogramphic peak detection.
+```{r}
+# matrix_pol: matrix in which the standards are solved and polarity.
+tmp <- rep("Water", length(fileNames(data)))
+tmp[grep("^QC", data$class)] <- "Serum"
+matrix_pol <- paste0(tmp, "_", data$polarity)
+data$matrix_pol <- matrix_pol
 
-## Correspondence analysis
+data_WP <- filterFile(data, file = which(data$matrix_pol == "Water_POS"))
+data_WN <- filterFile(data, file = which(data$matrix_pol == "Water_NEG"))
+data_SP <- filterFile(data, file = which(data$matrix_pol == "Serum_POS"))
+data_SN <- filterFile(data, file = which(data$matrix_pol == "Serum_NEG"))
+```
 
-- perform correspondence analysis.
+## Positive polarity and solved in water samples
 
-## Identification of features matching standards
+### Chromatographic peak detection
 
-- identify all features matching one adduct of a standard (use `matchMz`)
-- subsection for each standard
+```{r peakdetection, eval = !file.exists(paste0(RDATA_PATH, "processed_data.RData"))}
+cwp <- CentWaveParam(ppm = 50,
+                     peakwidth = c(2, 20),
+                     snthresh = 5,
+                     mzdiff = 0.001,
+                     prefilter = c(4, 300),
+                     noise = 100,
+                     integrate = 2)
+
+data_WP <- findChromPeaks(data_WP, param = cwp) 
+```
+
+### Refinement
+
+```{r refinement, message = FALSE, warning = FALSE, eval = !file.exists(paste0(RDATA_PATH, "processed_data.RData"))}
+mnp <- MergeNeighboringPeaksParam(expandRt = 2.5, expandMz = 0.001,
+                                  minProp = 3/4)
+data_WP <- refineChromPeaks(data_WP, param = mnp)
+```
+
+### Correspondence analysis
+
+Next we perform a correspondence analysis to group chromatographic peaks across
+samples.
+
+```{r correspondence, echo = FALSE, eval = !file.exists(paste0(RDATA_PATH, "processed_data.RData"))}
+pdp <- PeakDensityParam(sampleGroups = data_WP$matrix_pol, bw = 1.8,
+                        minFraction = 0.7, binSize = 0.02)
+data_WP <- groupChromPeaks(data_WP, param = pdp)
+```
+
+### Gap filling
+
+Finally we fill-in missing peak data.
+
+```{r gap-filling, echo = FALSE, eval = !file.exists(paste0(RDATA_PATH, "processed_data.RData"))}
+## Gap-filling
+data_WP <- fillChromPeaks(data_WP, param = ChromPeakAreaParam())
+save(data_WP, file = paste0(RDATA_PATH, "processed_data.RData"))
+```
 
 
-### Standard:
+```{r correspondence-cached, echo = FALSE, eval = file.exists(paste0(RDATA_PATH, "processed_data.RData"))}
+load(paste0(RDATA_PATH, "processed_data.RData"))
+```
 
-- table with all features (incl. m/z, retention time, adduct information, their
-  difference in average abundance in low vs high. Goal is to potentially remove
-  matched features (if their concentration is not different).
-- extract EICs and plot them.
-- extract MS/MS spectra for all feature above and match them against MassBank.
+### Differnce in concentration (between high and low concentration samples)
+
+We compute the t.test statistic and the related p-value for the difference in
+log2 concentration (between high and low concentration samples) for each of the
+identified features.
+
+```{r}
+fVlog2 <- log2(featureValues(data_WP, value = "into", method = "sum", filled = TRUE))
+high <- grep("High", colnames(fVlog2))
+low <- grep("Low", colnames(fVlog2))
+
+ttest <- t(apply(fVlog2, 1, function(x) {
+  res <- t.test(x[high], x[low], mu = 0)
+  c(high_low_diff = unname(res$estimate[1] - res$estimate[2]),
+    pvalue = res$p.value)
+}))
+```
+
+### Identification of features matching standards
+
+We now identify all features matching likely adducts of the standards.
+
+```{r}
+adducts <- c("[M+H]+", "[M+2H]2+", "[M+Na]+", "[M+K]+", "[M+NH4]+",
+             "[M+H-H2O]+", "[M+H+Na]2+", "[M+2Na]2+", "[M+H-NH3]+")
+prm <- Mass2MzParam(adducts = adducts, ppm = 30)
+fmat <- c(featureDefinitions(data_WP), ttest)
+mtchs <- matchMz(fmat, std_dilution01, param =  prm, mzColname = "mzmed")
+mtchs_sub <- mtchs[whichQuery(mtchs)]
+```
+
+
+```{r, results = "asis"}
+mD <- matchedData(mtchs_sub, columns = c("mzmed", "rtmed", "target_name",
+                                         "adduct", "score", "target_RT",
+                                         "target_POS", "high_low_diff",
+                                         "pvalue"))
+mD <- mD[order(mD$target_name), ]
+pandoc.table(as.data.frame(mD), style = "rmarkdown",
+             split.tables = Inf, caption = "Feature to standards matches")
+```
+
+Only `r length(unique(mD$target_name))` standards of the `r nrow(std_dilution01)` 
+standards in mix `r `mix` have at least a feature that was matched to them. 
+The standards with no match are reported below.
+
+```{r, results = "asis"}
+pandoc.table(std_dilution01[!std_dilution01$name %in% mD$target_name,
+                            c("name", "formula", "RT", "POS", "NEG")],
+             style = "rmarkdown", split.tables = Inf,
+             caption = "Not matched standards")
+```
+
+### A subsection for each of these standards to investigate why no match was found for them?
+
+### Plot features EICs
+
+We plot the EICs of the features that were matched to standards
+```{r}
+dr <- paste0(IMAGE_PATH, "eic_features_WP")
+dir.create(dr, showWarnings = FALSE, recursive = TRUE)
+for (ft in rownames(mD)) {
+  eics <- featureChromatograms(data_WP, features = ft, expandRt = 2, filled = TRUE)
+  png(paste0(IMAGE_PATH, "eic_features_WP/", ft, ".png"),
+      width = 10, height = 8, units = "cm", res = 300, pointsize = 6)
+  plotChromatogramsOverlay(eics) #or normalize(eics)
+  dev.off()
+}
+```
+
+### Annotating features using MS2 data
+
+Next we extract for all matched features potentially measured MS2 spectra
+and match them against MassBank in order to annotate them. We first extract 
+spectra from MassBank database.
+
+```{r}
+library(RMariaDB)
+library(MsBackendMassbank)
+
+co <- dbConnect(MariaDB(), user = "avwork", dbname = "MassBank",
+                 host = "localhost", pass = "massbank")
+mbank <- Spectra(co, source = MsBackendMassbankSql())
+mbank <- setBackend(mbank, MsBackendDataFrame()) # breaks with parallel processing
+```
+
+```{r}
+data_WP_ms2<- filterFile(data_WP, file = which(data_WP$mode != "FS"), keepFeatures = TRUE)
+```
+
+The following function (to avoid code repetition) takes the ids of
+features `f_id`, checks which ones are also available for the given MS2 data
+`data_ms2`. For these it extracts the corresponding spectra and matches them
+against a reference database `mbank`. It returns a vector. Each entry contains
+for a given feature the compound names of the spectra in `mbank` that were
+matched to the spectra of the feature.
+
+```{r}
+f_ms2_mtch <- function(data_ms2, f_id, mbank, case, recompute = FALSE) {
+  ids <- intersect(rownames(featureDefinitions(data_ms2)), f_id)
+  f_ms2 <- featureSpectra(data_ms2, msLevel = 2L, return.type = "Spectra",
+                          ppm = 10, features = ids)
+  fn <- paste0(RDATA_PATH, "comp_", case, "_ms2_MassBank.RData")
+  if(!file.exists(fn) | recompute) {
+    mtches <- matchSpectra(f_ms2, mbank,
+                           param = CompareSpectraParam(requirePrecursor = FALSE,
+                                                       ppm = 10))
+    save(mtches, file = fn)
+  }
+  else load(fn)
+  mtches <- mtches[whichQuery(mtches)]
+  tmp <- aggregate(mtches$target_compound_name,
+                   by = list(feature = mtches$feature_id),
+                   function(x) paste0(unique(x), collapse = ";"))
+  #tmp[tmp[, 2] == ""] <- NA
+  res <- rep(NA, length(f_id))
+  res[match(tmp[, 1], f_id)] <- tmp[, 2]
+  res
+}
+```
+
+
+```{r}
+mD$ms2_matches <- f_ms2_mtch(data_WP_ms2, rownames(mD), mbank, "WP")
+```
 
 # Final result
 
-- Final result would be a table, one row per ion of a standard with retention
-  time, adduct definition, difference in concentration high/low.
+```{r, results = "asis"}
+pandoc.table(as.data.frame(mD), style = "rmarkdown", split.tables = Inf,
+             caption = "Feature to standards and massbank matches")
+```
 
+Only a few features were matched to spectra of MassBank compounds and they not
+confirm feature to standard matches except the case of feature FT0158 that
+has been matched to Betaine and adduct [M+H]+ and also the associated MS2 data
+was matched to Betaine in MassBank.
 
 # Session information
 
