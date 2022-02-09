@@ -18,19 +18,22 @@ library(BiocParallel)
 library(Spectra)
 library(RColorBrewer)
 library(MetaboAnnotation)
+library(pheatmap)
+setMSnbaseFastLoad(FALSE)
 ```
 
 ```{r general-settings, echo = FALSE}
 mix <- 1
 mix_name <- paste0("Mix", ifelse(mix < 10, paste0(0, mix), mix)) 
 IMAGE_PATH <- paste0("images/match-standards-", tolower(mix_name),"/")
+if (dir.exists(IMAGE_PATH)) unlink(IMAGE_PATH, recursive = TRUE)
 RDATA_PATH <- paste0("data/RData/match-standards-/", tolower(mix_name), "/")
 dir.create(IMAGE_PATH, showWarnings = FALSE, recursive = TRUE)
 dir.create(RDATA_PATH, showWarnings = FALSE, recursive = TRUE)
 
 # Define the mzML files *base* path (/data/massspec/mzML/ on the cluster)
 MZML_PATH <- "~/mix01/"
-# MZML_PATH <- "/data/massspec/mzML/"
+MZML_PATH <- "/data/massspec/mzML/"
 
 # Set up parallel processing using 2 cores
 if (.Platform$OS.type == "unix") {
@@ -182,7 +185,7 @@ times for the standards is shown below.
 bpc <- chromatogram(data_WP, aggregationFun = "max", msLevel = 1L,
                     mz = c(60, 900), include = "none")
 par(mfrow = c(2, 1), mar = c(0, 20, 1.5, 0.5))
-plot(bpc, peakType = "none", col = paste0(col_group[bpc$group], 80))
+plot(bpc, col = paste0(col_group[bpc$group], 80))
 legend("topright", col = col_group, lty = 1, legend = names(col_group))
 abline(v = std_dilution01$RT, lty = 2)
 par(mar = c(4.5, 20, 0, 0.5))
@@ -194,11 +197,11 @@ There is a clear difference in the signal of samples with high and low
 concentration of the standards.
 
 
-### Differnce in concentration (between high and low concentration samples)
+### Signal intensity difference
 
-We compute the t.test statistic and the related p-value for the difference in
-log2 concentration (between high and low concentration samples) for each of the
-identified features.
+We compute the difference in (log2) signals between samples with high and low
+concentration of the standards and calculate the p-value for this difference
+using the Student's t-test.
 
 ```{r}
 fVlog2 <- log2(featureValues(data_WP, value = "into",
@@ -279,21 +282,23 @@ case.
 ### Standards with matching features
 
 While for some standards a matching feature was found we still need to evaluate
-whether this matching makes sense. For each standard we thus first evaluate the
+whether this matching is correct. For each standard we thus first evaluate the
 EICs for all matching features, then we match their MS2 spectra (if available)
-against reference libraries.
+against reference libraries. To ensure correct assignment of a feature, its
+retention time and eventually related MS2 spectra, we require the following
+to be true:
 
-Annotation criteria:
-
-- 1: feature(s) was/were found with m/z matching those of adduct(s) of the
+- feature(s) was/were found with m/z matching those of adduct(s) of the 
   standard.
-- 2: signal is higher for samples with higher concentration.
-- 3: MS2 spectra matches reference library.
+- signal is higher for samples with higher concentration.
+- MS2 spectra matches reference spectra for the standard (if available).
+- MS2 spectra don't match MS2 spectra of other compounds.
 
 We next load the reference libraries we will use for the MS2 matching. These are
 HMDB and MassBank.
 
 ```{r}
+register(SerialParam())
 library(CompoundDb)
 
 cdb <- CompDb("data/CompDb.Hsapiens.HMDB.5.0.sqlite")
@@ -323,24 +328,27 @@ ions from two different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-eics <- featureChromatograms(data_WP, features = rownames(tmp))
-dr <- file.path(IMAGE_PATH, std)
-dir.create(dr, showWarnings = FALSE)
-col_sample <- col_group[eics$group]
+plot_eics <- function(x, std, tab) {
+    eics <- featureChromatograms(x, features = rownames(tab))
+    dr <- file.path(IMAGE_PATH, std)
+    dir.create(dr, showWarnings = FALSE)
+    col_sample <- col_group[eics$group]
 
-for (i in seq_len(nrow(eics))) {
-    ft <- rownames(tmp)[i]
-    fl <- file.path(dr, paste0("WP_", ft, ".png"))
-    png(fl, width = 12, height = 8, units = "cm", res = 300, pointsize = 6)
-    eic <- eics[i, ]
-    plot(eic, col = paste0(col_sample, 80),
-         peakBg = paste0(col_sample[chromPeaks(eic)[, "sample"]], 40))
-    abline(v = tmp$target_RT[1], lty = 2, col = "#00000060")
-    grid()
-    legend("topleft", c(std, tmp$adduct[i], ft))
-    legend("topright", col = col_group, legend = names(col_group), lty = 1)
-    dev.off()
+    for (i in seq_len(nrow(eics))) {
+        ft <- rownames(tab)[i]
+        fl <- file.path(dr, paste0("WP_", ft, ".png"))
+        png(fl, width = 12, height = 8, units = "cm", res = 300, pointsize = 6)
+        eic <- eics[i, ]
+        plot(eic, col = paste0(col_sample, 80),
+             peakBg = paste0(col_sample[chromPeaks(eic)[, "sample"]], 40))
+        abline(v = tab$target_RT[1], lty = 2, col = "#00000060")
+        grid()
+        legend("topleft", c(std, tab$adduct[i], ft))
+        legend("topright", col = col_group, legend = names(col_group), lty = 1)
+        dev.off()
+    }
 }
+plot_eics(data_WP, std, tmp)
 ```
 
 The EICs for the feature with the higher intensity for each of the two potential
@@ -372,7 +380,11 @@ extract_ms2 <- function(x, features) {
                           features = features)
     res <- filterIntensity(res, intensity = low_int)
     res <- res[lengths(res) > 1]
-    addProcessing(res, scale_int)
+    if (!length(res))
+        return(res)
+    res <- addProcessing(res, scale_int)
+    spectraNames(res) <- paste0(res$feature_id, "_", spectraNames(res))
+    res
 }
 
 std_ms2 <- extract_ms2(data_WP, rownames(tmp))
@@ -388,8 +400,48 @@ The MS2 spectra look rather busy with a large number of peaks. The first two
 belong to the first set of features with a retention time of about 250, the 3rd
 one to the second set of features with a retention time of ~ 200.
 
-Next we match the MS2 spectra against all reference spectra from HMDB and
-identify spectra with a similarity higher than 0.7.
+We next match the extracted MS2 spectra against the reference spectra for 
+`r std` from HMDB.
+
+```{r mix01-water-3-phosphoglyceric-acid-ms2-hmdb-heatmap, fig.path = IMAGE_PATH, fig.cap = "Similarities of MS2 spectra for selected features against reference spectra for 3-Phoshoglyceric Acid from HMDB."}
+hmdb_id <- std_dilution$HMDB.code[std_dilution$name == std]
+hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
+
+sim <- compareSpectra(std_ms2, hmdb, ppm = 40)
+
+ann <- data.frame(feature_id = std_ms2$feature_id, rt = rtime(std_ms2))
+rownames(ann) <- rownames(sim)
+
+pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
+         color = colorRampPalette((brewer.pal(n = 7, name = "YlOrRd")))(100))
+```
+
+The MS2 spectra for FT1539 match those of 3-Phosphoglyceric Acid, albeit with a
+low similarity score while the MS2 spectrum for FT1793 does not match the
+reference spectra.
+
+The first two spectra match MS2 spectra for `r std` from HMDB with a similarity
+of about 0.4. These are shown in the mirror plots below.
+
+```{r mix01-water-3-phosphoglyceric-acid-mirror-hmdb, echo = FALSE, fig.cap = "Mirror plots"}
+idx <- which(sim > 0.3, arr.ind = TRUE)
+
+par(mfrow = c(floor(sqrt(nrow(idx))), ceiling(sqrt(nrow(idx)))))
+for (i in seq_len(nrow(idx))) {
+    a <- idx[i, 1L]
+    b <- idx[i, 2L]
+    plotSpectraMirror(std_ms2[a], addProcessing(hmdb[b], scale_int),
+                      main = paste(std_ms2$feature_id[a], hmdb$name[b]))
+}
+```
+
+Although not perfect, it seems that feature FT1539 contains signal from an ion
+of `r std`.
+
+In addition we match the MS2 spectra for the matched features against all
+spectra from HMDB identifying reference spectra with a similarity larger than
+0.7. This is to ensure that no reference spectra from any other compound would
+match the extracted spectra for this feature with a higher similarity.
 
 ```{r}
 hmdb_match <- matchSpectra(
@@ -410,31 +462,6 @@ mbank_match
 
 Also for MassBank no match was found.
 
-As an alternative, we calculate also pairwise differences of the 3 experimental
-spectra against the MS2 spectra for `r std` from HMDB.
-
-```{r}
-hmdb_id <- std_dilution$HMDB.code[std_dilution$name == std]
-hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-
-sim <- compareSpectra(std_ms2, hmdb, ppm = 40)
-sim
-```
-
-The first two spectra match MS2 spectra for `r std` from HMDB with a similarity
-of about 0.4. These are shown in the mirror plots below.
-
-```{r mix01-water-3-phosphoglyceric-acid-mirror-hmdb, echo = FALSE, fig.cap = "Mirror plots"}
-par(mfrow = c(2, 2))
-plotSpectraMirror(std_ms2[1L], hmdb[8L], ppm = 40)
-plotSpectraMirror(std_ms2[1L], hmdb[14L], ppm = 40)
-plotSpectraMirror(std_ms2[2L], hmdb[8L], ppm = 40)
-plotSpectraMirror(std_ms2[2L], hmdb[14L], ppm = 40)
-```
-
-Although not perfect, it seems that feature 
-`r paste0(unique(std_ms2[1:2]$feature_id), collapse = ", ")` contains signal for
-an ion from `r std`.
 
 
 #### Acetylhistidine
@@ -460,24 +487,7 @@ from 4 different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-eics <- featureChromatograms(data_WP, features = rownames(tmp))
-dr <- file.path(IMAGE_PATH, std)
-dir.create(dr, showWarnings = FALSE)
-col_sample <- col_group[eics$group]
-
-for (i in seq_len(nrow(eics))) {
-    ft <- rownames(tmp)[i]
-    fl <- file.path(dr, paste0("WP_", ft, ".png"))
-    png(fl, width = 12, height = 8, units = "cm", res = 300, pointsize = 6)
-    eic <- eics[i, ]
-    plot(eic, col = paste0(col_sample, 80),
-         peakBg = paste0(col_sample[chromPeaks(eic)[, "sample"]], 40))
-    abline(v = tmp$target_RT[1], lty = 2, col = "#00000060")
-    grid()
-    legend("topleft", c(std, tmp$adduct[i], ft))
-    legend("topright", col = col_group, legend = names(col_group), lty = 1)
-    dev.off()
-}
+plot_eics(data_WP, std, tmp)
 ```
 
 Again, we show a representative EIC for each *feature group* (ordered by
@@ -520,7 +530,20 @@ pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
 ```
 
 The MS2 spectra for FT1643 have the highest similarity against MS2 spectra from
-`r std`.
+`r std`. Mirror plots for the best matching spectra are shown below.
+
+```{r mix01-water-acetylhistidine-mirror-hmdb, echo = FALSE, fig.cap = "Mirror plots"}
+idx <- which(sim > 0.6, arr.ind = TRUE)
+
+par(mfrow = c(floor(sqrt(nrow(idx))), ceiling(sqrt(nrow(idx)))))
+for (i in seq_len(nrow(idx))) {
+    a <- idx[i, 1L]
+    b <- idx[i, 2L]
+    plotSpectraMirror(std_ms2[a], addProcessing(hmdb[b], scale_int),
+                      main = paste(std_ms2$feature_id[a], hmdb$name[b]))
+}
+```
+
 
 In addition we match the MS2 spectra for the matched features against all
 spectra from HMDB.
@@ -545,12 +568,162 @@ for that compound, even if their MS2 spectra match also reference spectra from
 other compounds.
 
 
+#### Betaine
+
+```{r, echo = FALSE}
+std <- "Betaine"
+```
+
+The table below lists all features that were matched to one of the adducts of 
+`r print(std)` that have in addition also on average a twice as high signal in
+samples with higher concentrations than in those with lower concentrations.
+
+```{r, results = "asis", echo = FALSE}
+tmp <- as.data.frame(mD[mD$target_name == std, ])
+tmp <- tmp[order(tmp$rtmed), ]
+pandoc.table(tmp, style = "rmarkdown",
+             split.tables = Inf, caption = "Feature to standards matches.")
+```
+
+Based on their retention time, it seems that these features represent signal
+from several different compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+```{r, echo = FALSE}
+plot_eics(data_WP, std, tab = tmp)
+```
+
+Again, we show a representative EIC for each *feature group*.
+
+![](images/match-standards-mix01/Betaine/WP_FT0544.png)
+
+![](images/match-standards-mix01/Betaine/WP_FT0878.png)
+
+![](images/match-standards-mix01/Betaine/WP_FT0883.png)
+
+The signal from the first feature above looks OK while the others are rather
+noisy.
+
+We next extract the MS2 spectra for all these features and match them against
+the reference spectra for `r std` from HMDB.
+
+```{r mix01-water-betaine-ms2, fig.path = IMAGE_PATH, fig.cap = "MS2 spectra for features matched to betaine.", echo = FALSE}
+std_ms2 <- extract_ms2(data_WP, rownames(tmp))
+
+plotSpectra(std_ms2)
+```
+
+We have thus only MS2 spectra for features with a retention time around 160 or
+180 seconds. Next we compare them against the reference spectra for `r std` from
+HMDB. The results are shown in the heatmap below.
+
+```{r mix01-water-betaine-ms2-hmdb-heatmap, fig.path = IMAGE_PATH, fig.cap = "Similarities of MS2 spectra for selected features against reference spectra for Betaine from HMDB."}
+hmdb_id <- std_dilution$HMDB.code[std_dilution$name == std]
+hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
+
+sim <- compareSpectra(std_ms2, hmdb, ppm = 40)
+
+ann <- data.frame(feature_id = std_ms2$feature_id, rt = rtime(std_ms2))
+rownames(ann) <- rownames(sim)
+
+library(pheatmap)
+pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
+         color = colorRampPalette((brewer.pal(n = 7, name = "YlOrRd")))(100))
+```
+
+Only the MS2 spectra for FT0544 (with a retention time of 162 match the
+reference spectra from betaine.
+
+```{r mix01-water-betaine-mirror-hmdb, echo = FALSE, fig.cap = "Mirror plots"}
+idx <- which(sim > 0.6, arr.ind = TRUE)
+
+par(mfrow = c(floor(sqrt(nrow(idx))), ceiling(sqrt(nrow(idx)))))
+for (i in seq_len(nrow(idx))) {
+    a <- idx[i, 1L]
+    b <- idx[i, 2L]
+    plotSpectraMirror(std_ms2[a], addProcessing(hmdb[b], scale_int),
+                      main = paste(std_ms2$feature_id[a], hmdb$name[b]))
+}
+```
+
+In addition we match the MS2 spectra for the matched features against all
+spectra from HMDB.
+
+```{r}
+hmdb_match <- matchSpectra(
+    std_ms2, Spectra(cdb),
+    param = CompareSpectraParam(ppm = 50, requirePrecursor = FALSE))
+hmdb_match
+```
+
+```{r}
+hmdb_match <- hmdb_match[whichQuery(hmdb_match)]
+
+tab <- spectraData(hmdb_match, c("feature_id", "rtime", "target_name", "score"))
+pandoc.table(as.data.frame(tab), style = "rmarkdown", split.table = Inf)
+```
+
+Thus, the MS2 spectra for feature FT0544 clearly match Betaine.
+
+
+#### C3 Carnitine
+
+```{r, echo = FALSE}
+std <- "C3 Carnitine"
+```
+
+The table below lists all features that were matched to one of the adducts of 
+`r print(std)` that have in addition also on average a twice as high signal in
+samples with higher concentrations than in those with lower concentrations.
+
+```{r, results = "asis", echo = FALSE}
+tmp <- as.data.frame(mD[mD$target_name == std, ])
+tmp <- tmp[order(tmp$rtmed), ]
+pandoc.table(tmp, style = "rmarkdown",
+             split.tables = Inf, caption = "Feature to standards matches.")
+```
+
+Based on their retention time, it seems that these features represent signal
+from two different compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+```{r, echo = FALSE}
+plot_eics(data_WP, std, tab = tmp)
+```
+
+Again, we show a representative EIC for each *feature group*.
+
+![](images/match-standards-mix01/C3 Carnitine/WP_FT1691.png)
+
+![](images/match-standards-mix01/C3 Carnitine/WP_FT1886.png)
+
+![](images/match-standards-mix01/C3 Carnitine/WP_FT2112.png)
+
+We next extract the MS2 spectra for all these features and match them against
+the reference spectra for `r std` from HMDB.
+
+```{r mix01-water-c3-carnitine-ms2, fig.path = IMAGE_PATH, fig.cap = "MS2 spectra for features matched to C3 Carnitine.", echo = FALSE}
+std_ms2 <- extract_ms2(data_WP, rownames(tmp))
+if (length(std_ms2)) {
+    plotSpectra(std_ms2)
+} else {
+    plot(3, 3, pch = NA, xaxt = "n", yaxt = "n")
+    text(3, 3, labels = "No Spectra")
+}
+```
+
+Unfortunately we don't have any MS2 spectra available.
+
+
+
 
 
 ### Standards without any matching feature
 
 
-## Alternative
+## Alternative?
 
 Sort of a reverse approach. Instead of starting with MS1 we start with MS2.
 
@@ -561,90 +734,6 @@ Sort of a reverse approach. Instead of starting with MS1 we start with MS2.
 - If features also exhibit a difference between concentrations AND the m/z
   matches those of an adduct of the standard -> Bingo.
 
-### A subsection for each of these standards to investigate why no match was found for them?
-
-### Plot features EICs
-
-We plot the EICs of the features that were matched to standards
-```{r}
-dr <- paste0(IMAGE_PATH, "eic_features_WP")
-dir.create(dr, showWarnings = FALSE, recursive = TRUE)
-for (ft in rownames(mD)) {
-  eics <- featureChromatograms(data_WP, features = ft, expandRt = 2, filled = TRUE)
-  png(paste0(IMAGE_PATH, "eic_features_WP/", ft, ".png"),
-      width = 10, height = 8, units = "cm", res = 300, pointsize = 6)
-  plotChromatogramsOverlay(eics) #or normalize(eics)
-  dev.off()
-}
-```
-
-### Annotating features using MS2 data
-
-Next we extract for all matched features potentially measured MS2 spectra
-and match them against MassBank in order to annotate them. We first extract 
-spectra from MassBank database.
-
-```{r}
-library(RMariaDB)
-library(MsBackendMassbank)
-
-co <- dbConnect(MariaDB(), user = "avwork", dbname = "MassBank",
-                 host = "localhost", pass = "massbank")
-mbank <- Spectra(co, source = MsBackendMassbankSql())
-mbank <- setBackend(mbank, MsBackendDataFrame()) # breaks with parallel processing
-```
-
-```{r}
-data_WP_ms2<- filterFile(data_WP, file = which(data_WP$mode != "FS"), keepFeatures = TRUE)
-```
-
-The following function (to avoid code repetition) takes the ids of
-features `f_id`, checks which ones are also available for the given MS2 data
-`data_ms2`. For these it extracts the corresponding spectra and matches them
-against a reference database `mbank`. It returns a vector. Each entry contains
-for a given feature the compound names of the spectra in `mbank` that were
-matched to the spectra of the feature.
-
-```{r}
-f_ms2_mtch <- function(data_ms2, f_id, mbank, case, recompute = FALSE) {
-  ids <- intersect(rownames(featureDefinitions(data_ms2)), f_id)
-  f_ms2 <- featureSpectra(data_ms2, msLevel = 2L, return.type = "Spectra",
-                          ppm = 10, features = ids)
-  fn <- paste0(RDATA_PATH, "comp_", case, "_ms2_MassBank.RData")
-  if(!file.exists(fn) | recompute) {
-    mtches <- matchSpectra(f_ms2, mbank,
-                           param = CompareSpectraParam(requirePrecursor = FALSE,
-                                                       ppm = 10))
-    save(mtches, file = fn)
-  }
-  else load(fn)
-  mtches <- mtches[whichQuery(mtches)]
-  tmp <- aggregate(mtches$target_compound_name,
-                   by = list(feature = mtches$feature_id),
-                   function(x) paste0(unique(x), collapse = ";"))
-  #tmp[tmp[, 2] == ""] <- NA
-  res <- rep(NA, length(f_id))
-  res[match(tmp[, 1], f_id)] <- tmp[, 2]
-  res
-}
-```
-
-
-```{r}
-mD$ms2_matches <- f_ms2_mtch(data_WP_ms2, rownames(mD), mbank, "WP")
-```
-
-# Final result
-
-```{r, results = "asis"}
-pandoc.table(as.data.frame(mD), style = "rmarkdown", split.tables = Inf,
-             caption = "Feature to standards and massbank matches")
-```
-
-Only a few features were matched to spectra of MassBank compounds and they not
-confirm feature to standard matches except the case of feature FT0158 that
-has been matched to Betaine and adduct [M+H]+ and also the associated MS2 data
-was matched to Betaine in MassBank.
 
 # Session information
 
