@@ -33,7 +33,7 @@ dir.create(RDATA_PATH, showWarnings = FALSE, recursive = TRUE)
 
 # Define the mzML files *base* path (/data/massspec/mzML/ on the cluster)
 MZML_PATH <- "~/mix01/"
-MZML_PATH <- "/data/massspec/mzML/"
+# MZML_PATH <- "/data/massspec/mzML/"
 
 # Set up parallel processing using 2 cores
 if (.Platform$OS.type == "unix") {
@@ -253,8 +253,8 @@ pandoc.table(as.data.frame(mD), style = "rmarkdown",
 ```
 
 For most of the standards (`r length(unique(mD$target_name))` out of 
-`r nrow(std_dilution01)`) in `r mix` at least one feature was found matching the
-standards adducts' m/z. 
+`r nrow(std_dilution01)`) in mix `r mix` at least one feature was found
+matching the standards adducts' m/z. 
 
 Below we plot the BPC indicating the position of the assigned features.
 
@@ -716,12 +716,697 @@ if (length(std_ms2)) {
 
 Unfortunately we don't have any MS2 spectra available.
 
+#### CDP
+
+```{r, echo = FALSE}
+std <- "CDP"
+```
+
+The table below lists all features that were matched to one of the adducts of 
+`r print(std)` that have in addition also on average a twice as high signal in
+samples with higher concentrations than in those with lower concentrations.
+
+```{r, results = "asis", echo = FALSE}
+tmp <- as.data.frame(mD[mD$target_name == std, ])
+tmp <- tmp[order(tmp$rtmed), ]
+pandoc.table(tmp, style = "rmarkdown",
+             split.tables = Inf, caption = "Feature to standards matches")
+```
+
+Based on their retention time, it seems that these features represent signal
+from several (7/8?) different compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+```{r, echo = FALSE}
+plot_eics(data_WP, std, tmp)
+```
+
+Again, we show some EICs for feature that might be associated with `r std`.
+
+<!-- I'm not sure the following plots are the best ones. What would be 
+some indications that an EICs might be from the "real" compound?
+- high difference between high and low concentration? (Do we know how much more
+  of the standard is put in the high concentration sample?)
+- similar shape for low and high? Shape with a clear peak?
+- if there are only low peaks then it's not from the "real" compound? Vice versa
+  it might be that they low curves are not there because to low to be detected?
+-->
+![](images/match-standards-mix01/CDP/WP_FT4769.png)
+
+![](images/match-standards-mix01/CDP/WP_FT4256.png)
+
+![](images/match-standards-mix01/CDP/WP_FT4471.png)
+
+![](images/match-standards-mix01/CDP/WP_FT4472.png)
+We next extract the MS2 spectra for all these features and match them against
+the reference spectra for `r std` from HMDB.
+
+```{r mix01-water-CDP-ms2, fig.path = IMAGE_PATH, fig.cap = "MS2 spectra for features matched to CDP", echo = FALSE}
+std_ms2 <- extract_ms2(data_WP, rownames(tmp))
+
+if (length(std_ms2)) {
+    plotSpectra(std_ms2)
+} else {
+    plot(3, 3, pch = NA, xaxt = "n", yaxt = "n")
+    text(3, 3, labels = "No Spectra")
+}
+```
+
+We haven't found any MS2 spectra for the features features matched to `r std`.
+
+#### Creatine
+
+```{r, echo = FALSE}
+std <- "Creatine"
+```
+
+The table below lists all features that were matched to one of the adducts of 
+`r print(std)` that have in addition also on average a twice as high signal in
+samples with higher concentrations than in those with lower concentrations.
+
+```{r, results = "asis", echo = FALSE}
+tmp <- as.data.frame(mD[mD$target_name == std, ])
+tmp <- tmp[order(tmp$rtmed), ]
+pandoc.table(tmp, style = "rmarkdown",
+             split.tables = Inf, caption = "Feature to standards matches")
+```
+
+Based on their retention time, it seems that these features represent signal
+from 6 different compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+```{r, echo = FALSE}
+plot_eics(data_WP, std, tmp)
+```
+
+Again, we show some EICs for feature that might be associated with `r std`.
+
+![](images/match-standards-mix01/Creatine/WP_FT0479.png)
+
+![](images/match-standards-mix01/Creatine/WP_FT0480.png)
+
+![](images/match-standards-mix01/Creatine/WP_FT0752.png)
+<!-- what could be behind having low and high shifted in retention time axis? -->
+
+We next extract the MS2 spectra for all these features and match them against
+the reference spectra for `r std` from HMDB.
+
+```{r mix01-water-creatine-ms2, fig.path = IMAGE_PATH, fig.cap = "MS2 spectra for features matched to creatine", echo = FALSE}
+std_ms2 <- extract_ms2(data_WP, rownames(tmp))
+
+plotSpectra(std_ms2)
+```
+
+We have thus MS2 spectra for features with a retention time around 67 and 177.
+Next we compare them against the reference spectra for `r std` from HMDB.
+The results are shown in the heatmap below.
+
+```{r mix01-water-creatine-ms2-hmdb-heatmap, fig.path = IMAGE_PATH, fig.cap = "Similarities of MS2 spectra for selected features against reference spectra for creatine from HMDB."}
+hmdb_id <- std_dilution$HMDB.code[std_dilution$name == std]
+hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
+
+sim <- compareSpectra(std_ms2, hmdb, ppm = 40)
+
+ann <- data.frame(feature_id = std_ms2$feature_id, rt = rtime(std_ms2))
+rownames(ann) <- rownames(sim)
+
+library(pheatmap)
+pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
+         color = colorRampPalette((brewer.pal(n = 7, name = "YlOrRd")))(100))
+```
+
+The MS2 spectra for FT0752 have the highest similarity against MS2 spectra from
+`r std`. Mirror plots for the best matching spectra are shown below.
+
+```{r mix01-water-creatine-mirror-hmdb, echo = FALSE, fig.cap = "Mirror plots"}
+idx <- which(sim > 0.6, arr.ind = TRUE)
+
+par(mfrow = c(floor(sqrt(nrow(idx))), ceiling(sqrt(nrow(idx)))))
+for (i in seq_len(nrow(idx))) {
+    a <- idx[i, 1L]
+    b <- idx[i, 2L]
+    plotSpectraMirror(std_ms2[a], addProcessing(hmdb[b], scale_int),
+                      main = paste(std_ms2$feature_id[a], hmdb$name[b]))
+}
+```
 
 
+In addition we match the MS2 spectra for the matched features against all
+spectra from HMDB.
 
+```{r}
+hmdb_match <- matchSpectra(
+    std_ms2, Spectra(cdb),
+    param = CompareSpectraParam(ppm = 50, requirePrecursor = FALSE))
+hmdb_match
+```
+
+```{r}
+hmdb_match <- hmdb_match[whichQuery(hmdb_match)]
+
+tab <- spectraData(hmdb_match, c("feature_id", "rtime", "target_name", "score"))
+pandoc.table(as.data.frame(tab), style = "rmarkdown", split.table = Inf)
+```
+
+The feature with a retention time around 177 seconds (FT0752) seem to represent
+signal from `r std` (being only matched to `r std` and with a high score).
+
+#### Dimethylglycine
+
+```{r, echo = FALSE}
+std <- "Dimethylglycine"
+```
+
+The table below lists all features that were matched to one of the adducts of 
+`r print(std)` that have in addition also on average a twice as high signal in
+samples with higher concentrations than in those with lower concentrations.
+
+```{r, results = "asis", echo = FALSE}
+tmp <- as.data.frame(mD[mD$target_name == std, ])
+tmp <- tmp[order(tmp$rtmed), ]
+pandoc.table(tmp, style = "rmarkdown",
+             split.tables = Inf, caption = "Feature to standards matches")
+```
+
+Based on their retention time, it seems that these features represent signal
+from 4 different compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+```{r, echo = FALSE}
+plot_eics(data_WP, std, tmp)
+```
+
+We show a representative EIC for each *feature group* (ordered by
+retention time).                                                                                                                                                                                                                                                                                                                                                        
+![](images/match-standards-mix01/Dimethylglycine/WP_FT0589.png)
+
+![](images/match-standards-mix01/Dimethylglycine/WP_FT0331.png)
+
+![](images/match-standards-mix01/Dimethylglycine/WP_FT0651.png)
+
+![](images/match-standards-mix01/Dimethylglycine/WP_FT0332.png)
+
+<!-- FT0331 and FT0650 exhibit only low concentration signal so maybe they
+are not from `r std`. In FT0589 and FT0651 only high concentration signal
+visible -->
+We next extract the MS2 spectra for all these features and match them against
+the reference spectra for `r std` from HMDB.
+
+```{r mix01-water-dimethylglycine-ms2, fig.path = IMAGE_PATH, fig.cap = "MS2 spectra for features matched to dimethylglycine", echo = FALSE}
+std_ms2 <- extract_ms2(data_WP, rownames(tmp))
+if (length(std_ms2)) {
+    plotSpectra(std_ms2)
+} else {
+    plot(3, 3, pch = NA, xaxt = "n", yaxt = "n")
+    text(3, 3, labels = "No Spectra")
+}
+```
+
+Unfortunately no MS2 spectra is available.
+
+
+#### Glycerol
+
+```{r, echo = FALSE}
+std <- "Glycerol"
+```
+
+The table below lists all features that were matched to one of the adducts of 
+`r print(std)` that have in addition also on average a twice as high signal in
+samples with higher concentrations than in those with lower concentrations.
+
+```{r, results = "asis", echo = FALSE}
+tmp <- as.data.frame(mD[mD$target_name == std, ])
+tmp <- tmp[order(tmp$rtmed), ]
+pandoc.table(tmp, style = "rmarkdown",
+             split.tables = Inf, caption = "Feature to standards matches")
+```
+
+Based on their retention time, it seems that these features represent signal
+from 6 different compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+```{r, echo = FALSE}
+plot_eics(data_WP, std, tmp)
+```
+
+We show some of the EICs we obtained
+
+![](images/match-standards-mix01/Glycerol/WP_FT0725.png)
+
+![](images/match-standards-mix01/Glycerol/WP_FT0726.png)
+
+![](images/match-standards-mix01/Glycerol/WP_FT0723.png)
+<!-- Maybe no EIC look really nice -->
+We next extract the MS2 spectra for all these features and match them against
+the reference spectra for `r std` from HMDB.
+
+```{r mix01-water-glycerol-ms2, fig.path = IMAGE_PATH, fig.cap = "MS2 spectra for features matched to glycerol", echo = FALSE}
+std_ms2 <- extract_ms2(data_WP, rownames(tmp))
+if (length(std_ms2)) {
+    plotSpectra(std_ms2)
+} else {
+    plot(3, 3, pch = NA, xaxt = "n", yaxt = "n")
+    text(3, 3, labels = "No Spectra")
+}
+```
+
+Unfortunately no MS2 spectra is available.
+
+#### L-Glutamic Acid
+
+```{r, echo = FALSE}
+std <- "L-Glutamic Acid"
+```
+
+The table below lists all features that were matched to one of the adducts of 
+`r print(std)` that have in addition also on average a twice as high signal in
+samples with higher concentrations than in those with lower concentrations.
+
+```{r, results = "asis", echo = FALSE}
+tmp <- as.data.frame(mD[mD$target_name == std, ])
+tmp <- tmp[order(tmp$rtmed), ]
+pandoc.table(tmp, style = "rmarkdown",
+             split.tables = Inf, caption = "Feature to standards matches")
+```
+
+Based on their retention time, it seems that these features represent signal
+from several different compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+```{r, echo = FALSE}
+plot_eics(data_WP, std, tmp)
+```
+
+Again, we show a few EICs that might be associated to `r std`.
+
+![](images/match-standards-mix01/L-Glutamic Acid/WP_FT0694.png)
+
+![](images/match-standards-mix01/L-Glutamic Acid/WP_FT0693.png)
+
+![](images/match-standards-mix01/L-Glutamic Acid/WP_FT1018.png)
+
+![](images/match-standards-mix01/L-Glutamic Acid/WP_FT1020.png)
+
+We next extract the MS2 spectra for all these features and match them against
+the reference spectra for `r std` from HMDB.
+
+```{r mix01-water-L-Glutamic-Acid-ms2, fig.path = IMAGE_PATH, fig.cap = "MS2 spectra for features matched to L-Glutamic Acid.", echo = FALSE}
+std_ms2 <- extract_ms2(data_WP, rownames(tmp))
+if (length(std_ms2)) {
+    plotSpectra(std_ms2)
+} else {
+    plot(3, 3, pch = NA, xaxt = "n", yaxt = "n")
+    text(3, 3, labels = "No Spectra")
+}
+```
+
+We have thus MS2 spectra for features shown above plus FT1307 (second and
+third plot).
+Next we compare them against the reference spectra for `r std` from HMDB. The
+results are shown in the heatmap below.
+
+```{r mix01-water-L-Glutamic-Acid-ms2-hmdb-heatmap, fig.path = IMAGE_PATH, fig.cap = "Similarities of MS2 spectra for selected features against reference spectra for L-Glutamic Acid from HMDB."}
+hmdb_id <- std_dilution$HMDB.code[std_dilution$name == std]
+hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
+
+sim <- compareSpectra(std_ms2, hmdb, ppm = 40)
+
+ann <- data.frame(feature_id = std_ms2$feature_id, rt = rtime(std_ms2))
+rownames(ann) <- rownames(sim)
+
+library(pheatmap)
+pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
+         color = colorRampPalette((brewer.pal(n = 7, name = "YlOrRd")))(100))
+```
+
+The MS2 spectra for FT1018, FT1020, FT0693, FT0694 have quite high similarity
+against MS2 spectra from `r std`. Mirror plots for the best matching spectra
+(similarity higher than 0.9) are shown below.
+
+```{r mix01-water-L-Glutamic-Acid-mirror-hmdb, echo = FALSE, fig.cap = "Mirror plots"}
+idx <- which(sim > 0.9, arr.ind = TRUE)
+
+par(mfrow = c(floor(sqrt(nrow(idx))), ceiling(sqrt(nrow(idx)))))
+for (i in seq_len(nrow(idx))) {
+  a <- idx[i, 1L]
+  b <- idx[i, 2L]
+  plotSpectraMirror(std_ms2[a], addProcessing(hmdb[b], scale_int),
+                    main = paste(std_ms2$feature_id[a], hmdb$name[b]))
+}
+```
+
+
+In addition we match the MS2 spectra for the matched features against all
+spectra from HMDB.
+
+```{r}
+hmdb_match <- matchSpectra(
+  std_ms2, Spectra(cdb),
+  param = CompareSpectraParam(ppm = 50, requirePrecursor = FALSE))
+hmdb_match
+```
+
+```{r}
+hmdb_match <- hmdb_match[whichQuery(hmdb_match)]
+
+tab <- spectraData(hmdb_match, c("feature_id", "rtime", "target_name", "score"))
+pandoc.table(as.data.frame(tab), style = "rmarkdown", split.table = Inf)
+```
+
+MS2 spectra associated to feature FT0694, FT0693, FT1018, FT1020 have been
+matched to reference spectra from L-Glutamine but also from other compounds with
+relatively high scores in both cases.
+
+#### Myo-Inositol
+
+```{r, echo = FALSE}
+std <- "Myo-Inositol"
+```
+
+The table below lists all features that were matched to one of the adducts of 
+`r print(std)` that have in addition also on average a twice as high signal in
+samples with higher concentrations than in those with lower concentrations.
+
+```{r, results = "asis", echo = FALSE}
+tmp <- as.data.frame(mD[mD$target_name == std, ])
+tmp <- tmp[order(tmp$rtmed), ]
+pandoc.table(tmp, style = "rmarkdown",
+             split.tables = Inf, caption = "Feature to standards matches")
+```
+
+Based on their retention time, it seems that these features represent signal
+from 6 different compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+```{r, echo = FALSE}
+plot_eics(data_WP, std, tmp)
+```
+
+We show some EICs that might be associated `r std`.
+
+![](images/match-standards-mix01/Myo-Inositol/WP_FT1450.png)
+
+![](images/match-standards-mix01/Myo-Inositol/WP_FT1733.png)
+
+![](images/match-standards-mix01/Myo-Inositol/WP_FT1902.png)
+
+We next extract the MS2 spectra for all these features and match them against
+the reference spectra for `r std` from HMDB.
+
+```{r mix01-water-myo-inositol-ms2, fig.path = IMAGE_PATH, fig.cap = "MS2 spectra for features matched to myo-inositol.", echo = FALSE}
+std_ms2 <- extract_ms2(data_WP, rownames(tmp))
+if (length(std_ms2)) {
+    plotSpectra(std_ms2)
+} else {
+    plot(3, 3, pch = NA, xaxt = "n", yaxt = "n")
+    text(3, 3, labels = "No Spectra")
+}
+```
+
+We have thus MS2 spectra for each set of features. Next we compare them against
+the reference spectra for `r std` from HMDB. The results are shown in the
+heatmap below.
+
+```{r mix01-water-myo-inositol-ms2-hmdb-heatmap, fig.path = IMAGE_PATH, fig.cap = "Similarities of MS2 spectra for selected features against reference spectra for myo-inositol from HMDB."}
+hmdb_id <- std_dilution$HMDB.code[std_dilution$name == std]
+hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
+
+sim <- compareSpectra(std_ms2, hmdb, ppm = 40)
+
+ann <- data.frame(feature_id = std_ms2$feature_id, rt = rtime(std_ms2))
+rownames(ann) <- rownames(sim)
+
+library(pheatmap)
+pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
+         color = colorRampPalette((brewer.pal(n = 7, name = "YlOrRd")))(100))
+```
+
+The MS2 spectra for FT1450 have a high similarity against some MS2 spectra from
+`r std`. Mirror plots for the best matching spectra are shown below.
+
+```{r mix01-water-myo-inositol-mirror-hmdb, echo = FALSE, fig.cap = "Mirror plots"}
+idx <- which(sim > 0.7, arr.ind = TRUE)
+
+par(mfrow = c(floor(sqrt(nrow(idx))), ceiling(sqrt(nrow(idx)))))
+for (i in seq_len(nrow(idx))) {
+  a <- idx[i, 1L]
+  b <- idx[i, 2L]
+  plotSpectraMirror(std_ms2[a], addProcessing(hmdb[b], scale_int),
+                    main = paste(std_ms2$feature_id[a], hmdb$name[b]))
+}
+```
+
+
+In addition we match the MS2 spectra for the matched features against all
+spectra from HMDB.
+
+```{r}
+hmdb_match <- matchSpectra(
+  std_ms2, Spectra(cdb),
+  param = CompareSpectraParam(ppm = 50, requirePrecursor = FALSE))
+hmdb_match
+```
+
+```{r}
+hmdb_match <- hmdb_match[whichQuery(hmdb_match)]
+
+tab <- spectraData(hmdb_match, c("feature_id", "rtime", "target_name", "score"))
+pandoc.table(as.data.frame(tab), style = "rmarkdown", split.table = Inf)
+```
+
+MS2 spectra from FT1450 are matched to `r std` and to other compounds as well
+(1,2-Dimethoxybenzene, L-Quebrachitol) but generally with lower scores.
+
+#### Pyruvic Acid
+
+```{r, echo = FALSE}
+std <- "Pyruvic Acid"
+```
+
+The table below lists all features that were matched to one of the adducts of 
+`r print(std)` that have in addition also on average a twice as high signal in
+samples with higher concentrations than in those with lower concentrations.
+
+```{r, results = "asis", echo = FALSE}
+tmp <- as.data.frame(mD[mD$target_name == std, ])
+tmp <- tmp[order(tmp$rtmed), ]
+pandoc.table(tmp, style = "rmarkdown",
+             split.tables = Inf, caption = "Feature to standards matches")
+```
+
+Only FT0348 was matched to `r std`.
+
+We next plot the EIC for the this feature and show it below.
+
+```{r, echo = FALSE}
+plot_eics(data_WP, std, tmp)
+```
+
+![](images/match-standards-mix01/Pyruvic Acid/WP_FT0348.png)
+
+Maybe FT0348 not represent signal from `r std`. 
+We next look if there are MS2 spectra associated to this feature but we don't
+find any.
+
+```{r mix01-water-pyruvic-acid-ms2, fig.path = IMAGE_PATH, fig.cap = "MS2 spectra for features matched to pyruvic-acid", echo = FALSE}
+std_ms2 <- extract_ms2(data_WP, rownames(tmp))
+if (length(std_ms2)) {
+    plotSpectra(std_ms2)
+} else {
+    plot(3, 3, pch = NA, xaxt = "n", yaxt = "n")
+    text(3, 3, labels = "No Spectra")
+}
+```
+
+#### Suberic Acid
+
+```{r, echo = FALSE}
+std <- "Suberic Acid"
+```
+
+The table below lists all features that were matched to one of the adducts of 
+`r print(std)` that have in addition also on average a twice as high signal in
+samples with higher concentrations than in those with lower concentrations.
+
+```{r, results = "asis", echo = FALSE}
+tmp <- as.data.frame(mD[mD$target_name == std, ])
+tmp <- tmp[order(tmp$rtmed), ]
+pandoc.table(tmp, style = "rmarkdown",
+             split.tables = Inf, caption = "Feature to standards matches")
+```
+
+Based on their retention time, it seems that these features represent signal
+from 3(or 4?) different compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+```{r, echo = FALSE}
+plot_eics(data_WP, std, tmp)
+```
+
+Again, we show a representative EIC for each *feature group* (ordered by
+                                                              retention time).
+
+![](images/match-standards-mix01/Suberic Acid/WP_FT1633.png)
+
+![](images/match-standards-mix01/Suberic Acid/WP_FT0400.png)
+
+![](images/match-standards-mix01/Suberic Acid/WP_FT1176.png)
+
+We next extract the MS2 spectra for all these features and match them against
+the reference spectra for `r std` from HMDB.
+
+```{r mix01-water-suberic-acid-ms2, fig.path = IMAGE_PATH, fig.cap = "MS2 spectra for features matched to suberic acid.", echo = FALSE}
+std_ms2 <- extract_ms2(data_WP, rownames(tmp))
+
+plotSpectra(std_ms2)
+```
+
+We have thus MS2 spectra for features around 37 and 140. Next we compare them
+against the reference spectra for `r std` from HMDB. The results are shown in
+the heatmap below.
+
+```{r mix01-water-suberic-acid-ms2-hmdb-heatmap, fig.path = IMAGE_PATH, fig.cap = "Similarities of MS2 spectra for selected features against reference spectra for suberic acid from HMDB."}
+hmdb_id <- std_dilution$HMDB.code[std_dilution$name == std]
+hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
+
+sim <- compareSpectra(std_ms2, hmdb, ppm = 40)
+
+ann <- data.frame(feature_id = std_ms2$feature_id, rt = rtime(std_ms2))
+rownames(ann) <- rownames(sim)
+
+library(pheatmap)
+pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
+         color = colorRampPalette((brewer.pal(n = 7, name = "YlOrRd")))(100))
+```
+
+Strangely every match has score equal to 0.
+<!--
+We look if there's any match for the MS2 spectra for the matched features
+against all spectra from HMDB.
+
+```{r}
+hmdb_match <- matchSpectra(
+  std_ms2, Spectra(cdb),
+  param = CompareSpectraParam(ppm = 50, requirePrecursor = FALSE))
+hmdb_match
+```
+
+```{r}
+hmdb_match <- hmdb_match[whichQuery(hmdb_match)]
+
+tab <- spectraData(hmdb_match, c("feature_id", "rtime", "target_name", "score"))
+pandoc.table(as.data.frame(tab), style = "rmarkdown", split.table = Inf)
+```
+-->
+
+#### Xanthine
+
+```{r, echo = FALSE}
+std <- "Xanthine"
+```
+
+The table below lists all features that were matched to one of the adducts of 
+`r print(std)` that have in addition also on average a twice as high signal in
+samples with higher concentrations than in those with lower concentrations.
+
+```{r, results = "asis", echo = FALSE}
+tmp <- as.data.frame(mD[mD$target_name == std, ])
+tmp <- tmp[order(tmp$rtmed), ]
+pandoc.table(tmp, style = "rmarkdown",
+             split.tables = Inf, caption = "Feature to standards matches")
+```
+
+Based on their retention time, it seems that these features represent signal
+from 2 different compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+```{r, echo = FALSE}
+plot_eics(data_WP, std, tmp)
+```
+
+Again, we show a representative EIC for each *feature group* (ordered by
+                                                              retention time).
+
+![](images/match-standards-mix01/Xanthine/WP_FT1102.png)
+
+![](images/match-standards-mix01/Xanthine/WP_FT1083.png)
+
+We next extract the MS2 spectra for all these features and match them against
+the reference spectra for `r std` from HMDB.
+
+```{r mix01-water-xanthine-ms2, fig.path = IMAGE_PATH, fig.cap = "MS2 spectra for features matched to xanthine", echo = FALSE}
+std_ms2 <- extract_ms2(data_WP, rownames(tmp))
+
+plotSpectra(std_ms2)
+```
+
+We have thus MS2 spectra for the set of features with retention time around 140.
+Next we compare them against the reference spectra for `r std` from HMDB. The
+results are shown in the heatmap below.
+
+```{r mix01-water-xanthine-ms2-hmdb-heatmap, fig.path = IMAGE_PATH, fig.cap = "Similarities of MS2 spectra for selected features against reference spectra for xanthine from HMDB."}
+hmdb_id <- std_dilution$HMDB.code[std_dilution$name == std]
+hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
+
+sim <- compareSpectra(std_ms2, hmdb, ppm = 40)
+
+ann <- data.frame(feature_id = std_ms2$feature_id, rt = rtime(std_ms2))
+rownames(ann) <- rownames(sim)
+
+library(pheatmap)
+pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
+         color = colorRampPalette((brewer.pal(n = 7, name = "YlOrRd")))(100))
+```
+
+The MS2 spectra for FT1102 have the highest similarity against MS2 spectra from
+`r std`. Mirror plots for the best matching spectra are shown below.
+
+```{r mix01-water-xanthine-mirror-hmdb, echo = FALSE, fig.cap = "Mirror plots"}
+idx <- which(sim > 0.6, arr.ind = TRUE)
+
+par(mfrow = c(floor(sqrt(nrow(idx))), ceiling(sqrt(nrow(idx)))))
+for (i in seq_len(nrow(idx))) {
+  a <- idx[i, 1L]
+  b <- idx[i, 2L]
+  plotSpectraMirror(std_ms2[a], addProcessing(hmdb[b], scale_int),
+                    main = paste(std_ms2$feature_id[a], hmdb$name[b]))
+}
+```
+
+
+In addition we match the MS2 spectra for the matched features against all
+spectra from HMDB.
+
+```{r}
+hmdb_match <- matchSpectra(
+  std_ms2, Spectra(cdb),
+  param = CompareSpectraParam(ppm = 50, requirePrecursor = FALSE))
+hmdb_match
+```
+
+```{r}
+hmdb_match <- hmdb_match[whichQuery(hmdb_match)]
+
+tab <- spectraData(hmdb_match, c("feature_id", "rtime", "target_name", "score"))
+pandoc.table(as.data.frame(tab), style = "rmarkdown", split.table = Inf)
+```
+
+MS2 spectra from FT1102 are assigned also to oxypurinol besides xanthine with
+similar (or slightly better) scores.
 
 ### Standards without any matching feature
 
+#### propionic acid
+#### Uric acid
 
 ## Alternative?
 
