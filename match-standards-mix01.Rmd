@@ -228,7 +228,7 @@ ttest <- t(apply(fVlog2, 1, function(x) {
 We now identify all features matching likely adducts of the standards.
 
 ```{r}
-adducts <- c("[M]+", "[M+H]+", "[M+2H]2+", "[M+Na]+", "[M+K]+", "[M+NH4]+",
+adducts <- c("[M+H]+", "[M+2H]2+", "[M+Na]+", "[M+K]+", "[M+NH4]+",
              "[M+H-H2O]+", "[M+H+Na]2+", "[M+2Na]2+", "[M+H-NH3]+")
 prm <- Mass2MzParam(adducts = adducts, ppm = 30)
 fmat <- c(featureDefinitions(data_WP), ttest)
@@ -248,8 +248,6 @@ mD <- matchedData(mtchs_sub, columns = c("mzmed", "ppm_error", "rtmed",
                                          "high_low_diff", "pvalue"))
 mD <- mD[-which(mD$high_low_diff < 1), ]
 mD <- mD[order(mD$target_name), ]
-pandoc.table(as.data.frame(mD), style = "rmarkdown",
-             split.tables = Inf, caption = "Feature to standards matches")
 ```
 
 For most of the standards (`r length(unique(mD$target_name))` out of 
@@ -462,8 +460,6 @@ mbank_match
 
 Also for MassBank no match was found.
 
-
-
 #### Acetylhistidine
 
 ```{r, echo = FALSE}
@@ -567,7 +563,6 @@ while those with a retention time of about 180 seconds seem to represent signal
 for that compound, even if their MS2 spectra match also reference spectra from
 other compounds.
 
-
 #### Betaine
 
 ```{r, echo = FALSE}
@@ -666,6 +661,9 @@ pandoc.table(as.data.frame(tab), style = "rmarkdown", split.table = Inf)
 
 Thus, the MS2 spectra for feature FT0544 clearly match Betaine.
 
+```{r}
+summary_table <- rbind(summary_table, tmp["FT0544", ])
+```
 
 #### C3 Carnitine
 
@@ -744,14 +742,6 @@ plot_eics(data_WP, std, tmp, "WP")
 
 Again, we show some EICs for feature that might be associated with `r std`.
 
-<!-- I'm not sure the following plots are the best ones. What would be 
-some indications that an EICs might be from the "real" compound?
-- high difference between high and low concentration? (Do we know how much more
-  of the standard is put in the high concentration sample?)
-- similar shape for low and high? Shape with a clear peak?
-- if there are only low peaks then it's not from the "real" compound? Vice versa
-  it might be that they low curves are not there because to low to be detected?
--->
 ![](images/match-standards-mix01/CDP/WP_FT4769.png)
 
 ![](images/match-standards-mix01/CDP/WP_FT4256.png)
@@ -808,8 +798,6 @@ Again, we show some EICs for feature that might be associated with `r std`.
 ![](images/match-standards-mix01/Creatine/WP_FT0480.png)
 
 ![](images/match-standards-mix01/Creatine/WP_FT0752.png)
-<!-- what could be behind having low and high shifted in retention time axis? -->
-
 We next extract the MS2 spectra for all these features and match them against
 the reference spectra for `r std` from HMDB.
 
@@ -891,7 +879,7 @@ pandoc.table(tmp, style = "rmarkdown",
 ```
 
 Based on their retention time, it seems that these features represent signal
-from 4 different compounds.
+from several different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -1325,7 +1313,7 @@ pandoc.table(tmp, style = "rmarkdown",
 ```
 
 Based on their retention time, it seems that these features represent signal
-from 2 different compounds.
+from a single compound.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -1505,7 +1493,7 @@ ttest_WN <- t(apply(fVlog2_WN, 1, function(x) {
 We now identify all features matching likely adducts of the standards.
 
 ```{r}
-adducts_N <- adducts("negative")[c("[M]-", "[M-H]-", "[M+Cl]-"),
+adducts_N <- adducts("negative")[c("[M-H]-", "[M+Cl]-"),
                                  c("mass_multi", "mass_add")]
 adducts_N <- rbind(adducts_N, "[M+HCOO]-" = c(1, calculateMass("HCOO"))) 
 prm_WN <- Mass2MzParam(adducts = adducts_N, ppm = 30)
@@ -1526,8 +1514,6 @@ mD_WN <- matchedData(mtchs_sub_WN, columns = c("mzmed", "ppm_error", "rtmed",
                                                "high_low_diff", "pvalue"))
 mD_WN <- mD_WN[-which(mD_WN$high_low_diff < 1), ]
 mD_WN <- mD_WN[order(mD_WN$target_name), ]
-pandoc.table(as.data.frame(mD_WN), style = "rmarkdown",
-             split.tables = Inf, caption = "Feature to standards matches")
 ```
 
 For most of the standards (`r length(unique(mD_WN$target_name))` out of 
@@ -1635,8 +1621,6 @@ for (i in seq_len(nrow(idx))) {
 }
 ```
 
-<!-- peaks seem close in m/z but not highlighted --> 
-
 In addition we match the MS2 spectra for the matched features against all
 spectra from HMDB identifying reference spectra with a similarity larger than
 0.7. This is to ensure that no reference spectra from any other compound would
@@ -1665,9 +1649,6 @@ pandoc.table(as.data.frame(tab[tab$score > max(sim), ]),
              style = "rmarkdown", split.table = Inf)
 
 ```
-
-
-
 
 #### Acetylhistidine
 
