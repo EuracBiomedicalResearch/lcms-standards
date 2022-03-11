@@ -15,8 +15,11 @@ created/measurable from each compound. In the workflow we first:
   
 ## Analysis workflow files
 
-- [preprocessing-standards.Rmd](preprocessing-standards.Rmd): preprocessing of
-  LC-MS(/MS) data for the standards data set.
+- [match-standards-mix01.Rmd](match-standards-mix01.Rmd): matching and
+  identifying signal from standards of mix 01. This includes preprocessing and
+  ultimately defines the retention time, the measured ions and related MS/MS
+  spectra of the standards.
+
 
 
 ## Data tables
@@ -47,9 +50,17 @@ created/measurable from each compound. In the workflow we first:
   concentrations also DDA MS2 data was measured with two different collision
   energies.
 
+## Contributors
+
+- Andrea Vicini
+- Vinicius Verri Hernandes
+- Mar Garcia-Aloy
+- Johannes Rainer (contact)
 
 ## *Old* R files
 
+- [preprocessing-standards.Rmd](preprocessing-standards.Rmd): preprocessing of
+  LC-MS(/MS) data for the standards data set.
 - [EIC_superposed.Rmd](EIC_superposed.Rmd): Markdown file for printing 
   the EIC of one compound using all samples. The plots are saved 
   in the folder `plots`.
