@@ -1,0 +1,65 @@
+# Introduction
+
+Mixes of standards have been solved in water or added to human serum sample
+pools in two different concentration and these samples were measured with the
+LC-MS setup from Eurac (used also to generate the CHRIS untargeted metabolomics
+data). Assignment of retention time and observed ion can be performed for each
+standard based on MS1 information such as expected m/z but also based on the
+expected difference in signal between samples with low and high concentration of
+the standards. Finally, experimental fragment spectra provide the third level of
+evidence. Thus, the present data set allows to annotate features to standards
+based on 3 levels of evidence: expected m/z, difference in measured intensity
+and MS2-based annotation.
+
+The goal of this analysis is to create an in-house reference library for
+our untargeted LC-MS setup. For that we:
+
+- determine the retention time of each standard in water and serum.
+- define which ions/adducts are measured for each standard (with relative
+  abundances, i.e. which is most highly abundant ion etc).
+- extract all MS2 spectra for each standard, match them against reference
+  spectra and store them in a database.
+
+The approach consists of the following steps:
+
+- **Identification of potential features for a certain standard**. Features
+  matching pre-defined adducts are identified. These are further sub-setted
+  keeping only features which match the expected difference in intensities
+  between *high* and *low* concentration samples. Resulting features are in
+  addition grouped based in similar retention time (5 seconds) and similar
+  abundance across samples (correlation > 0.6).
+- **MS2 spectra of all selected features are matched against reference spectra
+  for the standard from HMDB**.
+- **MS2 spectra of all selected features are matched against all HMDB and
+  Massbank**. This is to evaluate specificity of the fragment spectra.
+
+
+Based on the available information retention times/features are annotated to
+standards using different confidence levels:
+
+- **D** (lowest confidence): based on evidence 1: signal needs to be
+  higher in samples with higher concentration of the standard. Measured m/z has
+  to match the m/z of an ion of the compound.
+- **C**: based on evidence 1 and 2. In addition to **D**, also the MS2
+  spectrum for that feature needs to match with at least a low similarity to the
+  reference spectra for that compound from HMDB.
+- **B**: same as **C** but similarity to a reference spectrum for the standard
+  is higher than 0.7.
+- **A** (highest confidence): same as **B**, but the experimental MS2 spectrum
+  does not match a MS2 spectrum from any other compound in HMDB or MassBank with
+  a similarity > 0.7.
+
+These confidence levels are for the annotation of the feature(s) to the
+standard. Features with similar retention times and abundances across samples
+(as well as eventually similar peak shapes) *inherit* the highest confidence
+level from other features. 
+
+
+# Discussion and open discussion
+
+- What to do with MS2 spectra for ions other than `[M+H]+` and `[M-H]-`? If they
+  match neutral loss spectra from `[M+H]+` (or `[M-H]-` for negative polarity)
+  all is good and they should be considered *reference* spectra. If they don't
+  match, should they still be added as *reference* MS2, but with a low
+  confidence?
+- TODO: define a confidence level for reference spectra.
