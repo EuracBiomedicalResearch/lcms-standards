@@ -62,8 +62,11 @@ extract_ms2 <- function(x, features, ppm = 20) {
 #' This function uses *global* variables `sim`, `std_ms2` and `hmdb`
 plot_select_ms2 <- function(query, target, cutoff,
                             ppm = 40, tolerance = 0) {
-    idx <- which(sim > cutoff, arr.ind = TRUE)
-    
+    if (is.null(dim(sim)))
+        idx <- which(matrix(sim, length(query), length(target)) > cutoff,
+                     arr.ind = TRUE)
+    else idx <- which(sim > cutoff, arr.ind = TRUE)
+
     par(mfrow = c(round(sqrt(nrow(idx))), ceiling(sqrt(nrow(idx)))))
     for (i in seq_len(nrow(idx))) {
         a <- idx[i, 1L]
