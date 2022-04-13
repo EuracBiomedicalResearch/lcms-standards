@@ -238,7 +238,7 @@ hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 if (length(std_hmdb)) {
     sim <- compareSpectra(std_ms2, std_hmdb, ppm = csp@ppm,
-                          tolerance = csp@tolerance)
+                          tolerance = csp@tolerance, SIMPLIFY = FALSE)
     ann <- data.frame(feature_id = std_ms2$feature_id, rt = rtime(std_ms2))
     rownames(ann) <- rownames(sim)
     pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
@@ -249,7 +249,7 @@ if (length(std_hmdb)) {
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 if (length(std_mbank)) {
     sim <- compareSpectra(std_ms2, std_mbank, ppm = csp@ppm,
-                          tolerance = csp@tolerance)
+                          tolerance = csp@tolerance, SIMPLIFY = FALSE)
     ann <- data.frame(feature_id = std_ms2$feature_id, rt = rtime(std_ms2))
     rownames(ann) <- rownames(sim)
     pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
@@ -260,7 +260,7 @@ if (length(std_mbank)) {
 std_hmdb_nl <- hmdb_nl[hmdb_nl$compound_id == hmdb_id]
 std_ms2_nl <- neutralLoss(std_ms2, PrecursorMzParam())
 sim <- compareSpectra(std_ms2_nl, std_hmdb_nl, ppm = csp_nl@ppm,
-                      tolerance = csp_nl@tolerance)
+                      tolerance = csp_nl@tolerance, SIMPLIFY = FALSE)
 ann <- data.frame(feature_id = std_ms2_nl$feature_id, rt = rtime(std_ms2_nl))
 rownames(ann) <- rownames(sim)
 pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
@@ -270,7 +270,7 @@ pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
 std_mbank_nl <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey), nl = TRUE)
 std_ms2_nl <- neutralLoss(std_ms2, PrecursorMzParam())
 sim <- compareSpectra(std_ms2_nl, std_mbank_nl, ppm = csp_nl@ppm,
-                      tolerance = csp_nl@tolerance)
+                      tolerance = csp_nl@tolerance, SIMPLIFY = FALSE)
 ann <- data.frame(feature_id = std_ms2$feature_id, rt = rtime(std_ms2))
 rownames(ann) <- rownames(sim)
 pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
