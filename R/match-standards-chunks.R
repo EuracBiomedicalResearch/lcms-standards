@@ -193,6 +193,10 @@ adducts <- c("[M+H]+", "[M+2H]2+", "[M+Na]+", "[M+K]+", "[M+NH4]+",
              "[M+H-H2O]+", "[M+H+Na]2+", "[M+2Na]2+", "[M+H-NH3]+",
              "[M+2Na-H]+", "[M+2K-H]+")
 
+## ---- define-adducts-neg ----
+adducts <- adducts("negative")[c("[M-H]-", "[M+Cl]-"),
+                               c("mass_multi", "mass_add")] 
+adducts <- rbind(adducts, "[M+HCOO]-" = c(1, calculateMass("HCOO"))) 
 
 ## ---- match-features ----
 prm <- Mass2MzParam(adducts = adducts, ppm = 30)
@@ -240,9 +244,11 @@ if (length(std_hmdb)) {
     sim <- compareSpectra(std_ms2, std_hmdb, ppm = csp@ppm,
                           tolerance = csp@tolerance, SIMPLIFY = FALSE)
     ann <- data.frame(feature_id = std_ms2$feature_id, rt = rtime(std_ms2))
-    rownames(ann) <- rownames(sim)
-    pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
-             color = colorRampPalette((brewer.pal(n = 7, name = "YlOrRd")))(100))
+    if (is.matrix(sim) && all(dim(sim) > 1)) {
+        rownames(ann) <- rownames(sim)
+        pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
+                 color = colorRampPalette((brewer.pal(n = 7, name = "YlOrRd")))(100))
+    } else cat("Similarities: ", sim)
 } else cat("No reference spectrum in HMDB")
 
 ## ---- plot-ms2-mbank-heatmap ----
@@ -251,9 +257,11 @@ if (length(std_mbank)) {
     sim <- compareSpectra(std_ms2, std_mbank, ppm = csp@ppm,
                           tolerance = csp@tolerance, SIMPLIFY = FALSE)
     ann <- data.frame(feature_id = std_ms2$feature_id, rt = rtime(std_ms2))
-    rownames(ann) <- rownames(sim)
-    pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
-             color = colorRampPalette((brewer.pal(n = 7, name = "YlOrRd")))(100))
+    if (is.matrix(sim) && all(dim(sim) > 1)) {
+        rownames(ann) <- rownames(sim)
+        pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
+                 color = colorRampPalette((brewer.pal(n = 7, name = "YlOrRd")))(100))
+    } else cat("Similarities: ", sim)
 } else cat("No reference spectrum in MassBank")
 
 ## ---- plot-ms2-hmdb-nl-heatmap ----
@@ -262,9 +270,11 @@ std_ms2_nl <- neutralLoss(std_ms2, PrecursorMzParam())
 sim <- compareSpectra(std_ms2_nl, std_hmdb_nl, ppm = csp_nl@ppm,
                       tolerance = csp_nl@tolerance, SIMPLIFY = FALSE)
 ann <- data.frame(feature_id = std_ms2_nl$feature_id, rt = rtime(std_ms2_nl))
+if (is.matrix(sim) && all(dim(sim) > 1)) {
 rownames(ann) <- rownames(sim)
 pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
          color = colorRampPalette((brewer.pal(n = 7, name = "YlOrRd")))(100))
+} else cat("Similarities: ", sim)
 
 ## ---- plot-ms2-mbank-nl-heatmap ----
 std_mbank_nl <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey), nl = TRUE)
@@ -272,7 +282,8 @@ std_ms2_nl <- neutralLoss(std_ms2, PrecursorMzParam())
 sim <- compareSpectra(std_ms2_nl, std_mbank_nl, ppm = csp_nl@ppm,
                       tolerance = csp_nl@tolerance, SIMPLIFY = FALSE)
 ann <- data.frame(feature_id = std_ms2$feature_id, rt = rtime(std_ms2))
+if (is.matrix(sim) && all(dim(sim) > 1)) {
 rownames(ann) <- rownames(sim)
 pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
          color = colorRampPalette((brewer.pal(n = 7, name = "YlOrRd")))(100))
-
+} else cat("Similarities: ", sim)
