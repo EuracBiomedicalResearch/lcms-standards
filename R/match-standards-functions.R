@@ -22,7 +22,7 @@ group_features <- function(x, features, groupEic = FALSE) {
 }
 
 #' Plot EICs.
-plot_eics <- function(x, std, tab, MP) {
+plot_eics <- function(x, std, tab, MP, std_ms2) {
     eics <- featureChromatograms(x, features = rownames(tab))
     dr <- file.path(IMAGE_PATH, std)
     dir.create(dr, showWarnings = FALSE)
@@ -39,8 +39,25 @@ plot_eics <- function(x, std, tab, MP) {
         grid()
         legend("topleft", c(std, tab$adduct[i], ft))
         legend("topright", col = col_group, legend = names(col_group), lty = 1)
+        if (length(std_ms2) && length(idx <- which(std_ms2$feature_id == ft)))
+            abline(v = rtime(std_ms2)[idx], col = col_group["MSMS"], lty = 2)
         dev.off()
     }
+}
+
+plot_spectra <- function(x) {
+    if (length(x)) {
+        xl <- range(unlist(mz(x)))
+        lx <- length(x)
+        par(mfrow = c(ceiling(sqrt(lx)), round(sqrt(lx))),
+            mar = c(4.2, 4.5, 1.5, 0.5))
+        for (i in seq_len(lx)) {
+            plotSpectra(x[i], xlim = xl)
+            legend("top", bg = NA, horiz = TRUE,
+                   legend = c(x$feature_id[i],
+                              spectraNames(x)[i]))
+        }
+    } else cat("No MS2 spectra.")
 }
 
 extract_ms2 <- function(x, features, ppm = 20) {
@@ -66,16 +83,17 @@ plot_select_ms2 <- function(query, target, cutoff,
         idx <- which(matrix(sim, length(query), length(target)) > cutoff,
                      arr.ind = TRUE)
     else idx <- which(sim > cutoff, arr.ind = TRUE)
-
-    par(mfrow = c(round(sqrt(nrow(idx))), ceiling(sqrt(nrow(idx)))))
-    for (i in seq_len(nrow(idx))) {
-        a <- idx[i, 1L]
-        b <- idx[i, 2L]
-        plotSpectraMirror(query[a], addProcessing(target[b], scale_int),
-                          main = paste(spectraNames(query)[a], target$name[b]),
-                          ppm = ppm, tolerance = tolerance)
-    }
-    query[unique(idx[, "row"])]
+    if (nrow(idx)) {
+        par(mfrow = c(round(sqrt(nrow(idx))), ceiling(sqrt(nrow(idx)))))
+        for (i in seq_len(nrow(idx))) {
+            a <- idx[i, 1L]
+            b <- idx[i, 2L]
+            plotSpectraMirror(query[a], addProcessing(target[b], scale_int),
+                              main = paste(spectraNames(query)[a], target$name[b]),
+                              ppm = ppm, tolerance = tolerance)
+        }
+        query[unique(idx[, "row"])]
+    } else cat("No spectra with selected similarity")
 }
 
 match_table <- function(x, sv = c("rtime", "target_name",
@@ -142,4 +160,26 @@ get_mbank <- function(x, inchikey = character(), nl = FALSE) {
         x <- neutralLoss(x, param = PrecursorMzParam())
     }
     x
+}
+
+#' Calculates similarity between experimental MS2 spectra and reference
+#' MS2 and returns the similarity matrix.
+plot_ms2_similarity_heatmap <- function(x, y, param) {
+    if (length(y)) {
+        sim <- compareSpectra(x, y, ppm = param@ppm,
+                              tolerance = param@tolerance,
+                              simplify = FALSE)
+        ann <- data.frame(feature_id = x$feature_id, rt = rtime(x))
+        if (is.matrix(sim) && all(dim(sim) > 1)) {
+            rownames(ann) <- rownames(sim)
+            pheatmap(sim, annotation_row = ann,
+                     breaks = seq(0, 1, length.out = 101),
+                     color = colorRampPalette(
+                     (brewer.pal(n = 7, name = "YlOrRd")))(100))
+        } else cat("Similarities: ", sim)
+        sim
+    } else {
+        cat("No reference spectra available")
+        matrix()
+    }
 }

@@ -27,7 +27,7 @@ dir.create(IMAGE_PATH, showWarnings = FALSE, recursive = TRUE)
 dir.create(RDATA_PATH, showWarnings = FALSE, recursive = TRUE)
 #' Define the mzML files *base* path (/data/massspec/mzML/ on the cluster)
 MZML_PATH <- "~/mix01/"
-#' MZML_PATH <- "/data/massspec/mzML/"
+# MZML_PATH <- "/data/massspec/mzML/"
 ALL_NL_MATCH <- FALSE                   # run maching agains neutral loss db
 library(knitr)
 opts_chunk$set(cached = FALSE, message = FALSE, warning = FALSE,
@@ -79,8 +79,12 @@ hmdb_pos <- hmdb_neg <- Spectra(cdb)
 hmdb_pos$precursorMz <- mass2mz(hmdb_pos$exactmass, adduct = "[M+H]+")[, 1L]
 hmdb_neg$precursorMz <- mass2mz(hmdb_pos$exactmass, adduct = "[M-H]-")[, 1L]
 #' Neutral loss spectra
-hmdb_pos_nl <- neutralLoss(hmdb_pos, param = PrecursorMzParam())
-hmdb_neg_nl <- neutralLoss(hmdb_neg, param = PrecursorMzParam())
+nl_param <- PrecursorMzParam(filterPeaks = "removePrecursor", ppm = 50,
+                             tolerance = 0)
+hmdb_pos_nl <- neutralLoss(hmdb_pos, param = nl_param)
+hmdb_pos_nl <- hmdb_pos_nl[lengths(hmdb_pos_nl) > 0]
+hmdb_neg_nl <- neutralLoss(hmdb_neg, param = nl_param)
+hmdb_neg_nl <- hmdb_neg_nl[lengths(hmdb_neg_nl) > 0]
 #' HMDB with only MS2 for current standards
 hmdb_std <- Spectra(cdb, filter = ~ compound_id == std_dilution01$HMDB)
 
@@ -91,8 +95,8 @@ mbank <- Spectra(con, source = MsBackendMassbankSql())
 mbank$name <- mbank$compound_name
 #' Neutral loss spectra
 mbank_nl <- mbank[!is.na(mbank$precursorMz)]
-mbank_nl <- neutralLoss(mbank_nl, param = PrecursorMzParam())
-
+mbank_nl <- neutralLoss(mbank_nl, param = nl_param)
+mbank_nk <- mbank_nl[lengths(mbank_nl) > 0]
 
 ## ---- all-ms2 ----
 fls <- fls[grep("_CE", fls)]
@@ -209,7 +213,6 @@ mD <- matchedData(
                            "high_low_diff", "pvalue", "mean_high",
                            "mean_low"))
 mD <- mD[-which(mD$high_low_diff < 1), ]
-mD <- mD[!(is.na(mD$mean_high) & !is.na(mD$mean_low)), ]
 mD <- mD[order(mD$target_name), ]
 
 
@@ -235,55 +238,3 @@ pandoc.table(tmp[, c("mzmed", "ppm_error", "rtmed", "target_RT",
                      "mean_high", "mean_low")], style = "rmarkdown",
              split.tables = Inf,
              caption = paste0("Feature to standards matches for ", std))
-
-
-## ---- plot-ms2-hmdb-heatmap ----
-hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
-std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-if (length(std_hmdb)) {
-    sim <- compareSpectra(std_ms2, std_hmdb, ppm = csp@ppm,
-                          tolerance = csp@tolerance)
-    ann <- data.frame(feature_id = std_ms2$feature_id, rt = rtime(std_ms2))
-    if (is.matrix(sim) && all(dim(sim) > 1)) {
-        rownames(ann) <- rownames(sim)
-        pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
-                 color = colorRampPalette((brewer.pal(n = 7, name = "YlOrRd")))(100))
-    } else cat("Similarities: ", sim)
-} else cat("No reference spectrum in HMDB")
-
-## ---- plot-ms2-mbank-heatmap ----
-std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-if (length(std_mbank)) {
-    sim <- compareSpectra(std_ms2, std_mbank, ppm = csp@ppm,
-                          tolerance = csp@tolerance)
-    ann <- data.frame(feature_id = std_ms2$feature_id, rt = rtime(std_ms2))
-    if (is.matrix(sim) && all(dim(sim) > 1)) {
-        rownames(ann) <- rownames(sim)
-        pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
-                 color = colorRampPalette((brewer.pal(n = 7, name = "YlOrRd")))(100))
-    } else cat("Similarities: ", sim)
-} else cat("No reference spectrum in MassBank")
-
-## ---- plot-ms2-hmdb-nl-heatmap ----
-std_hmdb_nl <- hmdb_nl[hmdb_nl$compound_id == hmdb_id]
-std_ms2_nl <- neutralLoss(std_ms2, PrecursorMzParam())
-sim <- compareSpectra(std_ms2_nl, std_hmdb_nl, ppm = csp_nl@ppm,
-                      tolerance = csp_nl@tolerance)
-ann <- data.frame(feature_id = std_ms2_nl$feature_id, rt = rtime(std_ms2_nl))
-if (is.matrix(sim) && all(dim(sim) > 1)) {
-rownames(ann) <- rownames(sim)
-pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
-         color = colorRampPalette((brewer.pal(n = 7, name = "YlOrRd")))(100))
-} else cat("Similarities: ", sim)
-
-## ---- plot-ms2-mbank-nl-heatmap ----
-std_mbank_nl <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey), nl = TRUE)
-std_ms2_nl <- neutralLoss(std_ms2, PrecursorMzParam())
-sim <- compareSpectra(std_ms2_nl, std_mbank_nl, ppm = csp_nl@ppm,
-                      tolerance = csp_nl@tolerance)
-ann <- data.frame(feature_id = std_ms2$feature_id, rt = rtime(std_ms2))
-if (is.matrix(sim) && all(dim(sim) > 1)) {
-rownames(ann) <- rownames(sim)
-pheatmap(sim, annotation_row = ann, breaks = seq(0, 1, length.out = 101),
-         color = colorRampPalette((brewer.pal(n = 7, name = "YlOrRd")))(100))
-} else cat("Similarities: ", sim)
