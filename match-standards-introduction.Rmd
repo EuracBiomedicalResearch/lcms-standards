@@ -29,10 +29,11 @@ The approach consists of the following steps:
   addition grouped based in similar retention time (5 seconds) and similar
   abundance across samples (correlation > 0.6).
 - **MS2 spectra of all selected features are matched against reference spectra
-  for the standard from HMDB**.
+  for the standard from HMDB**. If no match is found and the ion is different
+  than `[M+H]+` or `[M-H]-` a comparison between neutral loss spectra is
+  performed in addition.
 - **MS2 spectra of all selected features are matched against all HMDB and
   Massbank**. This is to evaluate specificity of the fragment spectra.
-
 
 Based on the available information retention times/features are annotated to
 standards using different confidence levels:
@@ -55,11 +56,21 @@ standard. Features with similar retention times and abundances across samples
 level from other features. 
 
 
-# Discussion and open discussion
 
-- What to do with MS2 spectra for ions other than `[M+H]+` and `[M-H]-`? If they
-  match neutral loss spectra from `[M+H]+` (or `[M-H]-` for negative polarity)
-  all is good and they should be considered *reference* spectra. If they don't
-  match, should they still be added as *reference* MS2, but with a low
-  confidence?
-- TODO: define a confidence level for reference spectra.
+# Discussion and open questions
+
+## Neutral loss spectra
+
+What is puzzling is that neutral loss spectra of e.g. `[M+Na]+` ions don't match
+those of `[M+H]+` ions of the (potentially) same compound. Examples:
+
+- matching neutral loss: 
+  - mix01 serum pos, creatine: NL of `[M+2Na-H]+` ion matches NL reference
+  spectra. `[M+Na]+` does however not. Also `[M+H]+` does not really match well.
+  
+- not matching neutral loss:
+  - mix01 serum pos, acetylhistidine: NL `[M+H]+` and `[M+Na]+` don't match.
+  - mix01 serum pos, L-Glutamic Acid: NL `[M+H]+` does not match `[M+2Na-H]+`,
+    and `[M+Na]+` with a single peak.
+  - mix01 serum pos, Xanthine: NL `[M+H]+`, `[M+K]+`, `[M+H-NH3]+`, `[M+Na]+`
+    `[M+2Na-H]` all don't match.
