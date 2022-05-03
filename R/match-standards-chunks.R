@@ -13,22 +13,25 @@ library(RColorBrewer)
 library(MetaboAnnotation)
 library(pheatmap)
 library(MsFeatures)
-setMSnbaseFastLoad(FALSE)
+setMSnbaseFastLoad(TRUE)
+# setMSnbaseFastLoad(FALSE)
 register(SerialParam())
 source("R/match-standards-functions.R")
 
 
 ## ---- general-settings ----
 MIX_NAME <- paste0("Mix", ifelse(MIX < 10, paste0(0, MIX), MIX)) 
-IMAGE_PATH <- paste0("images/match-standards-serum-", tolower(MIX_NAME),"/")
+IMAGE_PATH <- paste0("images/match-standards-", tolower(MATRIX), "-",
+                     tolower(MIX_NAME), "/")
 if (dir.exists(IMAGE_PATH)) unlink(IMAGE_PATH, recursive = TRUE)
-RDATA_PATH <- paste0("data/RData/match-standards-serum-", tolower(MIX_NAME), "/")
+RDATA_PATH <- paste0("data/RData/match-standards-", tolower(MATRIX), "-",
+                     tolower(MIX_NAME), "/")
 dir.create(IMAGE_PATH, showWarnings = FALSE, recursive = TRUE)
 dir.create(RDATA_PATH, showWarnings = FALSE, recursive = TRUE)
 #' Define the mzML files *base* path (/data/massspec/mzML/ on the cluster)
 MZML_PATH <- "~/mix01/"
 # MZML_PATH <- "/data/massspec/mzML/"
-ALL_NL_MATCH <- FALSE                   # run maching agains neutral loss db
+ALL_NL_MATCH <- FALSE                   # run matching against neutral loss db
 library(knitr)
 opts_chunk$set(cached = FALSE, message = FALSE, warning = FALSE,
                fig.width = 10, fig.height = 8)
@@ -96,7 +99,7 @@ mbank$name <- mbank$compound_name
 #' Neutral loss spectra
 mbank_nl <- mbank[!is.na(mbank$precursorMz)]
 mbank_nl <- neutralLoss(mbank_nl, param = nl_param)
-mbank_nk <- mbank_nl[lengths(mbank_nl) > 0]
+mbank_nl <- mbank_nl[lengths(mbank_nl) > 0]
 
 ## ---- all-ms2 ----
 fls <- fls[grep("_CE", fls)]

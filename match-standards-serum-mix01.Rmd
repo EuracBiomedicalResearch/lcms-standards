@@ -67,7 +67,6 @@ these adducts as *precursor m/z*.
 ```{r, load-reference-databases, message = FALSE}
 ```
 
-
 # Initial evaluation of available MS2 data
 
 Before performing the actual analysis that involves chromatographic peak
@@ -2082,7 +2081,7 @@ sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 
 In both cases the extracted spectrum does not match any reference spectra from
 `r std`. Since feature FT1334, the feature associated to the available spectrum,
-was matched to an ion (`[M+Cl]-`) different from `[M-Cl]-` we also look at
+was matched to an ion (`[M+Cl]-`) different from `[M-H]-` we also look at
 neutral loss spectra.
 
 ```{r mix01-serum-neg-myo-inositol-ms2-hmdb_nl, echo = FALSE, fig.width = 5, fig.height = 5}
