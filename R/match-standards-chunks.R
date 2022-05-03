@@ -99,7 +99,7 @@ mbank$name <- mbank$compound_name
 #' Neutral loss spectra
 mbank_nl <- mbank[!is.na(mbank$precursorMz)]
 mbank_nl <- neutralLoss(mbank_nl, param = nl_param)
-mbank_nk <- mbank_nl[lengths(mbank_nl) > 0]
+mbank_nl <- mbank_nl[lengths(mbank_nl) > 0]
 
 ## ---- all-ms2 ----
 fls <- fls[grep("_CE", fls)]
