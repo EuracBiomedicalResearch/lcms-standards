@@ -53,7 +53,10 @@ standards using different confidence levels:
 These confidence levels are for the annotation of the feature(s) to the
 standard. Features with similar retention times and abundances across samples
 (as well as eventually similar peak shapes) *inherit* the highest confidence
-level from other features. 
+level from other features but get assigned a **-** to the inherited
+confidence. **D** confidence levels are only given if there is a single feature
+or for features with retention times similar to higher confidence features from
+the other polarity or other matrix.
 
 
 

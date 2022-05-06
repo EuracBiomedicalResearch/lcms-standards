@@ -14,7 +14,7 @@ library(MetaboAnnotation)
 library(pheatmap)
 library(MsFeatures)
 setMSnbaseFastLoad(TRUE)
-# setMSnbaseFastLoad(FALSE)
+setMSnbaseFastLoad(FALSE)
 register(SerialParam())
 source("R/match-standards-functions.R")
 
@@ -30,7 +30,7 @@ dir.create(IMAGE_PATH, showWarnings = FALSE, recursive = TRUE)
 dir.create(RDATA_PATH, showWarnings = FALSE, recursive = TRUE)
 #' Define the mzML files *base* path (/data/massspec/mzML/ on the cluster)
 MZML_PATH <- "~/mix01/"
-# MZML_PATH <- "/data/massspec/mzML/"
+MZML_PATH <- "/data/massspec/mzML/"
 ALL_NL_MATCH <- FALSE                   # run matching against neutral loss db
 library(knitr)
 opts_chunk$set(cached = FALSE, message = FALSE, warning = FALSE,
