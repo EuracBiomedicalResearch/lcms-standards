@@ -22,68 +22,6 @@ POLARITY <- "POS"
 ```{r, general-settings, echo = FALSE, message = FALSE}
 ```
 
-# TEMP
-
-What to store from features
-
-- feature_id
-- original_sample: mix 01...
-- sample_matrix: water|serum pool
-- ion_adduct
-- relative_ion_intensity: relative to the other ions [0-100]
-- confidence_level: ABCD.
-- rtmed -> ion_mz
-- mzmed -> ion_rt
-- compound_id
-
-```{r}
-## Create a data.frame with that info.
-fts <- data.frame(feature_id = ,
-                  compound_id,
-                  ion_adduct,
-                  sample_matrix,
-                  original_sample,
-                  confidence_level)
-## Extract remaining variables from the features:
-ion_mz, ion_rt, relative_ion_intensity, 
-## Set relative ion intensity
-
-idb <- insertIon(idb, fts)
-```
-
-What to store from spectra
-
-- feature_id
-- confidence: high, low
-- adduct
-- rtime, precursor m/z, acquisitionNum, polarity
-- original_file
-- collision_energy
-- compound_id
-- instrument "Sciex TripleTOF 5600+"
-- instrument_type "LC-ESI-QTOF"
-
-```{r}
-## Manually define the spctrum names/IDs.
-sps_insert <- data.frame(original_spectrum_id,
-                         compound_id,
-                         confidence,
-                         adduct,
-                         instrument,
-                         instrument_type)
-## Get remaining from Spectra
-rtime, precursor_mz, acquisitionNum, polarity, original_file, collision_energy
-## Add the ion_id info by getting the just inserted ion info from the database
-## identify the entries with feature_id, original_sample and sample_matrix
-idb <- insertSpectra(sps, columns = c(the columns to insert))
-
-```
-
-```{r}
-## create a new IonDb from the CompDb. If file exists, remove all ions and
-## spectra for the current mix.
-```
-
 **Current version: 0.10.0, 2022-05-05.**
 
 # Introduction
@@ -126,6 +64,9 @@ ions (respectively `[M-H]-` ions for negative polarity) and add the m/z for
 these adducts as *precursor m/z*.
 
 ```{r, load-reference-databases, message = FALSE}
+```
+
+```{r, setup-ion-db, message = FALSE, echo = FALSE}
 ```
 
 # Initial evaluation of available MS2 data
@@ -291,7 +232,7 @@ ions from two different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -361,6 +302,23 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   **B-**.
 - Reference MS2: `[M+H]+`: F07.S0836, F08.S0767 (with a *low* grading?)
 
+The associated ion and MS2 spectra are added to the database.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT1539", "FT1749"),
+                  confidence_level = c("B", "B-"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT1539_F07.S0836", "FT1539_F08.S0767")]
+ms2$confidence <- "low"
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### Acetylhistidine
 
@@ -381,7 +339,7 @@ from tentatively 3 different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 ```{r mix01-water-pos-acetylhistidine-ms2, echo = FALSE}
@@ -455,6 +413,23 @@ The neutral loss spectra don't match.
   F08.S0426; low confidence. Reference spectra for `[M+2Na-H]+` ion (FT2158):
   F07.S0430, F08.S0427; low confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT1643", "FT1925", "FT2158"),
+                  confidence_level = c("A", "A-", "A-"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT1643_F08.S0506", "FT1643_F07.S0518", "FT1643_F08.S0425",
+                 "FT1925_F07.S0429", "FT1925_F08.S0426", "FT2158_F07.S0430",
+                 "FT2158_F08.S0427")]
+ms2$confidence <- c(rep("high", 3), rep("low", 4))
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### Betaine
 
@@ -474,7 +449,7 @@ from several different compounds. We next plot the EIC for the assigned feature
 and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -547,6 +522,22 @@ The neutral loss MS2 of the different ions don't match.
 - Reference MS2: `[M+H]+`: F08.S0371, F07.S0379; high confidence. `[M+Na]+`:
   F07.S0389, F08.S0380; low confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0544", "FT0877"),
+                  confidence_level = c("A", "A-"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0544_F08.S0371", "FT0544_F07.S0379",
+                 "FT0877_F07.S0389", "FT0877_F08.S0380")]
+ms2$confidence <- c("high", "high", "low", "low")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### C3 Carnitine
 
@@ -567,7 +558,7 @@ from two different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -586,6 +577,15 @@ time.
 
 - FT2112 (RT=162.6, `[M+NH4]+`): confidence level **D**. Justify based on not
   possible adduct and polarity.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT2112"),
+                  confidence_level = c("D"))
+```
+
+```{r, add-ions, echo = FALSE}
+```
 
 
 ### CDP
@@ -607,7 +607,7 @@ from several different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -684,6 +684,17 @@ perform_match(std_ms2_nl, mbank_nl, similarity = 0.9,
 - FT4469 (RT=236, `[M+H]+` ion): confidence level **D**.
 - FT5021 (RT=233, `[M+2Na-H]+` ion): confidence level **D**.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT4469", "FT5021"),
+                  confidence_level = c("D", "D"))
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+
+
 ### Creatine
 
 ```{r, echo = FALSE}
@@ -703,7 +714,7 @@ from 6 different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -821,6 +832,23 @@ sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_ms2_nl, csp_nl)
   F07.S0427, F08.S0424; low confidence.
 - Interestingly, we seem to have Creatinine also present (FT0479, RT=56).
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0752", "FT1119", "FT1387"),
+                  confidence_level = c("A", "A-", "A-"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0752_F07.S0424", "FT0752_F08.S0420",
+                 "FT1119_F07.S0426", "FT1119_F08.S0422",
+                 "FT1387_F07.S0427", "FT1387_F08.S0424")]
+ms2$confidence <- c("high", "high", "low", "low", "low", "low")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### Dimethylglycine
 
@@ -841,7 +869,7 @@ from several different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -917,6 +945,17 @@ perform_match(std_ms2_nl, mbank_nl, sv = c("rtime", "target_name", "score"),
 - FT0651 (RT=176.6 `[M+Na]+` ion): confidence level **D**.
 - FT1015 (RT=175.2 `[M+2Na-H]+` ion): confidence level **D**.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0651", "FT1015"),
+                  confidence_level = c("D", "D"))
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+
+
 ### Glycerol
 
 ```{r, echo = FALSE}
@@ -936,7 +975,7 @@ from 6 different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -977,7 +1016,7 @@ from several different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -1125,6 +1164,28 @@ sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_ms2_nl, csp_nl)
   confidence. `[M+Na]+` (FT1307): F07.S0470, F08.S0466; low
   confidence. `[M+2Na-H]+` (FT1583): F07.S0472, F08.S0467; low confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT1018", "FT0693", "FT1307",
+                                 "FT0730", "FT1583"),
+                  confidence_level = c("B", "B", "B-", "B-", "B-"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT1018_F07.S0508", "FT1020_F07.S0619", "FT1018_F08.S0622",
+                 "FT0693_F08.S0464", "FT0693_F07.S0468",
+                 "FT1307_F07.S0470", "FT1307_F08.S0466",
+                 "FT1583_F07.S0472", "FT1583_F08.S0467")]
+ms2$confidence <- c("high", "high", "high",
+                    "high", "high",
+                    "low", "low",
+                    "low", "low")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### Myo-Inositol
 
@@ -1145,7 +1206,7 @@ from 6 different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -1235,6 +1296,23 @@ perform_match(std_ms2_nl, mbank_nl,
 - Reference MS2: `[M+H]+`: F08.S0532; high confidence. `[M+Na]+` (FT1733):
   F07.S0541, F08.S0535; low confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT1450", "FT1989", "FT1733", "FT1256"),
+                  confidence_level = c("B", "B-", "B-", "B-"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT1450_F08.S0532",
+                 "FT1733_F07.S0541", "FT1733_F08.S0535")]
+ms2$confidence <- c("high", "low", "low")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
+
 
 ### Pyruvic Acid
 
@@ -1253,7 +1331,7 @@ We have quite some features matching with their m/z to potential adducts of `r
 std`, but they have quite different retention times.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 We next look if there are MS2 spectra associated to this feature but we don't
@@ -1289,7 +1367,7 @@ from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -1369,14 +1447,26 @@ perform_match(std_ms2_nl, mbank_nl,
 
 #### Summary
 
-- FT1375 (RT=37.32, `[M+H]+` ion), FT1633 (RT=37.38, `[M+Na]+` ion), FT1585
-  (RT=37.25, `[M+NH4]+` ion) and FT1831 (RT=37.17, `[M+K]+` ion) all with
-  confidence **D+**: the other features have either high ppm or low signal (in
-  EIC). We can not give a higher confidence level because the MS2 spectrum for
-  the `[M+Na]+` ion does not match a reference spectrum. The neutral loss
-  spectrum has however some similarity with a reference spectrum. This is why we
-  assign the **+** to the **D** confidence.
+- FT1375 (RT=37.32, `[M+H]+` ion): confidence level **D** (from negative).
+- FT1633 (RT=37.38, `[M+Na]+` ion): confidence level **D** (from negative).
+- FT1585 (RT=37.25, `[M+NH4]+` ion): confidence level **D** (from negative).
+- FT1831 (RT=37.17, `[M+K]+` ion): confidence level **D** (from negative).
 - Reference MS2: `[M+Na]+`: F07.S0095; low confidence.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT1375", "FT1633", "FT1585", "FT1831"),
+                  confidence_level = c("D", "D", "D", "D"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT1633_F07.S0095")]
+ms2$confidence <- c("low")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 
 ### Xanthine
@@ -1398,7 +1488,7 @@ from a single compound.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -1495,6 +1585,30 @@ perform_match(std_ms2_nl, mbank_nl,
   F07.S0320, F08.S0296); low confidence. `[M+2K-H]+` (FT2055): F08.S0300; low
   confidence. `[M+2Na-H]+` (FT1630): F08.S0297.
   
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT1102", "FT1372", "FT1567",
+                                 "FT2055", "FT1630"),
+                  confidence_level = c("B", "B-", "B-", "B-", "B-"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT1102_F07.S0315", "FT1102_F08.S0290",
+                 "FT1372_F08.S0294",
+                 "FT1567_F07.S0320", "FT1567_F08.S0296",
+                 "FT2055_F08.S0300",
+                 "FT1630_F08.S0297")]
+ms2$confidence <- c("high", "high",
+                    "low",
+                    "low", "low",
+                    "low",
+                    "low")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 
 ### propionic acid
@@ -1513,7 +1627,7 @@ samples with higher concentrations than in those with lower concentrations.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The signal is very low and no big difference between high and low concentration
@@ -1535,6 +1649,15 @@ No MS2 spectra were found.
 - FT1057 (RT=39.54, `[M+2K-H]+` ion): confidence level **D**. Signal is however
   very low.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT1057"),
+                  confidence_level = c("D"))
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
 
 ### Uric acid
 
@@ -1555,7 +1678,7 @@ from a single compound.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 Signal is only very low for all of the features. And also no MS2 spectra were
@@ -1563,7 +1686,7 @@ found.
 
 
 ```{r echo = FALSE}
-std_ms2 <- extract_ms2(data, rownames(tmp))
+std_ms2 <- extract_ms2(data, rownames(feature_table))
 ```
 
 
@@ -1646,7 +1769,7 @@ ions from two different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 Next we extract the MS2 spectra for all features, clean and plot them.
@@ -1709,6 +1832,21 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT0557 (RT=247.4, `[M-H]-` ion): confidence level **B**.
 - Reference MS2: `[M-H]-` ion: F15.S0708; high confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0557"),
+                  confidence_level = c("B"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0557_F15.S0708")]
+ms2$confidence <- c("high")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### Acetylhistidine
 
@@ -1729,7 +1867,7 @@ from several different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 ```{r mix01-water-neg-acetylhistidine-ms2, fig.cap = "MS2 spectra for features matched to acetylhistidine.", echo = FALSE}
@@ -1793,6 +1931,21 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   overload (?).
 - Reference MS2: `[M-H]-`: (FT0620) F15.S0417, F16.S0409; high confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0620"),
+                  confidence_level = c("A"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0620_F15.S0417", "FT0620_F16.S0409")]
+ms2$confidence <- c("high", "high")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### Betaine
 
@@ -1813,7 +1966,7 @@ from the same compound.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -1828,6 +1981,15 @@ plot_spectra(std_ms2)
 
 - FT0323 (RT=162.7, `[M+Cl]-` ion): confidence level **D**.
 - FT0386 (RT=162.7, `[M+HCOO]-` ion): confidence level **D**.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0323", "FT0386"),
+                  confidence_level = c("D", "D"))
+```
+
+```{r, add-ions, echo = FALSE}
+```
 
 
 ### CDP
@@ -1851,7 +2013,7 @@ look rather noisy and large retention time shifts between the samples are
 visible.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 ```{r mix01-water-neg-cdp-ms2, echo = FALSE}
@@ -1908,6 +2070,23 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - Reference MS2: `[M-H]-` (FT2131) F16.S0627, F16.S0674, F15.S0683, F15.S0730;
   high confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT2131"),
+                  confidence_level = c("A"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT2131_F16.S0627", "FT2131_F16.S0674",
+                 "FT2135_F15.S0683", "FT2135_F15.S0730")]
+ms2$confidence <- "high"
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
+
 
 ### Creatine
 
@@ -1928,7 +2107,7 @@ from 2 different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 We haven't found any MS2 spectra for the features features matched to `r std`.
@@ -1936,6 +2115,15 @@ We haven't found any MS2 spectra for the features features matched to `r std`.
 #### Summary
 
 - FT0180 (RT=176.7, `[M-H]-` ion): confidence level **D**.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0180"),
+                  confidence_level = c("D"))
+```
+
+```{r, add-ions, echo = FALSE}
+```
 
 
 ### Dimethylglycine
@@ -1954,7 +2142,7 @@ samples with higher concentrations than in those with lower concentrations.
 We next plot the EIC for the only feature matched to `r std` and show it below.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -1970,6 +2158,15 @@ Unfortunately no MS2 spectra associated to FT0052 is available.
 #### Summary
 
 - FT0052 (RT=181.6, `[M-H]-` ion): confidence level **D**.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0052"),
+                  confidence_level = c("D"))
+```
+
+```{r, add-ions, echo = FALSE}
+```
 
 
 ### Glycerol
@@ -1989,7 +2186,7 @@ Also for `r std` we have only one match. We next plot the and show the EIC
 of the realted feature.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 
@@ -2017,7 +2214,7 @@ from 3 different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 Note: FT0269 and FT0270 are actually the same signal, FT0270 contains the peaks
@@ -2082,6 +2279,21 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - Reference MS2: `[M-H]-` (FT0269): F15.S0493, F15.S0436, F16.S0428; high
   confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0269"),
+                  confidence_level = c("B"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0269_F15.S0493", "FT0269_F15.S0436", "FT0269_F16.S0428")]
+ms2$confidence <- "high"
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### Myo-Inositol
 
@@ -2102,7 +2314,7 @@ from 6 different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -2179,6 +2391,22 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - Reference MS2: `[M-H]-` (FT0499): F15.S0496, F16.S0477; high
   confidence. `[M+HCOO]-` (FT0813): F15.S0498, F16.S0480; high confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0813", "FT0499"),
+                  confidence_level = c("A", "A"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0499_F15.S0496", "FT0499_F16.S0477",
+                 "FT0813_F15.S0498", "FT0813_F16.S0480")]
+ms2$confidence <- "high"
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### Pyruvic Acid
 
@@ -2201,7 +2429,7 @@ Again, we show a representative EIC for both *feature groups* (ordered by
 retention time).
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 We next look if there are MS2 spectra associated to the above features.
@@ -2254,6 +2482,22 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   above?
 - Reference MS2: `[M-H]-` (FT0023): F16.S0125; low confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0023", "FT0205"),
+                  confidence_level = c("D", "D"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0023_F16.S0125")]
+ms2$confidence <- "low"
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
+
 
 ### Suberic Acid
 
@@ -2274,7 +2518,7 @@ from 3(or 4?) different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -2337,6 +2581,21 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT0782 (RT=37.7, `[M+HCOO]-`): confidence level **A-**.
 - Reference MS2: `[M-H]-` (FT0428): F15.S0115, F16.S0120; high confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0428", "FT0782"),
+                  confidence_level = c("A", "A-"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0428_F15.S0115", "FT0428_F16.S0120")]
+ms2$confidence <- "high"
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### Uric acid
 
@@ -2354,7 +2613,7 @@ samples with higher concentrations than in those with lower concentrations.
 We show the EICs for the features above.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 We next look if there are MS2 spectra associated to the above features.
@@ -2366,6 +2625,7 @@ plot_spectra(std_ms2)
 
 #### Summary
 
+- Inconclusive.
 - FT0397 (RT=176.2, `[M-H]-` ion): confidence level **D** or drop it because of
   low signal?
 
@@ -2389,7 +2649,7 @@ from 3 different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -2449,8 +2709,23 @@ The spectra match to Xanthine and some other (related) compounds.
 #### Summary
 
 - FT0315 (RT=140.6, `[M-H]-` ion): confidence level **B**.
-- FT-633 (RT=140.4, `[M+HCOO]-` ion): confidence level **B-**.
+- FT0633 (RT=140.4, `[M+HCOO]-` ion): confidence level **B-**.
 - Reference MS2: `[M-H]-` (FT0315): F15.S0299, F16.S0305; high confidence.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0315", "FT0633"),
+                  confidence_level = c("B", "B-"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0315_F15.S0299", "FT0315_F16.S0305")]
+ms2$confidence <- c("high", "high")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 
 ## Standards without any matching feature
@@ -2459,6 +2734,12 @@ The spectra match to Xanthine and some other (related) compounds.
 ### propionic acid
 
 
+# Summary on the ion database
+
+Summarizing the content that was added to the `IonDb`.
+
+```{r, iondb-summary, echo = FALSE, results = "asis"}
+```
 
 # Changelog
 

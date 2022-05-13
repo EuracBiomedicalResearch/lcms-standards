@@ -101,6 +101,23 @@ mbank_nl <- mbank[!is.na(mbank$precursorMz)]
 mbank_nl <- neutralLoss(mbank_nl, param = nl_param)
 mbank_nl <- mbank_nl[lengths(mbank_nl) > 0]
 
+## ---- setup-ion-db ----
+fl <- "data/IfB_HILIC.IonDb.HMDB.5.0.sqlite"
+if (!file.exists(fl)) {
+    idb <- IonDb(fl, cdb)
+} else {
+    ## Delete any ions for the current mix/matrix
+    idb <- IonDb(fl)
+    all_ions <- ions(idb, columns = ionVariables(idb, includeId = TRUE))
+    ids <- all_ions$ion_id[all_ions$sample_matrix == MATRIX &
+                           all_ions$original_sample == paste0("Std_", MIX_NAME)]
+    if (length(ids)) idb <- deleteIon(idb, ids = ids)
+    ## Delete any MS2 spectra from the current files
+    all_sps <- Spectra(idb)
+    ids <- all_sps$spectrum_id[all_sps$original_file %in% std_files$mzML]
+    if (length(ids)) idb <- deleteSpectra(idb, ids = ids)
+}
+
 ## ---- all-ms2 ----
 fls <- fls[grep("_CE", fls)]
 
@@ -227,17 +244,70 @@ pandoc.table(std_dilution01[!std_dilution01$name %in% mD$target_name,
 
 
 ## ---- table-feature-matches ----
-tmp <- as.data.frame(mD[mD$target_name == std, ])
-tmp <- tmp[order(tmp$rtmed), ]
-tmp$feature_group <- group_features(data_FS, rownames(tmp))
-std_ms2 <- extract_ms2(data, rownames(tmp))
-tmp$n_ms2 <- 0
+feature_table <- as.data.frame(mD[mD$target_name == std, ])
+feature_table <- feature_table[order(feature_table$rtmed), ]
+feature_table$feature_group <- group_features(data_FS, rownames(feature_table))
+std_ms2 <- extract_ms2(data, rownames(feature_table))
+feature_table$n_ms2 <- 0
 if(length(std_ms2)) {
    nms2 <- table(std_ms2$feature_id)
-   tmp[names(nms2), "n_ms2"] <- unname(nms2) 
+   feature_table[names(nms2), "n_ms2"] <- unname(nms2) 
 }
-pandoc.table(tmp[, c("mzmed", "ppm_error", "rtmed", "target_RT",
-                     "feature_group", "adduct", "n_ms2", 
-                     "mean_high", "mean_low")], style = "rmarkdown",
+pandoc.table(feature_table[, c("mzmed", "ppm_error", "rtmed", "target_RT",
+                               "feature_group", "adduct", "n_ms2", 
+                               "mean_high", "mean_low")], style = "rmarkdown",
              split.tables = Inf,
              caption = paste0("Feature to standards matches for ", std))
+
+
+## ---- add-ions ----
+stopifnot(all(fts$feature_id %in% rownames(feature_table)))
+fts$sample_matrix <- MATRIX
+fts$original_sample <- paste0("Std_", MIX_NAME)
+fts$ion_mz <- feature_table[fts$feature_id, "mzmed"]
+fts$ion_rt <- round(feature_table[fts$feature_id, "rtmed"])
+fts$ion_relative_intensity <- feature_table[fts$feature_id, "mean_high"]
+fts$ion_relative_intensity <- fts$ion_relative_intensity /
+    max(fts$ion_relative_intensity)
+fts$ion_adduct <- feature_table[fts$feature_id, "adduct"]
+fts$compound_id <- hmdb_id
+fts$polarity <- POLARITY
+idb <- insertIon(idb, fts, addColumns = TRUE)
+
+
+## ---- add-ms2-spectra ----
+ms2$original_spectrum_id <- spectraNames(ms2)
+ms2$compound_id <- hmdb_id
+ms2$original_file <- basename(ms2$dataOrigin)
+ms2$collisionEnergy <- 20
+ms2$collisionEnergy[grep("CE30", ms2$original_file)] <- 30
+ms2$predicted <- FALSE
+ms2$instrument_type <- "LC-ESI-QTOF"
+ms2$instrument <- "Sciex TripleTOF 5600+"
+ms2$adduct <- feature_table[ms2$feature_id, "adduct"]
+idb <- insertSpectra(
+    idb, ms2, columns = c("original_spectrum_id", "compound_id", "polarity",
+                          "collisionEnergy", "predicted", "instrument_type",
+                          "instrument", "precursorMz", "adduct",
+                          "original_file", "confidence", "acquisitionNum",
+                          "rtime"))
+
+## ---- iondb-summary ----
+fts <- ions(idb)
+fts <- fts[fts$original_sample == paste0("Std_", MIX_NAME) &
+           fts$sample_matrix == MATRIX, ]
+
+fts <- split(fts, fts$compound_id)
+fts <- do.call(rbind, lapply(fts, function(z) {
+    data.frame(adducts = paste(z$ion_adduct, collapse = ", "),
+               rt = mean(z$ion_rt))
+}))
+sps <- Spectra(idb)
+sps <- sps[sps$original_file %in% basename(fls)]
+n_ms2 <- table(sps$compound_id)
+idx <- match(rownames(fts), std_dilution$HMDB)
+fts <- cbind(name = std_dilution[idx, "name"],
+             fts, n_ms2 = as.integer(n_ms2[rownames(fts)]),
+             old_rt = std_dilution[idx, "RT"])
+pandoc.table(fts[, c("name", "rt", "old_rt", "n_ms2", "adducts")],
+             style = "rmarkdown", split.table = Inf)
