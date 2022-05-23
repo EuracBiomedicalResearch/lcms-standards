@@ -53,24 +53,116 @@ standards using different confidence levels:
 These confidence levels are for the annotation of the feature(s) to the
 standard. Features with similar retention times and abundances across samples
 (as well as eventually similar peak shapes) *inherit* the highest confidence
-level from other features. 
+level from other features but get assigned a **-** to the inherited
+confidence. **D** confidence levels are only given if there is a single feature
+or for features with retention times similar to higher confidence features from
+the other polarity or other matrix.
 
+## Generation of the reference database
 
+The lab-internal reference database will then be created based on the manually
+defined and selected features and MS2 spectra. Feature data will be added as
+*ion* information to the database. Features detected in water samples will be
+preferred, but if a certain ion was only detected in serum or if the retention
+times between serum and water features differs by more than 10 seconds they will
+be in addition also added. All (manually selected) MS2 spectra (whether in water
+or in serum) will be added.
 
-# Discussion and open questions
+Information from features stored in the database are:
 
-## Neutral loss spectra
+- `original_sample`: the name of the sample mix.
+- `sample_matrix`: either water or serum pool.
+- `ion_adduct`: the adduct definition.
+- `relative_ion_intensity`: the relative intensity of the ion (relative to all
+  other ions of the same compound in the same sample matrix).
+- `polarity`: the polarity; negative or positive.
+- `compound_id`: the (HMDB) ID of the compound.
+- `ion_mz`: the (measured) m/z of the feature (`mzmed`).
+- `ion_rt`: the rounded, measured retention time of the feature (`rtmed`).
+- `confidence_level`: the manually defined confidence level.
+- `feature_id`: the feature ID.
 
-What is puzzling is that neutral loss spectra of e.g. `[M+Na]+` ions don't match
-those of `[M+H]+` ions of the (potentially) same compound. Examples:
+Information from MS2 spectra stored on the database are:
 
-- matching neutral loss: 
-  - mix01 serum pos, creatine: NL of `[M+2Na-H]+` ion matches NL reference
-  spectra. `[M+Na]+` does however not. Also `[M+H]+` does not really match well.
+- `original_file`: the name of the mzML file. This information should allow to
+  link the spectrum to the sample mix etc.
+- `adduct`: the adduct definition.
+- `compound_id`: the (HMDB) ID of the compound.
+- `acquisitionNum`: the spectrum ID/index within the mzML file.
+- `polarity`: the polarity.
+- `rtime`: the actual retention time of the spectrum.
+- `precursorMz`: the precursor m/z.
+- `collision_energy`: the collision energy.
+- `instrument`: the MS instrument (`"Sciex TripleTOF 5600+"`).
+- `instrument_type`: the setup (`"LC-ESI-QTOF"`).
+- `confidence`: either `"low"` (no match against reference spectrum) or `"high"`
+  (matches reference spectrum).
   
-- not matching neutral loss:
-  - mix01 serum pos, acetylhistidine: NL `[M+H]+` and `[M+Na]+` don't match.
-  - mix01 serum pos, L-Glutamic Acid: NL `[M+H]+` does not match `[M+2Na-H]+`,
-    and `[M+Na]+` with a single peak.
-  - mix01 serum pos, Xanthine: NL `[M+H]+`, `[M+K]+`, `[M+H-NH3]+`, `[M+Na]+`
-    `[M+2Na-H]` all don't match.
+
+# TEMP
+
+What to store from features. Add features predominantly from water. If none are
+found there, or if a certain adduct was not found there, add from serum. Avoid
+duplicated ion/adduct information for the same polarity (i.e. a single ion
+should be added for a compound).
+
+- feature_id
+- original_sample: mix 01...
+- sample_matrix: water|serum pool
+- ion_adduct
+- relative_ion_intensity: relative to the other ions [0-100]
+- confidence_level: ABCD.
+- rtmed -> ion_mz
+- mzmed -> ion_rt
+- compound_id
+- polarity
+
+```{r eval = FALSE}
+## Create a data.frame with that info.
+fts <- data.frame(feature_id = ,
+                  compound_id,
+                  ion_adduct,
+                  sample_matrix,
+                  original_sample,
+                  confidence_level)
+## Extract remaining variables from the features:
+ion_mz, ion_rt, relative_ion_intensity, 
+## Set relative ion intensity
+
+idb <- insertIon(idb, fts)
+```
+
+What to store from spectra; add all spectra from water (should be the *purest*).
+
+- confidence: high, low
+- adduct
+- rtime
+- precursor m/z
+- acquisitionNum
+- polarity
+- original_file
+- collision_energy
+- compound_id
+- instrument "Sciex TripleTOF 5600+"
+- instrument_type "LC-ESI-QTOF"
+
+```{r eval = FALSE}
+## Manually define the spctrum names/IDs.
+sps_insert <- data.frame(original_spectrum_id,
+                         compound_id,
+                         confidence,
+                         adduct,
+                         instrument,
+                         instrument_type)
+## Get remaining from Spectra
+rtime, precursor_mz, acquisitionNum, polarity, original_file, collision_energy
+## Add the ion_id info by getting the just inserted ion info from the database
+## identify the entries with feature_id, original_sample and sample_matrix
+idb <- insertSpectra(sps, columns = c(the columns to insert))
+
+```
+
+```{r eval = FALSE}
+## create a new IonDb from the CompDb. If file exists, remove all ions and
+## spectra for the current mix.
+```
