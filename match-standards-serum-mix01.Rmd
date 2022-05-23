@@ -23,7 +23,7 @@ POLARITY <- "POS"
 ```{r, general-settings, echo = FALSE, message = FALSE}
 ```
 
-**Current version: 0.9.0, 2022-03-09.**
+**Current version: 0.10.0, 2022-05-05.**
 
 # Introduction
 
@@ -65,6 +65,9 @@ ions (respectively `[M-H]-` ions for negative polarity) and add the m/z for
 these adducts as *precursor m/z*.
 
 ```{r, load-reference-databases, message = FALSE}
+```
+
+```{r, setup-ion-db, message = FALSE, echo = FALSE}
 ```
 
 # Initial evaluation of available MS2 data
@@ -225,7 +228,7 @@ std <- "3-Phosphoglyceric Acid"
 ```
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SP", std_ms2)
+plot_eics(data, std, feature_table, "SP", std_ms2)
 ```
 
 A considerable number of features has been assigned to this standard based on
@@ -236,7 +239,7 @@ The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix01-serum-pos-3-phosphoglyceric-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -327,19 +330,9 @@ perform_match(std_ms2_nl, mbank_nl, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- Inconclusive - would evaluate data in water first and eventually lift results
-  over (as additional evidence).
-- Only features for ions other than `[M+H]+` are identified, but their MS2
-  spectra don't match any spectra from any database - even not with their
-  neutral loss version.
-- Annotation of FT02219 (RT=115, `[M+Na]+` ion) to `r std` with confidence level
-  **C**? Or **D** because the score of the match between MS2 spectra was close
-  to 0? 
-- FT02581 was grouped together FT02219 so it should get the same confidence
-  level? 
-- Reference MS2: F08.S0419 (with a very *low* grading?)
-- What about the other features. Should we give them confidence **D** or can
-  we exclude them with other considerations?
+- From water and negative polarity, the expected retention time is 250 seconds:
+- FT01851 (RT=267.4, `[M+H]+` ion): confidence level **D**.
+- FT02127 (RT=253.2, `[M+NH4]+` ion): confidence level **D**.
 
 
 ### Acetylhistidine
@@ -356,14 +349,14 @@ samples with higher concentrations than in those with lower concentrations.
 ```
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SP", std_ms2)
+plot_eics(data, std, feature_table, "SP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix01-serum-pos-acetylhistidine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -449,13 +442,25 @@ perform_match(std_ms2_nl, mbank_nl,
 - FT02020 (RT=182.5, `[M+H]+` ion) matches MS2 spectra of `r std`. High
   similarity matches against other compounds are from related compounds, but
   differ in their precursor m/z. Confidence **A**.
-- Reference MS2: F08.S0632, F07.S0638. F08.S0806 and F07.S0810 have a much
-  higher retention time and will thus not be considered.
-- Unclear: FT02730 (`[M+2Na-H]+` ion) and FT02372 (`[M+Na]+` ion). Their MS2
-  spectra don't match as expected. Maybe best to not consider? Unless we find
-  an explanation why their neutral loss spectra don't match the one from
-  `[M+H]+`.
+- FT02372 (RT=180.5, `[M+Na]+` ion). Confidence **A-**.
+- FT02730 (RT=175.3, `[M+2Na-H]+` ion). Confidence **A-**.
+- Reference MS2: `[M+H]+` (FT02020): F08.S0632, F07.S0638; high
+  confidence. `[M+Na]+` (FT02372): F08.S0622; low confidence. `[M+2Na-H]+`
+  (FT02730): F07.S0623, F08.S0623; low confidence.
   
+```{r, echo = FALSE}
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT02020_F08.S0632", "FT02020_F07.S0638",
+                 "FT02372_F08.S0622",
+                 "FT02730_F07.S0623", "FT02730_F08.S0623")]
+ms2$confidence <- c("high", "high",
+                    "low",
+                    "low", "low")
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### Betaine
 
@@ -471,14 +476,14 @@ samples with higher concentrations than in those with lower concentrations.
 ```
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SP", std_ms2)
+plot_eics(data, std, feature_table, "SP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix01-serum-pos-betaine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -568,8 +573,22 @@ perform_match(std_ms2_nl, mbank_nl, similarity = 0.9,
 #### Summary
 
 - MS2 spectra for FT00644 (RT=163.4, `[M+H]+` ion) matches Betaine with
-  confidence **B** (or maybe A because Abromine is in fact Betaine?).
-- Reference MS2: F08.S0573, F07.S0602, F07.S0601.
+  confidence **B**.
+- FT01012 (RT=161.3, `[M+Na]+` ion). Confidence level **B-**.
+- Reference MS2: `[M+H]+` (FT00644): F07.S0573, F07.S0602, F08.S0601; high
+  confidence. `[M+Na]+` (FT01012): F07.S0563, F07.S0596, F08.S0576; low
+  confidence.
+
+```{r, echo = FALSE}
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT00644_F07.S0573", "FT00644_F07.S0602", "FT00644_F08.S0601",
+                 "FT01012_F07.S0563", "FT01012_F07.S0596", "FT01012_F08.S0576")]
+ms2$confidence <- c("high", "high", "high",
+                    "low", "low", "low")
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 
 ### C3 Carnitine
@@ -586,7 +605,7 @@ samples with higher concentrations than in those with lower concentrations.
 ```
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SP", std_ms2)
+plot_eics(data, std, feature_table, "SP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -645,8 +664,7 @@ perform_match(std_ms2_nl, mbank_nl, similarity = 0.7,
 
 #### Summary
 
-- Inconclusive: consider/check data in water.
-- FT02651 (RT=163.8, `[M+NH4]+`): confidence level **D**?
+- FT02651 (RT=163.8, `[M+NH4]+`): confidence level **D**.
 
 
 ### CDP
@@ -663,14 +681,14 @@ samples with higher concentrations than in those with lower concentrations.
 ```
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SP", std_ms2)
+plot_eics(data, std, feature_table, "SP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix01-serum-pos-cdp-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -755,7 +773,22 @@ perform_match(std_ms2_nl, mbank_nl, similarity = 0.9,
 
 - FT06282 (RT=260.8, `[M+H]+`): confidence level **B** (could be A, but match is
   based on a single peak).
-- Reference spectra: F23.S0892, F23.S0864.
+- Reference spectra: `[M+H]+` (FT06282): F07.S0892, F07.S0864; low confidence.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT06282"),
+                  confidence_level = c("B"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT06282_F07.S0892", "FT06282_F07.S0864")]
+ms2$confidence <- "low"
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 
 ### Creatine
@@ -772,14 +805,14 @@ samples with higher concentrations than in those with lower concentrations.
 ```
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SP", std_ms2)
+plot_eics(data, std, feature_table, "SP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix01-serum-pos-creatine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -869,13 +902,29 @@ perform_match(std_ms2_nl, mbank_nl, similarity = 0.9,
 - MS2 spectra for FT00577, FT00579 and FT00580 match neutral loss spectra from
   creatine, but their retention times are very different. Also, their MS2
   spectra match those of creatinine.
-- FT00872 (RT=176, `[M+H]+` ion): confidence **C**: the MS2 spectrum F07.S0633
+- FT00872 (RT=176, `[M+H]+` ion): confidence **B-**: the MS2 spectrum F07.S0633
   matches only `r std` with a low similarity.
-- FT01669 (RT=173.3, `[M+2Ma-H]+` ion): neutral loss spectrum of F07.S0621
+- FT01669 (RT=173.3, `[M+2Na-H]+` ion): neutral loss spectrum of F07.S0621
   matches reference spectrum with high simlarity. Confidence **B**.
 - FT01309 (RT=175.4, `[M+Na]+` ion) inherit confidence from above - or drop
   because the MS2 spectrum does not match any other?
-- Reference spectra: F07.S0621, F07.S0630 and F07.S0633.
+- Reference spectra: `[M+H]+` (FT00872): F08.S0630 and F07.S0633; low
+  confidence. `[M+2Na-H]+` (FT01669): F07.S0621, F08.S0620; high
+  confidence. `[M+Na]+` (FT01309): F08.S0618; low confidence.
+
+```{r, echo = FALSE}
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT00872_F08.S0630", "FT00872_F07.S0633",
+                 "FT01669_F07.S0621", "FT01669_F08.S0620",
+                 "FT01309_F08.S0618")]
+ms2$confidence <- c("low", "low",
+                    "high", "high",
+                    "low")
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### Dimethylglycine
 
@@ -896,14 +945,14 @@ from several different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SP", std_ms2)
+plot_eics(data, std, feature_table, "SP", std_ms2)
 ```
 
 The only MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix01-serum-pos-dimethylglycine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -976,10 +1025,24 @@ strangely matches a lot of other reference compounds.
 
 #### Summary
 
-- Inconclusive: check water data.
-- Maybe FT01184 (RT = 174.6, `[M+2Na-H]+` ion)?
-- FT00753 (RT = 175, `[M+Na]+` ion) inherit from above.
-- FT00428 (RT = 178.6, `[M+H]+` ion) inherit from above.
+- FT01184 (RT = 174.6, `[M+2Na-H]+` ion): confidence level **D**.
+- FT00753 (RT = 175, `[M+Na]+` ion): confidence level **D**.
+- FT00428 (RT = 178.6, `[M+H]+` ion): confidence level **D**.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT00428"),
+                  confidence_level = c("D"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT01184_F08.S0617")]
+ms2$confidence <- "low"
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 
 ### Glycerol
@@ -998,7 +1061,7 @@ samples with higher concentrations than in those with lower concentrations.
 We next plot the EIC for the assigned feature and visually inspect it.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SP", std_ms2)
+plot_eics(data, std, feature_table, "SP", std_ms2)
 ```
 
 ```{r , echo = FALSE}
@@ -1033,14 +1096,14 @@ from several different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SP", std_ms2)
+plot_eics(data, std, feature_table, "SP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix01-serum-pos-l-glutamic-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -1155,16 +1218,26 @@ with similarity > 0.4.
 #### Summary
 
 - FT01191 (RT=182.5, `[M+H]+` ion): confidence level **A**. Its MS2 spectra
-  (F23.S0695 and F24.S0682) match `r std`. Matches with other compounds have
+  (F07.S0695 and F08.S0682) match `r std`. Matches with other compounds have
   large differences in precursor m/z.
-- FT01933 (RT=179.9, `[M+2Na-H]+` ion): MS2 spectrum does not match
-  anything. Confidence **D** based on similar EIC?
-- FT00847 (RT=180.1, `[M+H-NH3]+`] ion): confidence level **B-**. Depends if
-  that compound can loose an NH3!
-- FT01568 (RT=179.9, `[M+Na]+`] ion): confidence level **C**. MS2 spectrum
-  F07.S0636 matches neutral loss reference spectra.
-- Reference MS2 spectra: F07.S0695 and F08.S0682, F07.S0636 for the `[M+Na]+`
-  ion.
+- FT01933 (RT=179.9, `[M+2Na-H]+` ion): confidence level **A-**.
+- FT01568 (RT=179.9, `[M+Na]+`] ion): confidence level **A-**.
+- Reference MS2 spectra: `[M+H]+` (FT01191): F07.S0695 and F08.S0682; high
+  confidence. `[M+Na]+` (FT01568): F07.S0636, F08.S0643; low
+  confidence. `[M+2Na-H]+` (FT01933): F08.S0644.  ion; low confidence.
+
+```{r, echo = FALSE}
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT01191_F07.S0695", "FT01191_F08.S0682",
+                 "FT01568_F07.S0636", "FT01568_F08.S0643",
+                 "FT01933_F08.S0644")]
+ms2$confidence <- c("high", "high",
+                    "low", "low",
+                    "low")
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 
 ### Myo-Inositol
@@ -1186,14 +1259,14 @@ from several different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SP", std_ms2)
+plot_eics(data, std, feature_table, "SP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix01-serum-pos-myo-inositol-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -1257,8 +1330,9 @@ perform_match(std_ms2_nl, mbank_nl,
 
 #### Summary
 
-- Inconclusive: check water data.
-- FT02027 is **not** `r std`. Inconclusive for all others.
+- FT01747 (RT=194.2 `[M+H]+` ion): confidence level **D** (from water).
+- FT01473 (RT=194.2 `[M+H-H2O]+` ion): confidence level **D** (from water).
+- FT02110 (RT=194.1, `[M+Na]+` ion): confidence level **D** (from water).
 
 
 ### Pyruvic Acid
@@ -1275,7 +1349,7 @@ samples with higher concentrations than in those with lower concentrations.
 ```
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SP", std_ms2)
+plot_eics(data, std, feature_table, "SP", std_ms2)
 ```
 
 We next look if there are MS2 spectra associated to this feature but we don't
@@ -1288,7 +1362,16 @@ plot_spectra(std_ms2)
 
 #### Summary
 
-- Inconclusive; no MS2 spectra available.
+- FT00883 (RT=39.8 `[M+2Na-H]+` ion): confidence level **D**.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT00883"),
+                  confidence_level = c("D"))
+```
+
+```{r, add-ions, echo = FALSE}
+```
 
 
 ### Suberic Acid
@@ -1310,14 +1393,14 @@ from a few different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SP", std_ms2)
+plot_eics(data, std, feature_table, "SP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix01-serum-pos-suberic-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -1385,7 +1468,18 @@ of other compounds than `r std`.
 
 #### Summary
 
-- Inconclusive: check water data.
+- FT01363 (RT=36.29 `[M+H-H2O]+` ion): confidence **D**.
+- FT02006 (RT=37.51 `[M+Na]+` ion): confidence **D**.
+- FT02358 (RT=37.78 `[M+2Na-H]+` ion): confidence **D**.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT01363", "FT02358"),
+                  confidence_level = c("D", "D"))
+```
+
+```{r, add-ions, echo = FALSE}
+```
 
 
 ### Xanthine
@@ -1407,14 +1501,14 @@ from two compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SP", std_ms2)
+plot_eics(data, std, feature_table, "SP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix01-serum-pos-xanthine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -1511,10 +1605,35 @@ compounds different from `r std` with higher similarity.
 - FT01910 (RT=141.2, `[M+K]+` ion): confidence level **B-**.
 - FT01647 (RT=141.7, `[M+Na]+` ion): confidence level **B-**.
 - FT02004 (RT=142.7, `[M+2Na-H]+` ion): confidence level **B-**.
-- Very puzzling that the neutral loss spectra of the different adducts don't
-  match.
-- Reference MS2: F07.S0505 and F08.S0515 (from FT01287). Question is what to do
-  with all the other spectra? Keep them as reference for other ions?
+- Reference MS2: `[M+H]+` (FT01287): F07.S0505 and F08.S0515; high
+  confidence. `[M+H-NH3]+` (FT00926): F07.S0524, F08.S0525; low
+  confidence. `[M+K]+` (FT01910): F07.S0515; low confidence. `[M+Na]+`
+  (FT01647): F08.S0526; low confidence. `[M+2Na-H]+` (FT02004): F07.S0525,
+  F08.S0532; low confidence.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT00926"),
+                  confidence_level = c("B-"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT01287_F07.S0505", "FT01287_F08.S0515",
+                 "FT00926_F07.S0524", "FT00926_F08.S0525",
+                 "FT01910_F07.S0515",
+                 "FT01647_F08.S0526",
+                 "FT02004_F07.S0525", "FT02004_F08.S0532")]
+ms2$confidence <- c("high", "high",
+                    "low", "low",
+                    "low",
+                    "low",
+                    "low", "low")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### Uric acid
 
@@ -1535,7 +1654,7 @@ from two compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SP", std_ms2)
+plot_eics(data, std, feature_table, "SP", std_ms2)
 ```
 
 Signal is very low for all of the features. And also no MS2 spectra were
@@ -1619,10 +1738,10 @@ std <- "3-Phosphoglyceric Acid"
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SN", std_ms2)
+plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
-```{r , echo = FALSE}
+```{r mix01-serum-neg-3-phosphoglyceric-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -1672,6 +1791,16 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   confidence **B**.
 - FT0908 (RT=266.1 `[M-H]-` ion) is the same as the feature above, thus this
   retention time should be assigned/used.
+- Reference MS2: `[M-H]-` (FT0911): F15.S0765; high confidence.
+
+```{r, echo = FALSE}
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0911_F15.S0765")]
+ms2$confidence <- "high"
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 
 ### Acetylhistidine
@@ -1693,10 +1822,10 @@ from several different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SN", std_ms2)
+plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
-```{r , echo = FALSE}
+```{r mix01-serum-neg-acetylhistidine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -1775,7 +1904,16 @@ perform_match(std_ms2_nl, mbank_nl,
 #### Summary
 
 - FT1073 (RT=177.1, `[M-H]-` ion): confidence level **A**.
-- Reference MS2: F15.S0586, F16.S0549, F16.S0599.
+- Reference MS2: `[M-H]-` (FT1073): F15.S0586, F16.S0549, F16.S0599.
+
+```{r, echo = FALSE}
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT1073_F15.S0586", "FT1073_F16.S0549", "FT1073_F16.S0599")]
+ms2$confidence <- "high"
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 
 ### Betaine
@@ -1797,7 +1935,7 @@ from the same compound.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SN", std_ms2)
+plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
 We next extract the MS2 spectra for all these features and match them against
@@ -1839,10 +1977,10 @@ look rather noisy and large retention time shifts between the samples are
 visible.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SN", std_ms2)
+plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
-```{r , echo = FALSE}
+```{r mix01-serum-neg-cdp-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -1892,7 +2030,24 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT4519 (RT=264.4, `[M-H]-` ion): confidence level **A**. Its MS2 spectra (or
   better said those of FT4523) match the reference spectra of `r std`.  Matches
   with other compounds have large differences in precursor m/z.
-- Reference MS2: F16.S0794, F16.S0840, F15.S0801, F15.S0838.
+- Reference MS2: `[M-H]-` (FT4519): F16.S0794, F16.S0840, F15.S0801, F15.S0838;
+  high confidence.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT4519"),
+                  confidence_level = c("A"))
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT4523_F16.S0794", "FT4523_F16.S0840",
+                 "FT4523_F15.S0801", "FT4523_F15.S0838")]
+ms2$confidence <- "high"
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 
 ### Dimethylglycine
@@ -1911,7 +2066,7 @@ samples with higher concentrations than in those with lower concentrations.
 We next plot the EIC for the only feature matched to `r std` and show it below.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SN", std_ms2)
+plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
 ```{r , echo = FALSE}
@@ -1922,7 +2077,6 @@ Unfortunately no MS2 spectra associated to FT0087 is available.
 
 #### Summary
 
-- Inconclusive: check water data.
 - FT0087 (RT=177, `[M-H]-` ion): confidence level **D**.
 
 
@@ -1943,7 +2097,7 @@ Also for `r std` we have only one match. We next plot the and show the EIC
 of the realted feature.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SN", std_ms2)
+plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
 ```{r , echo = FALSE}
@@ -1976,13 +2130,13 @@ from 2 different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SN", std_ms2)
+plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
 We next extract the MS2 spectra for all these features and match them against
 the reference spectra for `r std` from HMDB.
 
-```{r , echo = FALSE}
+```{r mix01-serum-neg-l-glutamic-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -2034,7 +2188,17 @@ Extracted spectra match also reference spectra of compounds different from
 
 - FT0433(RT=176.4, `[M-H]-` ion): confidence level **B**. We can't discriminate
   between L-Glutamic Acid and DL-Glutamate.
-- Reference MS2: F15.S0592, F16.S0560, F16.S0611.
+- Reference MS2: `[M-H]-` (FT0433): F15.S0592, F16.S0560, F16.S0611; high
+  confidence.
+
+```{r, echo = FALSE}
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0433_F15.S0592", "FT0433_F16.S0560", "FT0433_F16.S0611")]
+ms2$confidence <- "high"
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 
 ### Myo-Inositol
@@ -2056,12 +2220,12 @@ from several different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SN", std_ms2)
+plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
 The only available MS2 spectrum available for the above features is shown below.
 
-```{r , echo = FALSE}
+```{r mix01-serum-neg-myo-inositol-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -2140,13 +2304,18 @@ In any case, no match with similarity higher than 0.7 is found.
 
 #### Summary
 
-- Inconclusive: check water data.
-- FT1334 (RT = 193.7, `[M+Cl]-` ion) with confidence **C** (because of the
-  neutral loss spectra match)?
-- FT1460 (RT = 192.2, `[M+HCOO]-` ion) and FT0834 (RT = 192.2, `[M-H]-` ion)
-  inheriting confidence level from FT1334.
-- other features with confidence **D**?
+- FT1334 (RT = 193.7, `[M+Cl]-` ion): confidence level **D** (from water).
+- FT1460 (RT = 192.2, `[M+HCOO]-` ion) confidence level **D** (from water).
+- FT0834 (RT = 192.2, `[M-H]-` ion): confidence level **D** (from water).
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT1334"),
+                  confidence_level = c("D"))
+```
+
+```{r, add-ions, echo = FALSE}
+```
 
 ### propionic acid
 
@@ -2167,10 +2336,10 @@ from several different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SN", std_ms2)
+plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
-```{r , echo = FALSE}
+```{r mix01-serum-neg-propionic-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -2223,12 +2392,12 @@ samples with higher concentrations than in those with lower concentrations.
 ```
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SN", std_ms2)
+plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
 We next look if there are MS2 spectra associated to the above features.
 
-```{r , echo = FALSE}
+```{r mix01-serum-neg-pyruvic-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -2305,10 +2474,8 @@ Ascorbic acid are high.
 
 #### Summary
 
-- Inconclusive: check water data.
-- Only MS2 spectra from FT0043 are available but they don't match reference
-  spectra of `r std` (but those of ascorbic acid).
-
+- FT0328 (RT=40, `[M+HCOO]-` ion): confidence level **D**.
+- FT0043 (RT=42, `[M-H]-` ion): confidence level **D**.
 
 ### Suberic Acid
 
@@ -2329,14 +2496,14 @@ from 3(or 4?) different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SN", std_ms2)
+plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix01-serum-neg-suberic-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -2384,7 +2551,17 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 - FT0757 (RT=37.3, `[M-H]-` ion): confidence level **A**.
 - FT1399 (RT=37.3, `[M+HCOO]-` ion) inherits confidence level **A** from FT0757.
-- Reference MS2: F15.S0148, F15.S0260.
+- Reference MS2: `[M-H]-` (FT0757): F15.S0148, F16.S0136.
+- Note: there is also another feature: FT0758 (RT=64.14) matching with level A!
+
+```{r, echo = FALSE}
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0757_F15.S0148", "FT0757_F16.S0136")]
+ms2$confidence <- "high"
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 
 ### Uric acid
@@ -2403,7 +2580,7 @@ samples with higher concentrations than in those with lower concentrations.
 We show the EICs for the features above.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SN", std_ms2)
+plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
 We next look if there are MS2 spectra associated to the above features.
@@ -2438,7 +2615,7 @@ from 3 different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "SN", std_ms2)
+plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
 We next extract the MS2 spectra for all these features and match them against
@@ -2450,12 +2627,28 @@ plot_spectra(std_ms2)
 
 #### Summary
 
-- Inconclusive: check water data.
+- FT0491 (RT=140.2 `[M-H]-` ion): confidence level **D**.
+- FT1090 (RT=140.1 `[M+HCOO]-` ion): confidence level **D**.
 
 ## Standards without any matching feature
 
 ### C3 Carnitine
 ### Creatine
+
+# Summary on the ion database
+
+Summarizing the content that was added to the `IonDb`.
+
+```{r, iondb-summary, echo = FALSE, results = "asis"}
+```
+
+# Changelog
+
+- Version 0.10.0:
+  - Reconsider matches and include neutral loss spectra searches.
+- Version 0.9.0:
+  - Use `ppm = 20` to select MS2 spectra for features.
+  - Add adducts `[M+2Na-H]+` and `[M+2K-H]+`.
 
 # Session information
 
