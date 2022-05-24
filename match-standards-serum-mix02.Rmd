@@ -5,6 +5,7 @@ output:
   rmarkdown::html_document:
     highlight: pygments
     toc: true
+    toc_float: true
     toc_depth: 3
     fig_width: 5
 ---
@@ -58,7 +59,7 @@ We next load the data and split it according to matrix and polarity.
 We next also load the reference databases we will use to compare the
 experimental MS2 spectra against. Below we thus load HMDB and MassBank data. We
 create in addition *neutral loss* versions of the databases. Since HMDB does not
-provide precusor m/z values we assume the fragment spectra to represent `[M+H]+`
+provide precursor m/z values we assume the fragment spectra to represent `[M+H]+`
 ions (respectively `[M-H]-` ions for negative polarity) and add the m/z for
 these adducts as *precursor m/z*.
 
@@ -227,14 +228,14 @@ ions from different compounds.
 We next plot the EICs for the assigned features and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-pos-ascorbic-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -270,7 +271,7 @@ sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_hmdb_nl, csp_nl)
 ```
 
 ```{r mix02-serum-pos-ascorbic-acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2_nl, std_hmdb_nl, 0.05,
+feature_table_sel <- plot_select_ms2(std_ms2_nl, std_hmdb_nl, 0.05,
                            ppm = csp@ppm, tolerance = csp@tolerance)
 ```
 
@@ -337,14 +338,14 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-pos-c4-carnitine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -437,14 +438,14 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-pos-fructose-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -533,13 +534,13 @@ One single feature has been assigned to this standard based on m/z matching.
 We next plot its EIC and visually inspect it.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The only MS2 spectrum available for the features matched to `r std` is shown
 below (peaks with an intensity below 5% of the maximum peak where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-pos-glycine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -607,21 +608,21 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-pos-cgmp-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
 We next match the extracted MS2 spectra against the reference spectra for 
 `r std` from HMDB and MassBank.
 
-```{r mix02-serum-pos-cGMP-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-pos-cgmp-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
@@ -630,18 +631,18 @@ The MS2 spectra from FT05702 match with high similarity score reference spectra
 from `r std`. We also have matches with very low similarity involving spectra
 from FT06569.
 
-```{r mix02-serum-pos-cGMP-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
+```{r mix02-serum-pos-cgmp-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.9, ppm = csp@ppm,
                                tolerance = csp@tolerance)
 ```
 
-```{r mix02-serum-pos-cGMP-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-pos-cgmp-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 We observe similar results also from the MassBank comparison.
 
-```{r mix02-serum-pos-cGMP-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
+```{r mix02-serum-pos-cgmp-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7, ppm = csp@ppm,
                                tolerance = csp@tolerance)
 ```
@@ -650,13 +651,13 @@ The extracted spectra from feature FT4591 (F08.S0747, F07.S0735 and
 especially F07.S0777) seem to match reference spectra from `r std`. Also
 F08.S0748 from FT4903 matches but with very low similarity. 
 
-```{r mix02-serum-pos-cGMP-ms2-hmdb_nl, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-pos-cgmp-ms2-hmdb_nl, echo = FALSE, fig.width = 5, fig.height = 5}
 std_hmdb_nl <- hmdb_nl[hmdb_nl$compound_id == hmdb_id]
 std_ms2_nl <- neutralLoss(std_ms2, nl_param)
 sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_hmdb_nl, csp_nl)
 ```
 
-```{r mix02-serum-pos-cGMP-ms2-mbank_nl, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-pos-cgmp-ms2-mbank_nl, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank_nl <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey), nl = TRUE)
 std_ms2_nl <- neutralLoss(std_ms2, nl_param)
 sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_mbank_nl, csp_nl)
@@ -718,14 +719,14 @@ ions from two different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-pos-histidine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -843,14 +844,14 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-pos-hydroxyproline-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -949,14 +950,14 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-pos-hypoxanthine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -1059,14 +1060,14 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-pos-l-kynurenine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -1169,14 +1170,14 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-pos-lactic-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -1200,14 +1201,14 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-pos-1-methylxanthine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -1311,33 +1312,33 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-pos-3-nitrotyrosine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
 We next match the extracted MS2 spectra against the reference spectra for 
 `r std` from HMDB and MassBank.
 
-```{r mix02-serum-pos-3-Nitrotyrosine-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-pos-3-nitrotyrosine-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 We have very good matches for F07.S0483 and F08.S0493 from feature FT02778.
 
-```{r mix02-serum-pos-3-Nitrotyrosine-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
+```{r mix02-serum-pos-3-nitrotyrosine-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
                                tolerance = csp@tolerance)
 ```
 
-```{r mix02-serum-pos-3-Nitrotyrosine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-pos-3-nitrotyrosine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
@@ -1346,13 +1347,13 @@ In addition, since extracted spectrum F08.S0510 from FT03724 is associated to
 an ion different from `[M+H]+` we perform a neutral loss spectra comparison but
 still it does not match.
 
-```{r mix02-serum-pos-3-Nitrotyrosine-ms2-hmdb_nl, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-pos-3-nitrotyrosine-ms2-hmdb_nl, echo = FALSE, fig.width = 5, fig.height = 5}
 std_hmdb_nl <- hmdb_nl[hmdb_nl$compound_id == hmdb_id]
 std_ms2_nl <- neutralLoss(std_ms2, nl_param)
 sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_hmdb_nl, csp_nl)
 ```
 
-```{r mix02-serum-pos-3-Nitrotyrosine-ms2-mbank_nl, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-pos-3-nitrotyrosine-ms2-mbank_nl, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank_nl <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey), nl = TRUE)
 std_ms2_nl <- neutralLoss(std_ms2, nl_param)
 sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_mbank_nl, csp_nl)
@@ -1411,14 +1412,14 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-pos-phosphocreatine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -1442,27 +1443,27 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The only available MS2 spectrum (cleaned) for the features matched to `r std` is
 shown below (peaks with an intensity below 5% of the maximum peak and spectra
 with less than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-pos-udp-glucuronate-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
 We next match the extracted MS2 spectra against the reference spectra for 
 `r std` from HMDB and MassBank.
 
-```{r mix02-serum-pos-UDP-glucuronate-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-pos-udp-glucuronate-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
-```{r mix02-serum-pos-UDP-glucuronate-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-pos-udp-glucuronate-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
@@ -1471,13 +1472,13 @@ In both cases we don't find any match. In addition, some extracted
 spectra are associated to an ion different from `[M+H]+` we perform a neutral
 loss spectra comparison.
 
-```{r mix02-serum-pos-UDP-glucuronate-ms2-hmdb_nl, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-pos-udp-glucuronate-ms2-hmdb_nl, echo = FALSE, fig.width = 5, fig.height = 5}
 std_hmdb_nl <- hmdb_nl[hmdb_nl$compound_id == hmdb_id]
 std_ms2_nl <- neutralLoss(std_ms2, nl_param)
 sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_hmdb_nl, csp_nl)
 ```
 
-```{r mix02-serum-pos-UDP-glucuronate-ms2-mbank_nl, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-pos-udp-glucuronate-ms2-mbank_nl, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank_nl <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey), nl = TRUE)
 std_ms2_nl <- neutralLoss(std_ms2, nl_param)
 sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_mbank_nl, csp_nl)
@@ -1530,14 +1531,14 @@ std <- "Valine"
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WP", std_ms2)
+plot_eics(data, std, feature_table, "WP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-pos-valine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -1568,13 +1569,13 @@ MassBank.
 
 Since F08.S0568 from FT01634 is associated to an ion different from `[M+H]+` we perform a neutral loss spectra comparison.
 
-```{r mix02-serum-pos-UDP-glucuronate-ms2-hmdb_nl, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-pos-valine-ms2-hmdb_nl, echo = FALSE, fig.width = 5, fig.height = 5}
 std_hmdb_nl <- hmdb_nl[hmdb_nl$compound_id == hmdb_id]
 std_ms2_nl <- neutralLoss(std_ms2["FT01634_F08.S0568"], nl_param)
 sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_hmdb_nl, csp_nl)
 ```
 
-```{r mix02-serum-pos-UDP-glucuronate-ms2-mbank_nl, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-pos-valine-ms2-mbank_nl, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank_nl <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey), nl = TRUE)
 std_ms2_nl <- neutralLoss(std_ms2["FT01634_F08.S0568"], nl_param)
 sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_mbank_nl, csp_nl)
@@ -1689,14 +1690,14 @@ m/z matching. We next plot its EIC and visually inspect it (has very
 low intensity).
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-neg-c4-carnitine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -1719,14 +1720,14 @@ m/z matching. We next plot its EIC and visually inspect it (has very
 low intensity).
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-neg-fructose-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -1795,14 +1796,14 @@ different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-neg-glycine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -1827,21 +1828,21 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-neg-cgmp-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
 We next match the extracted MS2 spectra against the reference spectra for 
 `r std` from HMDB and MassBank.
 
-```{r mix02-serum-neg-cGMP-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-neg-cgmp-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
@@ -1850,17 +1851,17 @@ sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 All the spectra from FT3159 (F15.S0685, F15.S0721, F16.S0711, F16.S0742,
 F16.S0767) seem to match.
 
-```{r mix02-serum-neg-cGMP-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
+```{r mix02-serum-neg-cgmp-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
                                tolerance = csp@tolerance)
 ```
 
-```{r mix02-serum-neg-cGMP-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-neg-cgmp-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
-```{r mix02-serum-neg-cGMP-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
+```{r mix02-serum-neg-cgmp-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7, ppm = csp@ppm,
                                tolerance = csp@tolerance)
 ```
@@ -1903,14 +1904,14 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-neg-histidine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -1978,14 +1979,14 @@ std <- "Hydroxyproline"
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-neg-hydroxyproline-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -2012,14 +2013,14 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-neg-hypoxanthine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -2114,14 +2115,14 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-neg-l-kynurenine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -2206,14 +2207,14 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-neg-lactic-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -2298,14 +2299,14 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-neg-1-methylxanthine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -2369,21 +2370,21 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-neg-3-nitrotyrosine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
 We next match the extracted MS2 spectra against the reference spectra for 
 `r std` from HMDB and MassBank.
 
-```{r mix02-serum-neg-3-Nitrotyrosine-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-neg-3-nitrotyrosine-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
@@ -2392,12 +2393,12 @@ sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 We find good matches for spectra from FT1305 (especially F15.S0425 but also
 F16.S0459).
 
-```{r mix02-serum-neg-3-Nitrotyrosine-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
+```{r mix02-serum-neg-3-nitrotyrosine-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
                                tolerance = csp@tolerance)
 ```
 
-```{r mix02-serum-neg-3-Nitrotyrosine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix02-serum-neg-3-nitrotyrosine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
@@ -2452,14 +2453,14 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-neg-phosphocreatine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -2483,14 +2484,14 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The only available MS2 spectrum (cleaned) for the features matched to `r std` is
 shown below (peaks with an intensity below 5% of the maximum peak and spectra
 with less than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-neg-udp-glucuronate-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -2514,14 +2515,14 @@ ions from different compounds.
 We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
-plot_eics(data, std, tmp, "WN", std_ms2)
+plot_eics(data, std, feature_table, "WN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks where removed).
 
-```{r , echo = FALSE}
+```{r mix02-serum-neg-valine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
