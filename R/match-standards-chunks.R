@@ -14,7 +14,7 @@ library(MetaboAnnotation)
 library(pheatmap)
 library(MsFeatures)
 setMSnbaseFastLoad(TRUE)
-setMSnbaseFastLoad(FALSE)
+# setMSnbaseFastLoad(FALSE)
 register(SerialParam())
 source("R/match-standards-functions.R")
 
@@ -29,8 +29,8 @@ RDATA_PATH <- paste0("data/RData/match-standards-", tolower(MATRIX), "-",
 dir.create(IMAGE_PATH, showWarnings = FALSE, recursive = TRUE)
 dir.create(RDATA_PATH, showWarnings = FALSE, recursive = TRUE)
 #' Define the mzML files *base* path (/data/massspec/mzML/ on the cluster)
-MZML_PATH <- "~/mix01/"
-MZML_PATH <- "/data/massspec/mzML/"
+MZML_PATH <- "/Volumes/PortableSSD/mzML/"
+# MZML_PATH <- "/data/massspec/mzML/"
 ALL_NL_MATCH <- FALSE                   # run matching against neutral loss db
 library(knitr)
 opts_chunk$set(cached = FALSE, message = FALSE, warning = FALSE,
@@ -43,8 +43,8 @@ std_dilution <- read.table("data/standards_dilution.txt",
                            sep = "\t", header = TRUE)
 std_dilution$exactmass <- calculateMass(std_dilution$formula)
 colnames(std_dilution)[colnames(std_dilution) == "HMDB.code"] <- "HMDB"
-std_dilution01 <- std_dilution[std_dilution$mix == MIX, ]
-pandoc.table(std_dilution01[, c("name", "formula", "HMDB", "RT", "POS", "NEG")], 
+std_dilution <- std_dilution[std_dilution$mix == MIX, ]
+pandoc.table(std_dilution[, c("name", "formula", "HMDB", "RT", "POS", "NEG")], 
              style = "rmarkdown", split.tables = Inf,
              caption = paste0("Standards of ", MIX_NAME, ". Columns RT, POS ",
                               "and NEG contain expected retention times and ",
@@ -89,7 +89,7 @@ hmdb_pos_nl <- hmdb_pos_nl[lengths(hmdb_pos_nl) > 0]
 hmdb_neg_nl <- neutralLoss(hmdb_neg, param = nl_param)
 hmdb_neg_nl <- hmdb_neg_nl[lengths(hmdb_neg_nl) > 0]
 #' HMDB with only MS2 for current standards
-hmdb_std <- Spectra(cdb, filter = ~ compound_id == std_dilution01$HMDB)
+hmdb_std <- Spectra(cdb, filter = ~ compound_id == std_dilution$HMDB)
 
 library(MsBackendMassbank)
 library(RSQLite)
@@ -158,7 +158,7 @@ tmp <- do.call(rbind, lapply(tmp, function(z) {
                mean_sim = mean(z$score))
 }))
 tmp <- rbindFill(
-    tmp, std_dilution01[!std_dilution01$HMDB %in% tmp$HMDB, c("name", "HMDB")])
+    tmp, std_dilution[!std_dilution$HMDB %in% tmp$HMDB, c("name", "HMDB")])
 rownames(tmp) <- NULL
 pandoc.table(tmp[order(tmp$name), ], style = "rmarkdown", split.table = Inf,
              caption = "Standards with matching reference MS2 spectra.")
@@ -225,7 +225,7 @@ adducts <- rbind(adducts, "[M+HCOO]-" = c(1, calculateMass("HCOO")))
 ## ---- match-features ----
 prm <- Mass2MzParam(adducts = adducts, ppm = 30)
 fmat <- c(featureDefinitions(data), ttest)
-mtchs <- matchMz(fmat, std_dilution01, param = prm, mzColname = "mzmed")
+mtchs <- matchMz(fmat, std_dilution, param = prm, mzColname = "mzmed")
 mtchs_sub <- mtchs[whichQuery(mtchs)]
 mD <- matchedData(
     mtchs_sub, columns = c("mzmed", "ppm_error", "rtmed", "target_RT",
@@ -237,7 +237,7 @@ mD <- mD[order(mD$target_name), ]
 
 
 ## ---- table-standard-no-feature ----
-pandoc.table(std_dilution01[!std_dilution01$name %in% mD$target_name,
+pandoc.table(std_dilution[!std_dilution$name %in% mD$target_name,
                             c("name", "HMDB", "formula", "RT", "POS", "NEG")],
              style = "rmarkdown", split.tables = Inf,
              caption = "Not matched standards")
