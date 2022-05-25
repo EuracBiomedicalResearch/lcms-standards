@@ -13,8 +13,8 @@ library(RColorBrewer)
 library(MetaboAnnotation)
 library(pheatmap)
 library(MsFeatures)
-setMSnbaseFastLoad(TRUE)
-# setMSnbaseFastLoad(FALSE)
+# setMSnbaseFastLoad(TRUE)
+setMSnbaseFastLoad(FALSE)
 register(SerialParam())
 source("R/match-standards-functions.R")
 
@@ -30,7 +30,7 @@ dir.create(IMAGE_PATH, showWarnings = FALSE, recursive = TRUE)
 dir.create(RDATA_PATH, showWarnings = FALSE, recursive = TRUE)
 #' Define the mzML files *base* path (/data/massspec/mzML/ on the cluster)
 MZML_PATH <- "/Volumes/PortableSSD/mzML/"
-# MZML_PATH <- "/data/massspec/mzML/"
+MZML_PATH <- "/data/massspec/mzML/"
 ALL_NL_MATCH <- FALSE                   # run matching against neutral loss db
 library(knitr)
 opts_chunk$set(cached = FALSE, message = FALSE, warning = FALSE,
@@ -247,7 +247,8 @@ pandoc.table(std_dilution[!std_dilution$name %in% mD$target_name,
 feature_table <- as.data.frame(mD[mD$target_name == std, ])
 feature_table <- feature_table[order(feature_table$rtmed), ]
 feature_table$feature_group <- group_features(data_FS, rownames(feature_table))
-std_ms2 <- extract_ms2(data, rownames(feature_table))
+std_ms2 <- extract_ms2(data, rownames(feature_table), ppm = FEATURE_MS2_PPM,
+                       tolerance = FEATURE_MS2_TOLERANCE)
 feature_table$n_ms2 <- 0
 if(length(std_ms2)) {
    nms2 <- table(std_ms2$feature_id)

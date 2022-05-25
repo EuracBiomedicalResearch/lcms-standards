@@ -15,6 +15,9 @@ knitr::read_chunk("R/match-standards-chunks.R")
 MIX <- 1
 MATRIX <- "Water"
 POLARITY <- "POS"
+## settings to find MS2 spectra for features. Be rather inclusive here.
+FEATURE_MS2_PPM <- 20
+FEATURE_MS2_TOLERANCE <- 0.05
 ```
 
 ```{r, libraries, echo = FALSE, message = FALSE}
@@ -102,7 +105,7 @@ Standards for which no MS2 spectrum in HMDB is present are listed in
 the table below.
 
 ```{r, echo = FALSE, results = "asis"}
-tmp <- std_dilution01[!(std_dilution01$HMDB %in% hmdb_std$compound_id), ]
+tmp <- std_dilution[!(std_dilution$HMDB %in% hmdb_std$compound_id), ]
 pandoc.table(tmp[, c("name", "HMDB", "formula")], style = "rmarkdown",
              caption = "Standards for which no reference spectrum is available")
 ```
@@ -190,7 +193,7 @@ removed.
 ```
 
 For most of the standards (`r length(unique(mD$target_name))` out of 
-`r nrow(std_dilution01)`) in mix `r MIX` at least one feature was found
+`r nrow(std_dilution)`) in mix `r MIX` at least one feature was found
 matching the standards adducts' m/z. 
 
 ```{r, table-standard-no-feature, results = "asis", echo = FALSE}
@@ -896,6 +899,7 @@ standard but again we obtain no match.
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
+
 Since the extracted spectrum is associated to
 an ion different from `[M+H]+` (`[M+2Na-H]+`) we also perform a comparison
 between the neutral loss spectra from HMDB and MassBank.
@@ -1741,7 +1745,7 @@ removed.
 ```
 
 For most of the standards (`r length(unique(mD$target_name))` out of 
-`r nrow(std_dilution01)`) in mix `r MIX` at least one feature was found
+`r nrow(std_dilution)`) in mix `r MIX` at least one feature was found
 matching the standards adducts' m/z. 
 
 ```{r, table-standard-no-feature, results = "asis", echo = FALSE}
