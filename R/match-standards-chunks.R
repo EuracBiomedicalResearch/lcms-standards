@@ -247,7 +247,6 @@ pandoc.table(std_dilution[!std_dilution$name %in% mD$target_name,
 feature_table <- as.data.frame(mD[mD$target_name == std, ])
 feature_table <- feature_table[order(feature_table$rtmed), ]
 feature_table$feature_group <- group_features(data_FS, rownames(feature_table))
-FEATURE_MS2_TOLERANCE = 0.4
 std_ms2 <- extract_ms2(data, rownames(feature_table), ppm = FEATURE_MS2_PPM,
                        tolerance = FEATURE_MS2_TOLERANCE)
 feature_table$n_ms2 <- 0
@@ -262,7 +261,7 @@ pandoc.table(feature_table[, c("mzmed", "ppm_error", "rtmed", "target_RT",
              caption = paste0("Feature to standards matches for ", std))
 
 
-## ---- add-ions ----a
+## ---- add-ions ----
 stopifnot(all(fts$feature_id %in% rownames(feature_table)))
 fts$sample_matrix <- MATRIX
 fts$original_sample <- paste0("Std_", MIX_NAME)
@@ -305,7 +304,7 @@ fts <- do.call(rbind, lapply(fts, function(z) {
                rt = mean(z$ion_rt))
 }))
 sps <- Spectra(idb)
-sps <- sps[sps$original_file %in% basename(fls)]
+sps <- sps[sps$original_file %in% basename(fileNames(data_all))]
 n_ms2 <- table(sps$compound_id)
 idx <- match(rownames(fts), std_dilution$HMDB)
 fts <- cbind(name = std_dilution[idx, "name"],
