@@ -52,27 +52,6 @@ Garcia-Aloy.
 ```{r, standards-table, echo = FALSE, results = "asis"}
 ```
 
-```{r}
-iso <- data.frame(
-    mix = 2,
-    name = "Isobutyryl-L-carnitine",
-    abbreviation = NA,
-    HMDB = "HMDB0000736",
-    formula = "C11H22NO4",
-    POS = NA,
-    NEG = NA,
-    RT = 37,
-    data_set = NA,
-    sample = NA,
-    operator = NA,
-    version = NA,
-    quality_POS = NA,
-    quality_NEG = NA,
-    exactmass = calculateMass("C11H22NO4")
-)
-std_dilution <- rbind(std_dilution, iso)
-```
-
 # Data import
 
 We next load the data and split it according to matrix and polarity.
@@ -426,41 +405,6 @@ perform_match(std_ms2_nl, mbank_nl,
   retention time range.
 - Check with Vinicius: what was the actual compound used? Why was the formula
   adapted?
-
-### Isobutyryl-L-carnitine
-
-
-```{r, echo = FALSE}
-std <- "Isobutyryl-L-carnitine"
-```
-
-```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
-```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
-
-We next plot the EIC for the assigned feature and visually inspect these.
-
-```{r, echo = FALSE}
-plot_eics(data, std, feature_table, "WP", std_ms2)
-```
-
-The cleaned MS2 spectra for the features matched to `r std` are shown below
-(peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
-
-```{r mix02-water-pos-isobutyryl-l-carnitine-ms2, echo = FALSE}
-plot_spectra(std_ms2)
-```
-
-
-#### Summary
-
-- The signal for the `[M+H]+` ion for Isobutyryl-L-carnitine (with the formula
-  provided by HMDB!) is much higher than the one for C4 Carnitine. Still, no MS2
-  spectra are available for this feature.
   
 
 ### Fructose
