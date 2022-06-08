@@ -60,9 +60,9 @@ plot_spectra <- function(x) {
     } else cat("No MS2 spectra.")
 }
 
-extract_ms2 <- function(x, features, ppm = 20) {
+extract_ms2 <- function(x, features, ppm = 20, tolerance = 0) {
     res <- featureSpectra(x, expandRt = 3, return.type = "Spectra",
-                          features = features, ppm = ppm)
+                          features = features, ppm = ppm, expandMz = tolerance)
     res <- filterIntensity(res, intensity = low_int)
     res <- res[lengths(res) > 1]
     if (!length(res))
