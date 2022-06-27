@@ -433,6 +433,40 @@ ms2$confidence <- c(rep("high", 3), rep("low", 4))
 ```{r, add-ms2-spectra, echo = FALSE}
 ```
 
+```{r, eval = FALSE, echo = FALSE}
+## Issue #90
+## get MS2 spectra for the M+H, M+Na and M+2Na-H ions
+mh <- std_ms2[c(5, 6, 7, 8)]
+mna <- std_ms2[c(9, 10)]
+mna2 <- std_ms2[c(3, 4)]
+
+## Create neutral spectra by subtracting by converting m/z to mass.
+mh_mass <- addProcessing(mh, FUN = function(x, ...) {
+    x[, "mz"] <- mz2mass(x[, "mz"], "[M+H]+")[, 1]
+    x
+})
+mna_mass <- addProcessing(mna, FUN = function(x, ...) {
+    x[, "mz"] <- mz2mass(x[, "mz"], "[M+Na]+")[, 1]
+    x
+})
+mna2_mass <- addProcessing(mna2, FUN = function(x, ...) {
+    x[, "mz"] <- mz2mass(x[, "mz"], "[M+2Na-H]+")[, 1]
+    x
+})
+
+plotSpectraMirror(mh[1], mna[1])
+plotSpectraMirror(mh_mass[1], mna_mass[1])
+
+plotSpectraMirror(mh[2], mna[1])
+plotSpectraMirror(mh_mass[2], mna_mass[1])
+
+plotSpectraMirror(mh[1], mna2[2])
+plotSpectraMirror(mh_mass[1], mna2_mass[2])
+
+plotSpectraMirror(mna[1], mna2[2])
+plotSpectraMirror(mna_mass[1], mna2_mass[2])
+```
+
 
 ### Betaine
 
