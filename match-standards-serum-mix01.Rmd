@@ -240,7 +240,7 @@ ions from different compounds.
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix01-serum-pos-3-phosphoglyceric-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -357,7 +357,7 @@ plot_eics(data, std, feature_table, "SP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix01-serum-pos-acetylhistidine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -484,7 +484,7 @@ plot_eics(data, std, feature_table, "SP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix01-serum-pos-betaine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -613,7 +613,7 @@ plot_eics(data, std, feature_table, "SP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r , echo = FALSE}
 plot_spectra(std_ms2)
@@ -689,7 +689,7 @@ plot_eics(data, std, feature_table, "SP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix01-serum-pos-cdp-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -813,7 +813,7 @@ plot_eics(data, std, feature_table, "SP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix01-serum-pos-creatine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -953,7 +953,7 @@ plot_eics(data, std, feature_table, "SP", std_ms2)
 
 The only MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix01-serum-pos-dimethylglycine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -1114,7 +1114,7 @@ plot_eics(data, std, feature_table, "SP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix01-serum-pos-l-glutamic-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -1277,7 +1277,7 @@ plot_eics(data, std, feature_table, "SP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix01-serum-pos-myo-inositol-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -1411,7 +1411,7 @@ plot_eics(data, std, feature_table, "SP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix01-serum-pos-suberic-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -1519,7 +1519,7 @@ plot_eics(data, std, feature_table, "SP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix01-serum-pos-xanthine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -2544,7 +2544,7 @@ plot_eics(data, std, feature_table, "SN", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix01-serum-neg-suberic-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
