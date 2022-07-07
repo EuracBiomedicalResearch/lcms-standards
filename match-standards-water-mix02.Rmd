@@ -230,7 +230,7 @@ plot_eics(data, std, feature_table, "WP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-pos-ascorbic-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -335,7 +335,7 @@ plot_eics(data, std, feature_table, "WP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-pos-c4-carnitine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -483,7 +483,7 @@ plot_eics(data, std, feature_table, "WP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-pos-fructose-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -513,7 +513,7 @@ std_ms2_nl <- neutralLoss(std_ms2, nl_param)
 sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_hmdb_nl, csp_nl)
 ```
 
-```{r mix02-water-pos-fructose-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
+```{r mix02-water-pos-fructose-mirror-hmdb_nl, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2_nl, std_hmdb_nl, 0.05,
                            ppm = csp_nl@ppm, tolerance = csp_nl@tolerance)
 ```
@@ -675,7 +675,7 @@ plot_eics(data, std, feature_table, "WP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-pos-cgmp-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -786,7 +786,7 @@ plot_eics(data, std, feature_table, "WP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-pos-histidine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -919,7 +919,7 @@ plot_eics(data, std, feature_table, "WP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-pos-hydroxyproline-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -1041,7 +1041,7 @@ plot_eics(data, std, feature_table, "WP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-pos-hypoxanthine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -1164,7 +1164,7 @@ plot_eics(data, std, feature_table, "WP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-pos-l-kynurenine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -1300,7 +1300,7 @@ plot_eics(data, std, feature_table, "WP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-pos-lactic-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -1332,7 +1332,7 @@ plot_eics(data, std, feature_table, "WP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-pos-1-methylxanthine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -1460,7 +1460,7 @@ plot_eics(data, std, feature_table, "WP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-pos-3-nitrotyrosine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -1581,7 +1581,7 @@ plot_eics(data, std, feature_table, "WP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-pos-phosphocreatine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -1702,7 +1702,7 @@ plot_eics(data, std, feature_table, "WP", std_ms2)
 
 The only available MS2 spectrum (cleaned) for the features matched to `r std` is
 shown below (peaks with an intensity below 5% of the maximum peak and spectra
-with less than 2 peaks where removed).
+with less than 2 peaks were removed).
 
 ```{r mix02-water-pos-udp-glucuronate-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -1800,7 +1800,7 @@ plot_eics(data, std, feature_table, "WP", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-pos-valine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -1962,7 +1962,7 @@ plot_eics(data, std, feature_table, "WN", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-neg-ascorbic-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -2055,7 +2055,7 @@ plot_eics(data, std, feature_table, "WN", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-neg-c4-carnitine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -2085,7 +2085,7 @@ plot_eics(data, std, feature_table, "WN", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-neg-fructose-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -2160,7 +2160,7 @@ plot_eics(data, std, feature_table, "WN", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-neg-glycine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -2253,7 +2253,7 @@ plot_eics(data, std, feature_table, "WN", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-neg-cgmp-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -2346,7 +2346,7 @@ plot_eics(data, std, feature_table, "WN", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-neg-histidine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -2437,7 +2437,7 @@ plot_eics(data, std, feature_table, "WN", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-neg-hydroxyproline-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -2537,7 +2537,7 @@ plot_eics(data, std, feature_table, "WN", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-neg-hypoxanthine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -2641,7 +2641,7 @@ plot_eics(data, std, feature_table, "WN", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-neg-l-kynurenine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -2734,7 +2734,7 @@ plot_eics(data, std, feature_table, "WN", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-neg-lactic-acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -2853,7 +2853,7 @@ plot_eics(data, std, feature_table, "WN", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-neg-1-methylxanthine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -2948,7 +2948,7 @@ plot_eics(data, std, feature_table, "WN", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-neg-3-nitrotyrosine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -3035,7 +3035,7 @@ plot_eics(data, std, feature_table, "WN", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-neg-phosphocreatine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -3079,7 +3079,7 @@ plot_eics(data, std, feature_table, "WN", std_ms2)
 
 The only available MS2 spectrum (cleaned) for the features matched to `r std` is
 shown below (peaks with an intensity below 5% of the maximum peak and spectra
-with less than 2 peaks where removed).
+with less than 2 peaks were removed).
 
 ```{r mix02-water-neg-udp-glucuronate-ms2, echo = FALSE}
 plot_spectra(std_ms2)
@@ -3206,7 +3206,7 @@ plot_eics(data, std, feature_table, "WN", std_ms2)
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks where removed).
+than 2 peaks were removed).
 
 ```{r mix02-water-neg-valine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
