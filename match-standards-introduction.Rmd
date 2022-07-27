@@ -40,7 +40,8 @@ standards using different confidence levels:
 
 - **D** (lowest confidence): based on evidence 1: signal needs to be
   higher in samples with higher concentration of the standard. Measured m/z has
-  to match the m/z of an ion of the compound.
+  to match the m/z of an ion of the compound. A visual inspection of the EIC has
+  to be done in addition to ensure high quality of the signal.
 - **C**: based on evidence 1 and 2. In addition to **D**, also the MS2
   spectrum for that feature needs to match with at least a low similarity to the
   reference spectra for that compound from HMDB.
@@ -48,7 +49,8 @@ standards using different confidence levels:
   is higher than 0.7.
 - **A** (highest confidence): same as **B**, but the experimental MS2 spectrum
   does not match a MS2 spectrum from any other compound in HMDB or MassBank with
-  a similarity > 0.7.
+  a similarity > 0.7. Matches against spectra with a difference in their
+  precursor m/z are not considered.
 
 These confidence levels are for the annotation of the feature(s) to the
 standard. Features with similar retention times and abundances across samples
@@ -98,71 +100,12 @@ Information from MS2 spectra stored on the database are:
 - `confidence`: either `"low"` (no match against reference spectrum) or `"high"`
   (matches reference spectrum).
   
+Checklist for adding features and MS2 spectra:
 
-# TEMP
+- Check water and serum data: which ions where found? What is the retention
+  time?
+- Prefer adding features from water, unless in serum more ions were present.
+- If water and serum features have large difference in retention time, add both.
+- Add all MS2 spectra, from water and serum, from all ions.
 
-What to store from features. Add features predominantly from water. If none are
-found there, or if a certain adduct was not found there, add from serum. Avoid
-duplicated ion/adduct information for the same polarity (i.e. a single ion
-should be added for a compound).
 
-- feature_id
-- original_sample: mix 01...
-- sample_matrix: water|serum pool
-- ion_adduct
-- relative_ion_intensity: relative to the other ions [0-100]
-- confidence_level: ABCD.
-- rtmed -> ion_mz
-- mzmed -> ion_rt
-- compound_id
-- polarity
-
-```{r eval = FALSE}
-## Create a data.frame with that info.
-fts <- data.frame(feature_id = ,
-                  compound_id,
-                  ion_adduct,
-                  sample_matrix,
-                  original_sample,
-                  confidence_level)
-## Extract remaining variables from the features:
-ion_mz, ion_rt, relative_ion_intensity, 
-## Set relative ion intensity
-
-idb <- insertIon(idb, fts)
-```
-
-What to store from spectra; add all spectra from water (should be the *purest*).
-
-- confidence: high, low
-- adduct
-- rtime
-- precursor m/z
-- acquisitionNum
-- polarity
-- original_file
-- collision_energy
-- compound_id
-- instrument "Sciex TripleTOF 5600+"
-- instrument_type "LC-ESI-QTOF"
-
-```{r eval = FALSE}
-## Manually define the spctrum names/IDs.
-sps_insert <- data.frame(original_spectrum_id,
-                         compound_id,
-                         confidence,
-                         adduct,
-                         instrument,
-                         instrument_type)
-## Get remaining from Spectra
-rtime, precursor_mz, acquisitionNum, polarity, original_file, collision_energy
-## Add the ion_id info by getting the just inserted ion info from the database
-## identify the entries with feature_id, original_sample and sample_matrix
-idb <- insertSpectra(sps, columns = c(the columns to insert))
-
-```
-
-```{r eval = FALSE}
-## create a new IonDb from the CompDb. If file exists, remove all ions and
-## spectra for the current mix.
-```
