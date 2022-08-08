@@ -1706,7 +1706,7 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - Reference MS2: `[M-H]-`: FT0483_F15.S0185, FT0483_F15.S0206, FT0483_F16.S0182;
   high confidence.
 
-### Acetylglycine (Isobutyryl-L-carnitine)
+### Acetylglycine
 
 ```{r, echo = FALSE}
 std <- "Acetylglycine"
