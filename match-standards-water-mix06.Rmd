@@ -1852,8 +1852,6 @@ std <- "Asparagine"
 ```
 
 One single feature has been assigned to this standard based on m/z matching.
-Based on their retention times, these seem however to represent ions from two
-different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
