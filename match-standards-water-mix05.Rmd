@@ -292,7 +292,6 @@ ms2$confidence <- c("high")
 ```{r, add-ms2-spectra, echo = FALSE}
 ```
 
-
 ### dCDP
 
 ```{r, echo = FALSE}
