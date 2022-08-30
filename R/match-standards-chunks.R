@@ -232,10 +232,7 @@ mD <- matchedData(
                            "target_name", "target_HMDB", "adduct", 
                            "high_low_diff", "pvalue", "mean_high",
                            "mean_low"))
-keep <- which(mD$high_low_diff > 0.7)
-keep <- union(keep, which(mD$mean_high > 20 & mD$mean_low > 20)) # for Caffeine we seem to be in the saturation.
-mD <- mD[keep, ]
-## mD <- mD[-which(mD$high_low_diff < 0.9), ]
+mD <- mD[-which(mD$high_low_diff < 0.7), ]
 mD <- mD[order(mD$target_name), ]
 
 
