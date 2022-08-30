@@ -407,7 +407,7 @@ std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7,
 
 We obtain similar results with the MassBank comparison as we show below.
 
-```{r mix07-water-pos-caffeine-acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix07-water-pos-caffeine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
@@ -429,10 +429,9 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- EIC data is relatively low and no feature is detected at the expected
-  retention time. Might need to check negative polarity and serum data!
-- FT1708 (RT = 135.4, `[M+H]+` ion) with confidence **A**.
-- Reference MS2: `[M+H]+`: FT1523_F07.S0577; high confidence.
+- FT1707 (RT = 35.5, `[M+H]+` ion) with confidence **A**.
+- FT2390 (RT = 35.9, `[M+K]+` ion) with confidence **A-**.
+- Reference MS2: `[M+H]+`: FT1707_F07.S0138, FT1707_F08.S0145; high confidence.
 
 
 ### CDP-choline
@@ -2249,6 +2248,67 @@ plot_spectra(std_ms2)
 - FT2166 (RT = 37.22, `[M+HCOO]-` ion) confidence level **D**?
 
 
+### Taurine
+
+```{r, echo = FALSE}
+std <- "Taurine"
+```
+
+```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
+```
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+```{r, echo = FALSE}
+plot_eics(data, std, feature_table, "WN", std_ms2)
+```
+
+The cleaned MS2 spectra for the features matched to `r std` are shown below
+(peaks with an intensity below 5% of the maximum peak and spectra with less
+than 2 peaks were removed).
+
+```{r mix07-water-neg-taurine-ms2, echo = FALSE}
+plot_spectra(std_ms2)
+```
+
+```{r mix07-water-neg-taurine-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
+hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
+std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
+sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+```
+
+```{r mix07-water-neg-taurine-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
+                           tolerance = csp@tolerance)
+```
+
+```{r mix07-water-neg-taurine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
+std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
+sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+```
+
+In addition we match (**all**) the MS2 spectra for the matched features against
+all spectra from HMDB or MassBank identifying reference spectra with a
+similarity larger than 0.7. The results (if any spectra matched) are shown in
+the two following tables.
+
+```{r, echo = FALSE, message = FALSE, results = "asis"}
+perform_match(std_ms2, hmdb, sv = c("rtime", "target_name", "score"),
+              name = "target_name", param = csp)
+```
+
+```{r, echo = FALSE, message = FALSE, results = "asis"}
+perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
+              name = "target_name", param = csp)
+```
+
+
+#### Summary
+
+- FT0093 (RT = 171, `[M-H]-` ion) with confidence **A**.
+- Reference MS2: `[M-H]-`: FT0093_F15.S0497, FT0093_F16.S0496; high confidence.
+
+
 ### Threonic Acid
 
 ```{r, echo = FALSE}
@@ -2307,11 +2367,10 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - Inconclusive. Several features/peaks are present across a large RT range. The
   one selected below is the one with the highest intensity.
 - FT0173 (RT = 126.6, `[M-H]-` ion) with confidence **D**.
+- Reference MS2: `[M-H]-`: FT0173_F15.S0293, FT0173_F16.S0298; low confidence.
 
 
 ## Standards without any matching feature
-
-### Taurine
 
 # Summary on the ion database
 
