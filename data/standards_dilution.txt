@@ -82,7 +82,7 @@ mix	name	abbreviation	HMDB.code	formula	POS	NEG	RT	data_set	sample	operator	vers
 6	CMP	CMP	HMDB0000095	C9H14N3O8P	[M+H]+	[M-H]-	211	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	0_perfect	
 6	Cystine	cystine	HMDB0000192	C6H12N2O4S2	[M+H]+	[M-H]-	211	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	0_perfect	
 6	Histamine	histamine	HMDB0000870	C5H9N3	[M+H]+	[M-H]-	172	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	2_medium	
-6	3-Hydroxybutyric Acid	hydroxybutyric_3	HMDB0000357	C4H8O3	[M+Na]+	[M-H]-	37	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	0_perfect	
+6	3-Hydroxybutyric Acid	hydroxybutyric_3	HMDB0000011	C4H8O3	[M+Na]+	[M-H]-	37	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	3_bad	0_perfect	
 6	Methioninesulfoxide	methionine_sulfoxide	HMDB0002005	C5H11NO3S	[M+H]+	[M-H]-	182	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good	
 6	Paracetamol	paracetamol	HMDB0001859	C8H9NO2	[M+H]+	[M-H]-	36	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	1_good	1_good	
 6	Sphingosine-1-phosphate	sphingosine_phosphate	HMDB0000277	C18H38NO5P	[M+H]+	[M-H]-	145	2020_01_matrix_effect	serum	Mar Garcia-Aloy	2	2_medium	2_medium	

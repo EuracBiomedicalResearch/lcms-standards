@@ -276,6 +276,21 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - Reference MS2: `[M+H+]`: FT4724_F07.S0978, FT4724_F08.S0873, FT4724_F08.S0917;
   high confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT4724"),
+                  confidence_level = c("A"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT4724_F07.S0978", "FT4724_F08.S0873", "FT4724_F08.S0917")]
+ms2$confidence <- c("high")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 ### dCDP
 
@@ -309,6 +324,7 @@ plot_spectra(std_ms2)
 - Inconclusive: no MS2 spectra available; needs to be reconfirmed with other
   polarity and serum data set.
 - EICs all have very low intensity.
+- Not picking any feature.
 
 
 ### CoA
@@ -341,6 +357,7 @@ plot_spectra(std_ms2)
 - Inconclusive: no MS2 spectra available for the only assigned feature. EIC has
   very low intensity. Needs to be reconfirmed by other polarity or serum data
   set.
+- Not picking any feature.
 
 
 ### Corticosterone
@@ -415,7 +432,17 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT4138 (RT = 34.5, `[M+Na]+` ion) with confidence **B-**.
 - Reference MS2: `[M+H]+`: FT3772_F07.S0117, FT3772_F08.S0112; high confidence.
   `[M+H-H2O]+`: FT3418_F07.S0115, FT3418_F08.S0089; low confidence.
-  
+
+```{r, echo = FALSE}
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT3772_F07.S0117", "FT3772_F08.S0112", "FT3418_F07.S0115",
+                 "FT3418_F08.S0089")]
+ms2$confidence <- c(rep("high", 2), rep("low", 2))
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### 1,3-Dimethyluric acid
 
@@ -493,8 +520,26 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   FT1518_F08.S0391; high confidence. `[M+Na]+`: FT1759_F08.S0340,
   FT1759_F08.S0380; low confidence. `[M+2Na-H]`: FT2011_F07.S0390,
   FT2011_F08.S0318, FT2011_F08.S0367; low confidence.
-  
- 
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT1518", "FT1949", "FT1759", "FT2011"),
+                  confidence_level = c("B", "B-", "B-", "B-"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT1518_F07.S0333", "FT1518_F07.S0386", "FT1518_F07.S0412",
+                 "FT1518_F08.S0391", "FT1759_F08.S0340", "FT1759_F08.S0380",
+                 "FT2011_F07.S0390", "FT2011_F08.S0318", "FT2011_F08.S0367")]
+ms2$confidence <- c(rep("high", 4), rep("low", 5))
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
+
 ### Glycerophospho-inositol
 
 ```{r, echo = FALSE}
@@ -541,7 +586,8 @@ sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 - Inconclusive. Need to evaluate negative polarity or serum data.
 - Some EICs show high signal, but it is not clear which retention time would be
   correct.
-  
+- Not picking any feature.
+
   
 ### GTP
 
@@ -573,6 +619,7 @@ plot_spectra(std_ms2)
 #### Summary
 
 - Inconclusive. No MS2 spectra available. The two EIC show low intensity signal.
+- Not picking any feature.
 
 
 ### 2-Ketobutyric acid
@@ -666,7 +713,8 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   D-Threonine. Need to evaluate negative polarity and serum data.
 - Features with RT 170 are most likely Threonine (since that's also measured in
   this mix).
-  
+- Not picking any feature.
+
 
 ### Mannose
 
@@ -756,6 +804,22 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT1758 (RT = 165.8, `[M+K]+` ion) confidence level **C-**.
 - Reference MS2: `[M+NH4]+`: FT1537_F07.S0617, FT1537_F08.S0576; low confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT1537", "FT1607", "FT1758"),
+                  confidence_level = c("C", "C-", "C-"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT1537_F07.S0617", "FT1537_F08.S0576")]
+ms2$confidence <- c("low")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### 5-MTA
 
@@ -831,7 +895,25 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - Reference MS2: `[M+H]+`: FT2817_F07.S0160, FT2817_F07.S0210, FT2817_F08.S0153,
   FT2817_F08.S0199; FT2818_F08.S0240; high confidence.
   `[M+Na]+`: FT3251_F07.S0172, FT3251_F08.S0161; low confidence.
-  
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT2817", "FT3251"),
+                  confidence_level = c("B", "B-"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT2817_F07.S0160", "FT2817_F07.S0210", "FT2817_F08.S0153",
+                 "FT2817_F08.S0199", "FT2818_F08.S0240", "FT3251_F07.S0172",
+                 "FT3251_F08.S0161")]
+ms2$confidence <- c(rep("high", 5), rep("low", 2))
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### NADP
 
@@ -923,6 +1005,22 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - Reference MS2: `[M+H]+`: FT6971_F07.S0957, FT6971_F08.S0891; low confidence;
   `[M+H-H2O]+`: FT6922_F08.S0927; low confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT6971", "FT4181", "FT6922"),
+                  confidence_level = c("C", "C-", "C"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT6971_F07.S0957", "FT6971_F08.S0891", "FT6922_F08.S0927")]
+ms2$confidence <- c("low")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### Nicotinic acid
 
@@ -994,6 +1092,23 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT0568 (RT=37.37, `[M+H]+` ion) with confidence level **A**.
 - Reference MS2: `[M+H]+`: FT0568_F07.S0122, FT0568_F08.S0118, FT0569_F08.S0437,
   FT0567_F08.S0118, FT0567_F07.S0184; high confidence.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0568"),
+                  confidence_level = c("A"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0568_F07.S0122", "FT0568_F08.S0118", "FT0569_F08.S0437",
+                 "FT0567_F08.S0118", "FT0567_F07.S0184")]
+ms2$confidence <- c("high")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 
 ### Orotic acid
@@ -1070,6 +1185,23 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - Reference MS2: `[M+H]+`: FT1034_F07.S0641, FT1034_F08.S0595; high confidence.
   `[M+H-H2O]+`: FT0779_F07.S0640, FT0779_F08.S0594; low confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT1034", "FT0779"),
+                  confidence_level = c("A", "A-"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT1034_F07.S0641", "FT1034_F08.S0595", "FT0779_F07.S0640",
+                 "FT0779_F08.S0594")]
+ms2$confidence <- c(rep("high", 2), rep("low", 2))
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### PABA
 
@@ -1141,6 +1273,7 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   is pretty good, there are also matches with other compounds.
 - FT0769 (RT= 119.6, `[M+H]+` ion) with confidence level **B**.
 - Reference MS2: `[M+H]+`: FT0769_F08.S0425; high confidence. 
+- Not selecting any feature.
 
 
 ### Threonine
@@ -1227,6 +1360,22 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - Reference MS2: `[M+H]+`: FT0512_F07.S0628, FT0512_F07.S0701, FT0512_F08.S0586;
   high confidence. `[M+H-H2O]+`: FT0292_F07.S0627.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0512", "FT0292", "FT0849", "FT1134"),
+                  confidence_level = c("B", "B-", "B-", "B-"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0512_F07.S0628", "FT0512_F07.S0701", "FT0512_F08.S0586",
+                 "FT0292_F07.S0627")]
+ms2$confidence <- c(rep("high", 3), "low")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 
 # Water, negative polarity
@@ -1372,7 +1521,24 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT2900 (RT = 260, `[M-H]-` ion) with confidence level **C**.
 - Reference MS2: `[M-H]-`: FT2900_F15.S0784, FT2900_F15.S0830, FT2900_F16.S0735,
   FT2900_F16.S0806, FT2898_F16.S1023; low confidence.
-  
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT2900"),
+                  confidence_level = c("C"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT2900_F15.S0784", "FT2900_F15.S0830", "FT2900_F16.S0735",
+                 "FT2900_F16.S0806", "FT2898_F16.S1023")]
+ms2$confidence <- c("low")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### dCDP
 
@@ -1447,6 +1613,23 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - Reference MS2: `[M-H]-`: FT2597_F16.S0794, FT2602_F15.S0708, FT2602_F15.S0783,
   FT2602_F16.S0734, FT2602_F16.S0794; high confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT2598", "FT2597"),
+                  confidence_level = c("A", "A"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT2597_F16.S0794", "FT2602_F15.S0708", "FT2602_F15.S0783",
+                 "FT2602_F16.S0734", "FT2602_F16.S0794")]
+ms2$confidence <- c("high")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### CoA
 
@@ -1518,7 +1701,7 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT5137 (RT = 305.6, `[M-H]-` ion) with confidence level **C**.
 - Eventually Reference MS2: FT5136_F16.S0878, FT5137_F16.S0972,
   FT5137_F16.S0998; low confidence.
-
+- Not selecting any feature.
 
 
 ### Corticosterone
@@ -1594,6 +1777,22 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT2657 (RT = 33.7, `[M+HCOO]-` ion): with confidence level **D**.
 - FT2535 (RT = 33.7, `[M+Cl]-` ion): with confidence level **D**.
 - Reference MS2: `[M+HCOO]-`: FT2657_F15.S0111; low confidence.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT2657", "FT2535"),
+                  confidence_level = c("D", "D"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT2657_F15.S0111")]
+ms2$confidence <- c("low")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 
 ### 1,3-Dimethyluric acid
@@ -1676,6 +1875,23 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - Reference MS2: `[M-H]-`: FT0608_F15.S0280, FT0608_F16.S0284, FT0609_F16.S0503,
   FT0609_F15.S0487; high confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0608", "FT0605"),
+                  confidence_level = c("B", "B"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0608_F15.S0280", "FT0608_F16.S0284", "FT0609_F16.S0503",
+                 "FT0609_F15.S0487")]
+ms2$confidence <- c("high")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### Glycerophospho-inositol
 
@@ -1704,6 +1920,7 @@ plot_spectra(std_ms2)
 
 - Inconclusive. EIC data is rather low intensity.
 - FT1975 (RT = 33, `[M-H]-` ion): with confidence level **D**.
+- Not picking any feature.
 
 
 ### GTP
@@ -1774,7 +1991,23 @@ perform_match(std_ms2, mbank,
 - FT4029 (RT = 260.3, `[M-H]-` ion) with confidence **A**.
 - Reference MS2: `[M-H]-`: FT4029_F15.S0835, FT4029_F16.S0867, FT4029_F16.S0868;
   high confidence.
-  
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT4029"),
+                  confidence_level = c("A"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT4029_F15.S0835", "FT4029_F16.S0867", "FT4029_F16.S0868")]
+ms2$confidence <- c("high")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### 2-Ketobutyric acid
 
@@ -1845,12 +2078,27 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-
 #### Summary
 
 - FT0038 (RT = 38, `[M-H]-` ion) with confidence level **C**.
 - FT0297 (RT = 38.1, `[M+HCOO]-` ion) with confidence level **C-**.
 - Reference MS2: `[M-H]-`: FT0038_F15.S0096; low confidence.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0038", "FT0297"),
+                  confidence_level = c("C", "C-"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0038_F15.S0096")]
+ms2$confidence <- c("high")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 
 ### Mannose
@@ -1928,7 +2176,23 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT0768 (RT = 166.7, `[M+Cl]-` ion): with confidence level **D**.
 - Reference MS2: `[M+HCOO]-`: FT0839_F15.S0471, FT0768_F16.S0479; low
   confidence.
-  
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0487", "FT0839", "FT0768"),
+                  confidence_level = c("D", "D", "D"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0839_F15.S0471", "FT0768_F16.S0479")]
+ms2$confidence <- c("low")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### 5-MTA
 
@@ -2001,6 +2265,22 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - Reference MS2: `[M+HCOO]-`: FT2104_F15.S0164; high confidence. `[M-H]-`:
   FT1441_F15.S0163, FT1441_F16.S0163; low confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT2104", "FT1441", "FT1965"),
+                  confidence_level = c("B", "B", "B-"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT2104_F15.S0164", "FT1441_F15.S0163", "FT1441_F16.S0163")]
+ms2$confidence <- c(rep("high", 1), rep("low", 2))
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### NADP
 
@@ -2068,11 +2348,26 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-
 #### Summary
 
 - FT5078 (RT = 259.2, `[M-H]-` ion) with confidence level **A**.
 - Reference MS2: FT5078_F15.S0823, FT5078_F16.S0877; high confidence.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT5078"),
+                  confidence_level = c("A"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT5078_F15.S0823", "FT5078_F16.S0877")]
+ms2$confidence <- c("high")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 
 ### Nicotinic acid
@@ -2138,12 +2433,27 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-
 #### Summary
 
 - FT0118 (RT = 44.69, `[M-H]-` ion) with confidence **B**.
 - FT0415 (RT = 44.47, `[M+HCOO]-` ion) with confidence **B-**.
 - Reference MS2: `[M-H-]`: FT0118_F15.S0118, FT0118_F15.S0176; high confidence.
+
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0118", "FT0415"),
+                  confidence_level = c("B", "B-"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0118_F15.S0118", "FT0118_F15.S0176")]
+ms2$confidence <- c("high")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
 
 
 ### Orotic acid
@@ -2214,6 +2524,22 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - Reference MS2: FT0331_F15.S0518, FT0331_F16.S0521, FT0331_F16.S0556; high
   confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0331"),
+                  confidence_level = c("A"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0331_F15.S0518", "FT0331_F16.S0521", "FT0331_F16.S0556")]
+ms2$confidence <- c(rep("high", 3))
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ### PABA
 
@@ -2245,6 +2571,7 @@ plot_spectra(std_ms2)
   different RT. Requires validation by positive polarity or serum data.
 - ? FT0225 (RT = 44.7, `[M-H]-` ion): with confidence level **D**?
 - ? FT0224 (RT = 142, `[M-H]-` ion): with confidence level **D**?
+- No feature selected.
 
 
 ### Threonine
@@ -2320,9 +2647,31 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - Eventual reference MS2 (if no other, better one found for serum data):
   `[M-H]-`: FT0101_F16.S0573; low confidence.
 
+```{r, echo = FALSE}
+## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT0100", "FT0392"),
+                  confidence_level = c("D", "D"))
+
+## Get MS2 spectra:
+ms2 <- std_ms2[c("FT0101_F16.S0573")]
+ms2$confidence <- c("low")
+```
+
+```{r, add-ions, echo = FALSE}
+```
+
+```{r, add-ms2-spectra, echo = FALSE}
+```
+
 
 ## Standards without any matching feature
 
+# Summary on the ion database
+
+Summarizing the content that was added to the `IonDb`.
+
+```{r, iondb-summary, echo = FALSE, results = "asis"}
+```
 
 # Session information
 
