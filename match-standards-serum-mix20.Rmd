@@ -1,0 +1,649 @@
+---
+title: "Identifying mix20 standards in serum"
+author: "Marilyn De Graeve, Andrea Vicini, Vinicius Verri Hernandes, Johannes Rainer"
+output:
+  rmarkdown::html_document:
+    highlight: pygments
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    fig_width: 5
+---
+
+```{r, include = FALSE, cached = FALSE}
+knitr::read_chunk("R/match-standards-chunks.R")
+MIX <- 20
+MATRIX <- "Serum"
+POLARITY <- "POS"
+## settings to find MS2 spectra for features. Be rather inclusive here.
+FEATURE_MS2_PPM <- 20
+FEATURE_MS2_TOLERANCE <- 0.05
+```
+
+```{r, libraries, echo = FALSE, message = FALSE}
+```
+```{r, general-settings, echo = FALSE, message = FALSE}
+```
+
+**Current version: 0.10.1, 2024-10-29.**
+
+# Introduction
+
+Mixes of standards have been solved in serum or added to human serum sample
+pools in two different concentration and these samples were measured with the
+LC-MS setup from Eurac (used also to generate the CHRIS untargeted metabolomics
+data). Assignment of retention time and observed ion can be performed for each
+standard based on MS1 information such as expected m/z but also based on the
+expected difference in signal between samples with low and high concentration of
+the standards. Finally, experimental fragment spectra provide the third level of
+evidence. Thus, the present data set allows to annotate features to standards
+based on 3 levels of evidence: expected m/z, difference in measured intensity
+and MS2-based annotation.
+
+A detailed description of the approach is given in
+[match-standards-introduction.Rmd](match-standards-introduction.Rmd).
+
+
+The list of standards that constitute the present sample mix are listed below
+along with the expected retention time and the most abundant adduct for positive
+and negative polarity as defined manually in a previous analysis by Mar
+Garcia-Aloy.
+
+```{r, standards-table, echo = FALSE, results = "asis"}
+```
+
+# Data import
+
+We next load the data and split it according to matrix and polarity.
+
+```{r, data-import}
+```
+
+We next also load the reference databases we will use to compare the
+experimental MS2 spectra against. Below we thus load HMDB and MassBank data. We
+create in addition *neutral loss* versions of the databases. Since HMDB does not
+provide precursor m/z values we assume the fragment spectra to represent `[M+H]+`
+ions (respectively `[M-H]-` ions for negative polarity) and add the m/z for
+these adducts as *precursor m/z*.
+
+This chunk is edited for `r MIX_NAME` because 3 of the 4 stds present do not 
+have a HMDB entry (non-biological chemicals). 
+
+```{r, load-reference-databases_MIX20, message = FALSE}
+#' different because 3/4 stds do not have an HMDB entry (non-biological chemicals)
+#' therefore, only 1st molecule kept to make hmdb_std object
+library(CompoundDb)
+
+cdb <- CompDb("data/CompDb.Hsapiens.HMDB.5.0.sqlite")
+hmdb_pos <- hmdb_neg <- Spectra(cdb)
+hmdb_pos$precursorMz <- mass2mz(hmdb_pos$exactmass, adduct = "[M+H]+")[, 1L]
+hmdb_neg$precursorMz <- mass2mz(hmdb_pos$exactmass, adduct = "[M-H]-")[, 1L]
+#' Neutral loss spectra
+nl_param <- PrecursorMzParam(filterPeaks = "removePrecursor", ppm = 50,
+                             tolerance = 0)
+hmdb_pos_nl <- neutralLoss(hmdb_pos, param = nl_param)
+hmdb_pos_nl <- hmdb_pos_nl[lengths(hmdb_pos_nl) > 0]
+hmdb_neg_nl <- neutralLoss(hmdb_neg, param = nl_param)
+hmdb_neg_nl <- hmdb_neg_nl[lengths(hmdb_neg_nl) > 0]
+#' HMDB with only MS2 for current standards
+hmdb_std <- Spectra(cdb, filter = ~ compound_id == "HMDB0033826") #edited here
+
+library(MsBackendMassbank)
+library(RSQLite)
+#con <- dbConnect(SQLite(), "data/MassBank.sqlite") #NO, alternatively do:
+#con <- dbConnect(SQLite(), "data/MassBank.sql") #error
+library(AnnotationHub)
+ah <- AnnotationHub()
+con <- ah[["AH116166"]]
+
+mbank <- Spectra(con, source = MsBackendMassbankSql())
+#mbank$name <- mbank$compound_name   #already present in AH116166
+#' Neutral loss spectra
+mbank_nl <- mbank[!is.na(mbank$precursorMz)]
+mbank_nl <- neutralLoss(mbank_nl, param = nl_param)
+mbank_nl <- mbank_nl[lengths(mbank_nl) > 0]
+```
+
+```{r, setup-ion-db, message = FALSE, echo = FALSE}
+```
+
+# Initial evaluation of available MS2 data
+
+Before performing the actual analysis that involves chromatographic peak
+detection and evaluation of feature abundances, we compare all experimental MS2
+spectra against the reference libraries. This provides already a first hint for
+which standards a valid MS2 spectrum was recorded (and hence would allow
+annotation based on evidence 3) and what related retention time might be.
+
+We first extract all MS2 spectra from the respective data files and process them
+by first removing all peaks with an intensity below 5% of the highest peak
+signal, then scaling all intensities to a value range between 0 and 100 and
+finally remove all MS2 spectra with less than 2 peaks.
+
+```{r prepare-all-ms2}
+fls <- fileNames(data_all)[data_all$polarity == "POS"]
+```
+```{r, all-ms2}
+```
+
+We next match these spectra against all reference spectra from HMDB for the
+standards in `r MIX_NAME`. 
+
+The settings for the matching are defined below. These will be used for all MS2
+spectra similarity calculations. All matching spectra with a similarity larger
+0.7 are identified.
+
+```{r, compare-spectra-param}
+```
+ 
+Standards for which no MS2 spectrum in HMDB is present are listed in
+the table below.
+
+```{r, echo = FALSE, results = "asis"}
+tmp <- std_dilution[!(std_dilution$HMDB %in% hmdb_std$compound_id), ]
+pandoc.table(tmp[, c("name", "HMDB", "formula")], style = "rmarkdown",
+             caption = "Standards for which no reference spectrum is available")
+```
+
+The table below lists all standards and the number of matching reference spectra
+(along with their retention times).
+
+This chunk is edited for `r MIX_NAME` because 3 of the 4 stds present do not 
+have a HMDB entry (non-biological chemicals). 
+
+```{r, table-all-ms2-hmdb_MIX12, echo = FALSE, results = "asis"}
+all_match <- matchSpectra(
+    hmdb_std, all_ms2,
+    param = csp)
+all_match <- all_match[whichQuery(all_match)]
+print('There are 0 MatchedSpectra.')
+
+tab <- matchedData(all_match, c("name", "compound_id", "score", "target_rtime"))
+pandoc.table(tab, style = "rmarkdown", split.table = Inf,
+             caption = "Standards with matching reference MS2 spectra.")
+```
+
+We repeat the same analysis for the negative polarity data (code not shown
+again).
+
+```{r, echo = FALSE}
+fls <- fileNames(data_all)[data_all$polarity == "NEG"]
+```
+```{r, all-ms2, echo = FALSE}
+```
+
+This chunk is edited for `r MIX_NAME` because 3 of the 4 stds present do not 
+have a HMDB entry (non-biological chemicals).
+
+```{r, table-all-ms2-hmdb_MIX20neg, echo = FALSE, results = "asis"}
+all_match <- matchSpectra(
+    hmdb_std, all_ms2,
+    param = csp)
+all_match <- all_match[whichQuery(all_match)]
+print('There are 0 MatchedSpectra.')
+
+tab <- matchedData(all_match, c("name", "compound_id", "score", "target_rtime"))
+pandoc.table(tab, style = "rmarkdown", split.table = Inf,
+             caption = "Standards with matching reference MS2 spectra.")
+```
+
+We next perform the full analysis of the data set involving MS1 and MS2 data.
+
+
+# Serum, positive polarity
+
+We first perform the analysis on the samples with the standards solved in pure
+serum acquired in positive polarity mode.
+
+```{r}
+POLARITY <- "POS"
+data <- filterFile(data_all, which(data_all$polarity == POLARITY))
+hmdb <- hmdb_pos
+hmdb_nl <- hmdb_pos_nl
+```
+
+## Data pre-processing
+
+We perform the pre-processing of our data set which consists of the
+chromatographic peak detection followed by a peak refinement step to reduce peak
+detection artifacts, the correspondence analysis to group peaks across samples
+and finally the gap-filling to fill in missing peak data from samples in which
+no chromatographic peak was detected. For details on settings please refer to
+the analysis of *mix 01* samples.
+
+```{r, preprocessing, eval = !file.exists(paste0(RDATA_PATH, "processed_data_", POLARITY, ".RData")), message = FALSE}
+```
+
+```{r, echo = FALSE}
+load(paste0(RDATA_PATH, paste0("processed_data_", POLARITY, ".RData")))
+data_FS <- filterFile(data, which(data$mode == "FS"),
+                      keepFeatures = TRUE)
+```
+
+## Signal intensity difference
+
+We compute the difference in (log2) signals between samples with high and low
+concentration of the standards and calculate the p-value for this difference
+using the Student's t-test.
+
+```{r, abundance-difference}
+```
+
+## Identification of features matching standards
+
+We now identify all features matching the any of the pre-defined set of adducts
+for the standards of mix `r MIX`. Matching features are further subsetted to
+those that show an at least twice as high signal in samples with high
+concentration compared to those with low concentrations. Also, features with a
+signal in low concentration but no detectable signal in high concentration are
+removed. Lastly, from mixture 12 onward the maximum retention time deviation 
+from the expected 'Target_RT' is less than 10 seconds.
+
+```{r, define-adducts-pos}
+```
+```{r, match-features}
+```
+
+For most of the standards (`r length(unique(mD$target_name))` out of 
+`r nrow(std_dilution)`) in mix `r MIX` at least one feature was found
+matching the standards adducts' m/z. 
+
+```{r, table-standard-no-feature, results = "asis", echo = FALSE}
+```
+
+In the next sections we investigate for each standard which assignment would be
+the correct one or, for those for which no signal was detected, why that was the
+case.
+
+## Standards evaluation (all, incl not found/matched)
+
+While for some standards a matching feature was found we still need to evaluate
+whether this matching is correct. For each standard we thus first evaluate the
+EICs for all matching features, then we match their MS2 spectra (if available)
+against reference libraries. To ensure correct assignment of a feature, its
+retention time and eventually related MS2 spectra, we consider the following
+criteria to determine the annotation confidence:
+
+- feature(s) was/were found with m/z matching those of adduct(s) of the 
+  standard.
+- signal is higher for samples with higher concentration.
+- MS2 spectra matches reference spectra for the standard (if available).
+- MS2 spectra don't match MS2 spectra of other compounds.
+
+### 7-Aminoheptanoic acid
+
+```{r, echo = FALSE}
+std <- "7-Aminoheptanoic acid"
+```
+
+```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
+```
+
+Many features have been assigned to this standard based on m/z matching. Based
+on their retention times, these seem however to represent ions from different
+compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+EICs (check D?):
+
+```{r, echo = FALSE}
+plot_eics(data, std, feature_table, "WP", std_ms2)
+```
+
+The cleaned MS2 spectra for the features matched to `r std` are shown below
+(peaks with an intensity below 5% of the maximum peak and spectra with less
+than 2 peaks were removed).
+
+```{r mix12-serum-pos-7-Aminoheptanoic acid-ms2, echo = FALSE}
+plot_spectra(std_ms2)
+```
+
+#### Summary
+
+- No MS2 spectra available.
+- FT00972 (RT = 169.5, 9.554 ppm, `[M+2Na]2+` ion): with confidence **D**? 
+  Mixture only contains 4 stds, so maybe high ppm during run? FINDME
+
+
+### 3-Chloro-5-(trifluoromethyl)-2-pyrindol
+
+```{r, echo = FALSE}
+std <- "3-Chloro-5-(trifluoromethyl)-2-pyrindol"
+```
+
+```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
+```
+
+Many features have been assigned to this standard based on m/z matching. Based
+on their retention times, these seem however to represent ions from different
+compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+EICs (check D?):
+
+```{r, echo = FALSE}
+plot_eics(data, std, feature_table, "WP", std_ms2)
+```
+
+The cleaned MS2 spectra for the features matched to `r std` are shown below
+(peaks with an intensity below 5% of the maximum peak and spectra with less
+than 2 peaks were removed).
+
+```{r mix12-serum-pos-3-Chloro-5-(trifluoromethyl)-2-pyrindol-ms2, echo = FALSE}
+plot_spectra(std_ms2)
+```
+
+#### Summary
+
+- No MS2 reference spectra available in HMDB and MassBank.
+- FT02079 (RT = 33.23, 2.115 ppm, `[M+H]+` ion) with confidence **D**
+
+
+### "3,5-Dichloro-2-hydroxypyridine"
+
+```{r, echo = FALSE}
+std <- "3,5-Dichloro-2-hydroxypyridine"
+```
+
+```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
+```
+
+Many features have been assigned to this standard based on m/z matching. Based
+on their retention times, these seem however to represent ions from different
+compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+EICs (check D?):
+
+```{r, echo = FALSE}
+plot_eics(data, std, feature_table, "WP", std_ms2)
+```
+
+The cleaned MS2 spectra for the features matched to `r std` are shown below
+(peaks with an intensity below 5% of the maximum peak and spectra with less
+than 2 peaks were removed).
+
+```{r mix12-serum-pos-"3,5-Dichloro-2-hydroxypyridine"-ms2, echo = FALSE}
+plot_spectra(std_ms2)
+```
+
+#### Summary
+
+- No MS2 reference spectra available in HMDB and MassBank.
+- FT01582 (RT = 36.6, 1.653 ppm, `[M+H]+` ion) with confidence **D**
+- FT02125 (RT = 32.05, 6.723 ppm, `[M+K]+` ion): probably other compound.
+
+
+### "3,5,6-Trichloro-2-pyrinidol"
+
+```{r, echo = FALSE}
+std <- "3,5,6-Trichloro-2-pyrinidol"
+```
+
+```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
+```
+
+Many features have been assigned to this standard based on m/z matching. Based
+on their retention times, these seem however to represent ions from different
+compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+EICs (check D?):
+
+```{r, echo = FALSE}
+plot_eics(data, std, feature_table, "WP", std_ms2)
+```
+
+The cleaned MS2 spectra for the features matched to `r std` are shown below
+(peaks with an intensity below 5% of the maximum peak and spectra with less
+than 2 peaks were removed).
+
+```{r mix12-serum-pos-"3,5,6-Trichloro-2-pyrinidol"-ms2, echo = FALSE}
+plot_spectra(std_ms2)
+```
+
+#### Summary
+
+- No MS2 reference spectra available in HMDB and MassBank.
+- FT02077 (RT = 32.28, 1.602 ppm, `[M+H]+` ion) with confidence **D**
+
+
+
+# Serum, negative polarity
+
+We now perform the analysis on the samples with the standards still solved in
+pure serum but acquired in negative polarity mode.
+
+```{r}
+POLARITY <- "NEG"
+data <- filterFile(data_all, which(data_all$polarity == POLARITY))
+hmdb <- hmdb_neg
+hmdb_nl <- hmdb_neg_nl
+```
+
+```{r, preprocessing, eval = !file.exists(paste0(RDATA_PATH, "processed_data_", POLARITY, ".RData")), message = FALSE}
+```
+
+```{r, echo = FALSE}
+load(paste0(RDATA_PATH, paste0("processed_data_", POLARITY, ".RData")))
+data_FS <- filterFile(data, which(data$mode == "FS"),
+                      keepFeatures = TRUE)
+```
+
+
+## Signal intensity difference
+
+We compute the difference in (log2) signals between samples with high and low
+concentration of the standards and calculate the p-value for this difference
+using the Student's t-test.
+
+```{r, abundance-difference}
+```
+
+## Identification of features matching standards
+
+We now identify all features matching the any of the pre-defined set of adducts
+for the standards of mix `r MIX`. Matching features are further subsetted to
+those that show an at least twice as high signal in samples with high
+concentration compared to those with low concentrations. Also, features with a
+signal in low concentration but no detectable signal in high concentration are
+removed.
+
+```{r, define-adducts-neg}
+```
+```{r, match-features}
+```
+
+For most of the standards (`r length(unique(mD$target_name))` out of 
+`r nrow(std_dilution)`) in mix `r MIX` at least one feature was found
+matching the standards adducts' m/z. 
+
+```{r, table-standard-no-feature, results = "asis", echo = FALSE}
+```
+
+In the next sections we investigate for each standard which assignment would be
+the correct one or, for those for which no signal was detected, why that was the
+case.
+
+## Standards evaluation (all, incl not found/matched)
+
+While for some standards a matching feature was found we still need to evaluate
+whether this matching is correct. For each standard we thus first evaluate the
+EICs for all matching features, then we match their MS2 spectra (if available)
+against reference libraries. To ensure correct assignment of a feature, its
+retention time and eventually related MS2 spectra, we consider the following
+criteria to determine the annotation confidence:
+
+- feature(s) was/were found with m/z matching those of adduct(s) of the 
+  standard.
+- signal is higher for samples with higher concentration.
+- MS2 spectra matches reference spectra for the standard (if available).
+- MS2 spectra don't match MS2 spectra of other compounds.
+
+### 7-Aminoheptanoic acid
+
+```{r, echo = FALSE}
+std <- "7-Aminoheptanoic acid"
+```
+
+The filtered feature table for `r std` is empty, so change code chunk below in 
+able to render document possible.
+
+```{r, table-feature-matches_MIX20, results = "asis", echo = FALSE, message = FALSE}
+feature_table <- as.data.frame(mD[mD$target_name == std, ])
+pandoc.table(feature_table, style = "rmarkdown",
+             split.tables = Inf,
+             caption = paste0("Feature to standards matches for ", std))
+```
+
+Many features have been assigned to this standard based on m/z matching. Based
+on their retention times, these seem however to represent ions from different
+compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+EICs (check D?):
+
+```{r, echo = FALSE}
+plot_eics(data, std, feature_table, "WP", std_ms2)
+```
+
+
+#### Summary
+
+- No filtered feature table, no potential peaks found.
+- No MS2 spectra available (because no potential peaks for `r std`).
+
+
+### 3-Chloro-5-(trifluoromethyl)-2-pyrindol
+
+```{r, echo = FALSE}
+std <- "3-Chloro-5-(trifluoromethyl)-2-pyrindol"
+```
+
+```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
+```
+
+Many features have been assigned to this standard based on m/z matching. Based
+on their retention times, these seem however to represent ions from different
+compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+EICs (check D?):
+
+```{r, echo = FALSE}
+plot_eics(data, std, feature_table, "WP", std_ms2)
+```
+
+The cleaned MS2 spectra for the features matched to `r std` are shown below
+(peaks with an intensity below 5% of the maximum peak and spectra with less
+than 2 peaks were removed).
+
+```{r mix12-serum-neg-"3-Chloro-5-(trifluoromethyl)-2-pyrindol"-ms2, echo = FALSE}
+plot_spectra(std_ms2)
+```
+
+
+#### Summary
+
+- No MS2 reference spectra available in HMDB and MassBank.
+- FT0839 (RT = 38.5, 19.8 ppm, `[M-H]-` ion): nice peak but high ppm so 
+  probably other compound or **D**? Mixture only contains 4 stds, so maybe high 
+  ppm during run? FINDME
+- FT1354 (RT = 32.8, 16.83 ppm, `[M+CHO2]-` ion): high ppm so probably other 
+  compound or **D**?
+- FT3231 (RT = 32.38, 15.37 ppm, `[2M-H]-` ion): nice peak but high ppm so 
+  probably other compound or **D**?
+
+
+### "3,5-Dichloro-2-hydroxypyridine"
+
+```{r, echo = FALSE}
+std <- "3,5-Dichloro-2-hydroxypyridine"
+```
+
+```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
+```
+
+Many features have been assigned to this standard based on m/z matching. Based
+on their retention times, these seem however to represent ions from different
+compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+EICs (check D?):
+
+```{r, echo = FALSE}
+plot_eics(data, std, feature_table, "WP", std_ms2)
+```
+
+The cleaned MS2 spectra for the features matched to `r std` are shown below
+(peaks with an intensity below 5% of the maximum peak and spectra with less
+than 2 peaks were removed).
+
+```{r mix12-serum-neg-"3,5-Dichloro-2-hydroxypyridine"-ms2, echo = FALSE}
+plot_spectra(std_ms2)
+```
+
+
+#### Summary
+
+- No MS2 reference spectra available in HMDB and MassBank.
+- No MS2 spectra available.
+- FT0464 (RT = 38.62, 21.26 ppm, `[M-H]-` ion) with confidence **D**? Mixture 
+  only contains 4 stds, so maybe high ppm during run? FINDME
+- FT1009 (RT = 35.93, 19.85 ppm, `[M+CHO2]-` ion) with confidence **D**? Mixture 
+  only contains 4 stds, so maybe high ppm during run? FINDME
+
+
+### "3,5,6-Trichloro-2-pyrinidol"
+
+```{r, echo = FALSE}
+std <- "3,5,6-Trichloro-2-pyrinidol"
+```
+
+```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
+```
+
+Many features have been assigned to this standard based on m/z matching. Based
+on their retention times, these seem however to represent ions from different
+compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+EICs (check D?):
+
+```{r, echo = FALSE}
+plot_eics(data, std, feature_table, "WP", std_ms2)
+```
+
+The cleaned MS2 spectra for the features matched to `r std` are shown below
+(peaks with an intensity below 5% of the maximum peak and spectra with less
+than 2 peaks were removed).
+
+```{r mix12-serum-neg-"3,5,6-Trichloro-2-pyrinidol"-ms2, echo = FALSE}
+plot_spectra(std_ms2)
+```
+
+
+#### Summary
+
+- No MS2 reference spectra available in HMDB and MassBank.
+- FT0832 (RT = 31.13, 19.82 ppm, `[M-H]-` ion) with confidence **D**? Mixture 
+  only contains 4 stds, so maybe high ppm during run? FINDME
+
+
+# Summary on the ion database
+
+# Session information
+
+The R version and packages used in this analysis are listed below.
+
+```{r sessioninfo}
+sessionInfo()
+```
