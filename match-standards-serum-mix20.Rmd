@@ -151,7 +151,7 @@ The table below lists all standards and the number of matching reference spectra
 This chunk is edited for `r MIX_NAME` because 3 of the 4 stds present do not 
 have a HMDB entry (non-biological chemicals). 
 
-```{r, table-all-ms2-hmdb_MIX12, echo = FALSE, results = "asis"}
+```{r, table-all-ms2-hmdb_MIX20, echo = FALSE, results = "asis"}
 all_match <- matchSpectra(
     hmdb_std, all_ms2,
     param = csp)
@@ -295,7 +295,7 @@ The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks were removed).
 
-```{r mix12-serum-pos-7-Aminoheptanoic acid-ms2, echo = FALSE}
+```{r mix20-serum-pos-7-Aminoheptanoic acid-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -331,7 +331,7 @@ The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks were removed).
 
-```{r mix12-serum-pos-3-Chloro-5-(trifluoromethyl)-2-pyrindol-ms2, echo = FALSE}
+```{r mix20-serum-pos-3-Chloro-5-(trifluoromethyl)-2-pyrindol-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -366,7 +366,7 @@ The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks were removed).
 
-```{r mix12-serum-pos-"3,5-Dichloro-2-hydroxypyridine"-ms2, echo = FALSE}
+```{r mix20-serum-pos-"3,5-Dichloro-2-hydroxypyridine"-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -402,7 +402,7 @@ The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks were removed).
 
-```{r mix12-serum-pos-"3,5,6-Trichloro-2-pyrinidol"-ms2, echo = FALSE}
+```{r mix20-serum-pos-"3,5,6-Trichloro-2-pyrinidol"-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -544,7 +544,7 @@ The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks were removed).
 
-```{r mix12-serum-neg-"3-Chloro-5-(trifluoromethyl)-2-pyrindol"-ms2, echo = FALSE}
+```{r mix20-serum-neg-"3-Chloro-5-(trifluoromethyl)-2-pyrindol"-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -586,7 +586,7 @@ The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks were removed).
 
-```{r mix12-serum-neg-"3,5-Dichloro-2-hydroxypyridine"-ms2, echo = FALSE}
+```{r mix20-serum-neg-"3,5-Dichloro-2-hydroxypyridine"-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -626,7 +626,7 @@ The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks were removed).
 
-```{r mix12-serum-neg-"3,5,6-Trichloro-2-pyrinidol"-ms2, echo = FALSE}
+```{r mix20-serum-neg-"3,5,6-Trichloro-2-pyrinidol"-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
