@@ -8,18 +8,26 @@ The first definition of retention times and ions for all standards was performed
 manually by Mar Garcia-Alloy. In the *new* workflow we aim to use the `xcms` and
 `Spectra` package to refine these and to determine also all additional adducts
 created/measurable from each compound. In the workflow we first:
+
 - Identify chromatographic peaks in each file for one *standard mix*.
 - Plot each chromatographic peak.
 - Perform correspondence analysis to group each chromatographic peak to a
   feature.
-  
+
+
 ## Analysis workflow files
 
-- [match-standards-mix01.Rmd](match-standards-mix01.Rmd): matching and
+- [match-standards-introduction.Rmd](match-standards-introduction.Rmd): A 
+  detailed description of the approach per *standard mix* is given.
+- [match-standards-serum-mix01.Rmd](match-standards-mix01.Rmd): matching and
   identifying signal from standards of mix 01. This includes preprocessing and
   ultimately defines the retention time, the measured ions and related MS/MS
-  spectra of the standards.
-
+  spectra of the standards in serum.
+- ...
+- [match-standards-serum-mix08.Rmd](match-standards-mix08.Rmd): matching and
+  identifying signal from standards of mix 08. This includes preprocessing and
+  ultimately defines the retention time, the measured ions and related MS/MS
+  spectra of the standards in serum.
 
 
 ## Data tables
@@ -50,12 +58,15 @@ created/measurable from each compound. In the workflow we first:
   concentrations also DDA MS2 data was measured with two different collision
   energies.
 
+
 ## Contributors
 
+- Marilyn De Graeve
 - Andrea Vicini
 - Vinicius Verri Hernandes
 - Mar Garcia-Aloy
 - Johannes Rainer (contact)
+
 
 ## *Old* R files
 
@@ -94,7 +105,9 @@ created/measurable from each compound. In the workflow we first:
 - [exclusion_mz.R](exclusion_mz.R): R code for generate the 
   table `exclusion_mz.txt`.
 
+
 ## Matrix effects
+
 In the folder `std_serum` there are the files used for analyse the 
 experiments about IS and STDs (injected in different MIXs) 
 at 2 different concentrations in water and in QC-serum samples.  
