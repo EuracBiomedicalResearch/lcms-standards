@@ -13,6 +13,7 @@ library(RColorBrewer)
 library(MetaboAnnotation)
 library(pheatmap)
 library(MsFeatures)
+library(MSnbase)
 # setMSnbaseFastLoad(TRUE)
 setMSnbaseFastLoad(FALSE)
 register(SerialParam())
@@ -93,9 +94,14 @@ hmdb_std <- Spectra(cdb, filter = ~ compound_id == std_dilution$HMDB)
 
 library(MsBackendMassbank)
 library(RSQLite)
-con <- dbConnect(SQLite(), "data/MassBank.sqlite")
+#con <- dbConnect(SQLite(), "data/MassBank.sqlite") #NO, alternatively do:
+#con <- dbConnect(SQLite(), "data/MassBank.sql") #error
+library(AnnotationHub)
+ah <- AnnotationHub()
+con <- ah[["AH116166"]]
+
 mbank <- Spectra(con, source = MsBackendMassbankSql())
-mbank$name <- mbank$compound_name
+#mbank$name <- mbank$compound_name   #already present in AH116166
 #' Neutral loss spectra
 mbank_nl <- mbank[!is.na(mbank$precursorMz)]
 mbank_nl <- neutralLoss(mbank_nl, param = nl_param)
@@ -131,7 +137,7 @@ all_ms2 <- setBackend(all_ms2, MsBackendDataFrame())
 all_ms2 <- applyProcessing(all_ms2)
 
 
-## ---- compare-spectra-param
+## ---- compare-spectra-param ----
 ## Settings for matchSpectra
 csp <- CompareSpectraParam(ppm = 40, requirePrecursor = FALSE)
 ## Settings for matchSpectra with neutral loss spectra
@@ -218,9 +224,10 @@ adducts <- c("[M+H]+", "[M+2H]2+", "[M+Na]+", "[M+K]+", "[M+NH4]+",
              "[M+2Na-H]+", "[M+2K-H]+")
 
 ## ---- define-adducts-neg ----
-adducts <- adducts("negative")[c("[M-H]-", "[M+Cl]-"),
+adducts <- adducts("negative")[c("[M-H]-", "[M+Cl]-", "[M-H+HCOONa]-",
+                                 "[2M-H]-", "[M+CHO2]-"),
                                c("mass_multi", "mass_add")] 
-adducts <- rbind(adducts, "[M+HCOO]-" = c(1, calculateMass("HCOO"))) 
+#adducts <- rbind(adducts, "[M+HCOO]-" = c(1, calculateMass("HCOO"))) #already included BUT not same mass_add? FINDME, keep 1 option
 
 ## ---- match-features ----
 prm <- Mass2MzParam(adducts = adducts, ppm = 30)
