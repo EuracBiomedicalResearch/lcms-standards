@@ -24,7 +24,7 @@ source("R/match-standards-functions.R")
 MIX_NAME <- paste0("Mix", ifelse(MIX < 10, paste0(0, MIX), MIX)) 
 IMAGE_PATH <- paste0("images/match-standards-", tolower(MATRIX), "-",
                      tolower(MIX_NAME), "/")
-if (dir.exists(IMAGE_PATH)) unlink(IMAGE_PATH, recursive = TRUE)
+#if (dir.exists(IMAGE_PATH)) unlink(IMAGE_PATH, recursive = TRUE)
 RDATA_PATH <- paste0("data/RData/match-standards-", tolower(MATRIX), "-",
                      tolower(MIX_NAME), "/")
 dir.create(IMAGE_PATH, showWarnings = FALSE, recursive = TRUE)
@@ -32,7 +32,6 @@ dir.create(RDATA_PATH, showWarnings = FALSE, recursive = TRUE)
 #' Define the mzML files *base* path (/data/massspec/mzML/ on the cluster)
 MZML_PATH <- "/Volumes/PortableSSD/mzML/"
 MZML_PATH <- "/data/massspec/mzML/"
-MZML_PATH <- '/home/mdegraeve/Documents/Files/Work_Eurac/Data/CHRIS/massspec/mzML/' #in folder is massspec/mzML2020/2020_01
 ALL_NL_MATCH <- FALSE                   # run matching against neutral loss db
 library(knitr)
 opts_chunk$set(cached = FALSE, message = FALSE, warning = FALSE,
@@ -222,13 +221,13 @@ ttest <- t(apply(fVlog2, 1, function(x) {
 ## ---- define-adducts-pos ----
 adducts <- c("[M+H]+", "[M+2H]2+", "[M+Na]+", "[M+K]+", "[M+NH4]+",
              "[M+H-H2O]+", "[M+H+Na]2+", "[M+2Na]2+", "[M+H-NH3]+",
-             "[M+2Na-H]+", "[M+2K-H]+")
+             "[M+2Na-H]+", "[M+2K-H]+",
+             "[2M+H]+", "[M+H-H4O2]+", "[M+H-Hexose-H2O]+", "[M+H-CH2O2]+")
 
 ## ---- define-adducts-neg ----
 adducts <- adducts("negative")[c("[M-H]-", "[M+Cl]-", "[M-H+HCOONa]-",
                                  "[2M-H]-", "[M+CHO2]-"),
                                c("mass_multi", "mass_add")] 
-#adducts <- rbind(adducts, "[M+HCOO]-" = c(1, calculateMass("HCOO"))) #already included BUT not same mass_add? FINDME, keep 1 option
 
 ## ---- match-features ----
 prm <- Mass2MzParam(adducts = adducts, ppm = 30)
@@ -241,6 +240,7 @@ mD <- matchedData(
                            "high_low_diff", "pvalue", "mean_high",
                            "mean_low"))
 mD <- mD[-which(mD$high_low_diff < 0.7), ]
+mD <- mD[-which(abs(mD$rtmed - mD$target_RT) < 10), ]  #max 10s rt deviation, incorrect in table so ignore
 mD <- mD[order(mD$target_name), ]
 
 
