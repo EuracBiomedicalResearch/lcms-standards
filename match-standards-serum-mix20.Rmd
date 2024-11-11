@@ -136,6 +136,8 @@ spectra similarity calculations. All matching spectra with a similarity larger
 ```{r, compare-spectra-param}
 ```
  
+Positive polarity:
+
 Standards for which no MS2 spectrum in HMDB is present are listed in
 the table below.
 
@@ -162,6 +164,8 @@ tab <- matchedData(all_match, c("name", "compound_id", "score", "target_rtime"))
 pandoc.table(tab, style = "rmarkdown", split.table = Inf,
              caption = "Standards with matching reference MS2 spectra.")
 ```
+
+Negative polarity:
 
 We repeat the same analysis for the negative polarity data (code not shown
 again).
@@ -302,8 +306,8 @@ plot_spectra(std_ms2)
 #### Summary
 
 - No MS2 spectra available.
-- FT00972 (RT = 169.5, 9.554 ppm, `[M+2Na]2+` ion): with confidence **D**? 
-  Mixture only contains 4 stds, so maybe high ppm during run? FINDME
+- FT00972 (RT = 169.5, 9.554 ppm, `[M+2Na]2+` ion): with confidence **D**, high 
+  ppm? 
 
 
 ### 3-Chloro-5-(trifluoromethyl)-2-pyrindol
@@ -341,7 +345,7 @@ plot_spectra(std_ms2)
 - FT02079 (RT = 33.23, 2.115 ppm, `[M+H]+` ion) with confidence **D**
 
 
-### "3,5-Dichloro-2-hydroxypyridine"
+### 3,5-Dichloro-2-hydroxypyridine
 
 ```{r, echo = FALSE}
 std <- "3,5-Dichloro-2-hydroxypyridine"
@@ -377,7 +381,7 @@ plot_spectra(std_ms2)
 - FT02125 (RT = 32.05, 6.723 ppm, `[M+K]+` ion): probably other compound.
 
 
-### "3,5,6-Trichloro-2-pyrinidol"
+### 3,5,6-Trichloro-2-pyrinidol
 
 ```{r, echo = FALSE}
 std <- "3,5,6-Trichloro-2-pyrinidol"
@@ -490,28 +494,15 @@ criteria to determine the annotation confidence:
 std <- "7-Aminoheptanoic acid"
 ```
 
-The filtered feature table for `r std` is empty, so change code chunk below in 
-able to render document possible.
+The feature table for `r std` is empty, the code chunk below was modified to 
+allow rendering of the document.
 
-```{r, table-feature-matches_MIX20, results = "asis", echo = FALSE, message = FALSE}
+```{r, table-feature-matches_7-Aminoheptanoic acid, results = "asis", echo = FALSE, message = FALSE}
 feature_table <- as.data.frame(mD[mD$target_name == std, ])
 pandoc.table(feature_table, style = "rmarkdown",
              split.tables = Inf,
              caption = paste0("Feature to standards matches for ", std))
 ```
-
-Many features have been assigned to this standard based on m/z matching. Based
-on their retention times, these seem however to represent ions from different
-compounds.
-
-We next plot the EIC for the assigned feature and visually inspect these.
-
-EICs (check D?):
-
-```{r, echo = FALSE}
-plot_eics(data, std, feature_table, "WP", std_ms2)
-```
-
 
 #### Summary
 
@@ -553,15 +544,14 @@ plot_spectra(std_ms2)
 
 - No MS2 reference spectra available in HMDB and MassBank.
 - FT0839 (RT = 38.5, 19.8 ppm, `[M-H]-` ion): nice peak but high ppm so 
-  probably other compound or **D**? Mixture only contains 4 stds, so maybe high 
-  ppm during run? FINDME
+  probably other compound or **D**, high ppm? 
 - FT1354 (RT = 32.8, 16.83 ppm, `[M+CHO2]-` ion): high ppm so probably other 
   compound or **D**?
 - FT3231 (RT = 32.38, 15.37 ppm, `[2M-H]-` ion): nice peak but high ppm so 
   probably other compound or **D**?
 
 
-### "3,5-Dichloro-2-hydroxypyridine"
+### 3,5-Dichloro-2-hydroxypyridine
 
 ```{r, echo = FALSE}
 std <- "3,5-Dichloro-2-hydroxypyridine"
@@ -595,13 +585,12 @@ plot_spectra(std_ms2)
 
 - No MS2 reference spectra available in HMDB and MassBank.
 - No MS2 spectra available.
-- FT0464 (RT = 38.62, 21.26 ppm, `[M-H]-` ion) with confidence **D**? Mixture 
-  only contains 4 stds, so maybe high ppm during run? FINDME
-- FT1009 (RT = 35.93, 19.85 ppm, `[M+CHO2]-` ion) with confidence **D**? Mixture 
-  only contains 4 stds, so maybe high ppm during run? FINDME
+- FT0464 (RT = 38.62, 21.26 ppm, `[M-H]-` ion) with confidence **D**, high ppm? 
+- FT1009 (RT = 35.93, 19.85 ppm, `[M+CHO2]-` ion) with confidence **D**, high 
+  ppm? 
 
 
-### "3,5,6-Trichloro-2-pyrinidol"
+### 3,5,6-Trichloro-2-pyrinidol
 
 ```{r, echo = FALSE}
 std <- "3,5,6-Trichloro-2-pyrinidol"
@@ -634,8 +623,7 @@ plot_spectra(std_ms2)
 #### Summary
 
 - No MS2 reference spectra available in HMDB and MassBank.
-- FT0832 (RT = 31.13, 19.82 ppm, `[M-H]-` ion) with confidence **D**? Mixture 
-  only contains 4 stds, so maybe high ppm during run? FINDME
+- FT0832 (RT = 31.13, 19.82 ppm, `[M-H]-` ion) with confidence **D**, high ppm?
 
 
 # Summary on the ion database

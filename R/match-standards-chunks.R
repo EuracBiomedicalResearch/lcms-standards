@@ -32,6 +32,7 @@ dir.create(RDATA_PATH, showWarnings = FALSE, recursive = TRUE)
 #' Define the mzML files *base* path (/data/massspec/mzML/ on the cluster)
 MZML_PATH <- "/Volumes/PortableSSD/mzML/"
 MZML_PATH <- "/data/massspec/mzML/"
+MZML_PATH <- '/home/mdegraeve/Documents/Files/Work_Eurac/Data/CHRIS/massspec/mzML/' #in folder is massspec/mzML2020/2020_01
 ALL_NL_MATCH <- FALSE                   # run matching against neutral loss db
 library(knitr)
 opts_chunk$set(cached = FALSE, message = FALSE, warning = FALSE,

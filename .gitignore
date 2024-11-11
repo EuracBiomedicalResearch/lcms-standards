@@ -7,3 +7,5 @@ std_serum/stds_RT_serum.txt
 images/*
 dinamic_range_*.txt
 tmp/*
+*.sqlite
+
