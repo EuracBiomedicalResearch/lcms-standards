@@ -370,7 +370,7 @@ The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks were removed).
 
-```{r mix20-serum-pos-"3,5-Dichloro-2-hydroxypyridine"-ms2, echo = FALSE}
+```{r mix20-serum-pos-3,5-Dichloro-2-hydroxypyridine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -406,7 +406,7 @@ The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks were removed).
 
-```{r mix20-serum-pos-"3,5,6-Trichloro-2-pyrinidol"-ms2, echo = FALSE}
+```{r mix20-serum-pos-3,5,6-Trichloro-2-pyrinidol-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -535,7 +535,7 @@ The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks were removed).
 
-```{r mix20-serum-neg-"3-Chloro-5-(trifluoromethyl)-2-pyrindol"-ms2, echo = FALSE}
+```{r mix20-serum-neg-3-Chloro-5-(trifluoromethyl)-2-pyrindol-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -546,9 +546,9 @@ plot_spectra(std_ms2)
 - FT0839 (RT = 38.5, 19.8 ppm, `[M-H]-` ion): nice peak but high ppm so 
   probably other compound or **D**, high ppm? 
 - FT1354 (RT = 32.8, 16.83 ppm, `[M+CHO2]-` ion): high ppm so probably other 
-  compound or **D**?
+  compound or **D**, high ppm?
 - FT3231 (RT = 32.38, 15.37 ppm, `[2M-H]-` ion): nice peak but high ppm so 
-  probably other compound or **D**?
+  probably other compound or **D**, high ppm?
 
 
 ### 3,5-Dichloro-2-hydroxypyridine
@@ -576,7 +576,7 @@ The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks were removed).
 
-```{r mix20-serum-neg-"3,5-Dichloro-2-hydroxypyridine"-ms2, echo = FALSE}
+```{r mix20-serum-neg-3,5-Dichloro-2-hydroxypyridine-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
@@ -615,7 +615,7 @@ The cleaned MS2 spectra for the features matched to `r std` are shown below
 (peaks with an intensity below 5% of the maximum peak and spectra with less
 than 2 peaks were removed).
 
-```{r mix20-serum-neg-"3,5,6-Trichloro-2-pyrinidol"-ms2, echo = FALSE}
+```{r mix20-serum-neg-3,5,6-Trichloro-2-pyrinidol-ms2, echo = FALSE}
 plot_spectra(std_ms2)
 ```
 
