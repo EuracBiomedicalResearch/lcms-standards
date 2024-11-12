@@ -514,33 +514,17 @@ plot_spectra(std_ms2)
 std <- "6-Phosphogluconic Acid"
 ```
 
-```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
-```
+```{r, table-feature-matches-6-Phosphogluconic Acid, results = "asis", echo = FALSE, message = FALSE}
 
-Many features have been assigned to this standard based on m/z matching. Based
-on their retention times, these seem however to represent ions from different
-compounds.
-
-We next plot the EIC for the assigned feature and visually inspect these.
-
-EICs (check D?):
-
-```{r, echo = FALSE}
-plot_eics(data, std, feature_table, "WP", std_ms2)
-```
-
-The cleaned MS2 spectra for the features matched to `r std` are shown below
-(peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks were removed).
-
-```{r mix16-serum-pos-6-Phosphogluconic Acid-ms2, echo = FALSE}
-plot_spectra(std_ms2)
 ```
 
 #### Summary
 
 - No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
+- No filtered feature table, no potential peaks found.
+- No MS2 spectra available (because no potential peaks for `r std`).
+- Results previous (wo rt filtering):
+  - No MS2 spectra available.
 
 
 ### Quinolinic acid
