@@ -280,34 +280,21 @@ criteria to determine the annotation confidence:
 std <- "7-Aminoheptanoic acid"
 ```
 
-```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
-```
-
-Many features have been assigned to this standard based on m/z matching. Based
-on their retention times, these seem however to represent ions from different
-compounds.
-
-We next plot the EIC for the assigned feature and visually inspect these.
-
-EICs (check D?):
-
-```{r, echo = FALSE}
-plot_eics(data, std, feature_table, "WP", std_ms2)
-```
-
-The cleaned MS2 spectra for the features matched to `r std` are shown below
-(peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks were removed).
-
-```{r mix20-serum-pos-7-Aminoheptanoic acid-ms2, echo = FALSE}
-plot_spectra(std_ms2)
+```{r, table-feature-matches-7-Aminoheptanoic acid, results = "asis", echo = FALSE, message = FALSE}
+feature_table <- as.data.frame(mD[mD$target_name == std, ])
+pandoc.table(feature_table, style = "rmarkdown",
+             split.tables = Inf,
+             caption = paste0("Feature to standards matches for ", std))
 ```
 
 #### Summary
 
-- No MS2 spectra available.
-- FT00972 (RT = 169.5, 9.554 ppm, `[M+2Na]2+` ion): with confidence **D**, high 
-  ppm? 
+- No filtered feature table, no potential peaks found.
+- No MS2 spectra available (because no potential peaks for `r std`).
+- Results from previous (wo rt filter):
+  - No MS2 spectra available.
+  - FT00972 (RT = 169.5, 9.554 ppm, `[M+2Na]2+` ion): with confidence **D**, 
+    high ppm? 
 
 
 ### 3-Chloro-5-(trifluoromethyl)-2-pyrindol
@@ -623,7 +610,10 @@ plot_spectra(std_ms2)
 #### Summary
 
 - No MS2 reference spectra available in HMDB and MassBank.
+- No MS2 spectra available.
 - FT0832 (RT = 31.13, 19.82 ppm, `[M-H]-` ion) with confidence **D**, high ppm?
+- Results previous (wo rt filter):
+  - FT0833 had 4 spectra, but very high rt dev (RT +- 60s) so ignore
 
 
 # Summary on the ion database
