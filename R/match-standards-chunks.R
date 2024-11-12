@@ -240,7 +240,7 @@ mD <- matchedData(
                            "high_low_diff", "pvalue", "mean_high",
                            "mean_low"))
 mD <- mD[-which(mD$high_low_diff < 0.7), ]
-mD <- mD[-which(abs(mD$rtmed - mD$target_RT) < 10), ]  #max 10s rt deviation, 2-sided
+mD <- mD[which(abs(mD$rtmed - mD$target_RT) < 10), ]  #max 10s rt deviation, 2-sided
 mD <- mD[order(mD$target_name), ]
 
 
