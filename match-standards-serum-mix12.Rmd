@@ -362,6 +362,7 @@ sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 | FT00630 | 114.1 | 5.492 | 185.2 | 184 | FG.001.001 | [M+2H]2+ | 0 | 20.86 | 7.094 |
 
 - <**D** for, high ppm and/or rt:
+
 |   &nbsp;   | mzmed | ppm_error | rtmed | target_RT | feature_group |   adduct      | n_ms2 | mean_high | mean_low |
 |:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:-------------:|:-----:|:---------:|:--------:|
 | FT00632 | 114.1 | 21.6 | 34.61 | 184 | FG.003.001 | [M+2H]2+ | 0 | 12.07 | 6.834 |
@@ -1614,61 +1615,9 @@ than 2 peaks were removed).
 plot_spectra(std_ms2)
 ```
 
-We next match the extracted MS2 spectra against the reference spectra for 
-`r std` from HMDB and MassBank.
-
-Heat maps:
-
-```{r mix12-serum-neg-Galactitol-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
-hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
-std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
-```
-
-FYI: no heat map with only 1 row.
-
-```{r mix12-serum-neg-Galactitol-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
-std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
-```
-
-FYI: no heat map with only 1 row.
-
-For spectra from untargeted features that match with good similarity to some of 
-the HMDB reference spectra for `r std`, we show the mirror plots of the best 
-matches.
-
-Mirror plots (check D -> C or B?):
-
-```{r mix12-serum-neg-Galactitol-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
-```
-
-```{r mix12-serum-neg-Galactitol-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
-```
-
-In addition we match (**all**) the MS2 spectra for the matched features against
-all spectra from HMDB or MassBank identifying reference spectra with a
-similarity larger than 0.7. The results (if any spectra matched) are shown in
-the two following tables.
-
-Highest confidence matches (check B -> A?):
-
-```{r, echo = FALSE, message = FALSE, results = "asis"}
-perform_match(std_ms2, hmdb, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp)
-```
-
-```{r, echo = FALSE, message = FALSE, results = "asis"}
-perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp)
-```
-
 #### Summary
 
+- No MS2 spectra available.
 - **D** for, high ppm:
 
 |   &nbsp;   | mzmed | ppm_error | rtmed | target_RT | feature_group |   adduct  | n_ms2 | mean_high | mean_low |
