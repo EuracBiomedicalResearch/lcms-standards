@@ -294,16 +294,15 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: Adenine and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- good spectral match, one non-unique match with Adenosine so keep A for
+  FT01064. But in massbank also less similar hits >0.7, so back to B. 
 
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct    | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:----------:|:-----:|:---------:|:--------:|
+| **A** | FT01064    | 136.1 | 1.504     | 133.2 | 133       | FG.001.001    | [M+H]+     | 2     | 23.07     | 21.14    |
+| **D** | FT00763    | 119   | 2.986     | 133.2 | 133       | FG.001.001    | [M+H-NH3]+ | 0     | 18.67     | 14.62    |
+
+- Reference MS2: FT01064: F08.S0417, F07.S0427
 
 
 ### ATP
@@ -321,7 +320,6 @@ pandoc.table(feature_table, style = "rmarkdown",
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
 - No filtered feature table, no potential peaks found.
 - No MS2 spectra available (because no potential peaks for `r std`).
 
@@ -371,6 +369,8 @@ std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
+FYI: heatmap with 1 row / feature gives non-visual output.
+
 For spectra from untargeted features that match with good similarity to some of 
 the HMDB reference spectra for `r std`, we show the mirror plots of the best 
 matches.
@@ -383,7 +383,7 @@ std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
 ```
 
 ```{r mix19-serum-pos-Homocysteinethiolactone-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.5,
                            ppm = csp@ppm, tolerance = csp@tolerance)
 ```
 
@@ -406,15 +406,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: Homocysteinethiolactone and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- Mirror plots D -> C for FT00746, but <0.7 match. not nicest EIC though.
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **C** | FT00746    | 118   | 1.501     | 125.7 | 124       | FG.001.001    | [M+H]+    | 1     | 21.95     | 17.8     |
 
 
 ### Methylamine
@@ -535,16 +531,18 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: UMP and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- FYI: UMP and URIDINEMONOPHOSPHATE are synonyms
+- URIDINE5DIPHOSPHATE is very similar, so keep A for FT04738, but in hmdb also
+  other matches, so back to B.
+- Reference MS2: FT04738: F08.S0740, F08.S0793, F07.S0765, F07.S0806,
+  F07.S0834
 
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** | FT04738    | 325   | 2.39      | 222.6 | 225       | FG.001.001    | [M+H]+    | 5     | 18.7      | 11.87    |
+| **D** | FT09502    | 649.1 | 2.453     | 222.8 | 225       | FG.001.001    | [2M+H]+   | 2     | 15.11     | 2.721    |
+| **D** | FT05284    | 347   | 4.308     | 222.9 | 225       | FG.001.001    | [M+Na]+   | 2     | 17.04     | 7.324    |
+| **D** | FT05610    | 363   | 12.08     | 222.9 | 225       | FG.001.001    | [M+K]+    | 2     | 15.16     | 5.591    |
 
 
 # Serum, negative polarity
@@ -698,16 +696,16 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: Adenine and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- good spectral match, one non-unique match with Adenosine and Adenosine-related 
+  so keep A for FT0283. But in massbank also less similar hits >0.7, so back to
+  B. also high ppm.
 
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** |FT0283      | 134   | 15.57     | 133.6 | 133       | FG.001.001    | [M-H]-    | 2     | 21        | 19.3     |
+| **D** | FT0703     | 180   | 17.74     | 132.5 | 133       | FG.001.001    | [M+CHO2]- | 0     | 15.61     | 13.41    |
+
+- FYI: FT1742 has only good EIC for low abundance samples, so not asign D.
 
 
 ### ATP
@@ -725,7 +723,6 @@ pandoc.table(feature_table, style = "rmarkdown",
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
 - No filtered feature table, no potential peaks found.
 - No MS2 spectra available (because no potential peaks for `r std`).
 
@@ -844,7 +841,7 @@ std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
 ```
 
 ```{r mix19-serum-neg-UMP-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.4,
                            ppm = csp@ppm, tolerance = csp@tolerance)
 ```
 
@@ -867,16 +864,12 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: UMP and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- good sprectra for FT2528, but in massbank got 2 other hits, so B. high ppm
 
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** | FT2528     | 323   | 12.19     | 226.4 | 225       | FG.001.001    | [M-H]-    | 5     | 21.85     | 15.86    |
+| **D** | FT6303     | 647.1 | 4.172     | 226.8 | 225       | FG.001.001    | [2M-H]-   | 2     | 20.64     | 2.679    |
 
 
 # Summary on the ion database
