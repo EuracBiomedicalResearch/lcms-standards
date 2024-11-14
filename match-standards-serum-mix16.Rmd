@@ -567,7 +567,7 @@ plot_spectra(std_ms2)
 | **D** | FT01063    | 137.1 | 0.8786    | 36.09 | 36        | FG.002.001    | [M+H-CH2O2]+ | 0     | 13.95     | 12.87    |
 
 
-### 6-Phosphogluconic Acid R
+### 6-Phosphogluconic Acid
 
 ```{r, echo = FALSE}
 std <- "6-Phosphogluconic Acid"
