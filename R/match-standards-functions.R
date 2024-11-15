@@ -76,21 +76,24 @@ extract_ms2 <- function(x, features, ppm = 20, tolerance = 0) {
 #' similarity higher than the specified cutoff, creates mirror plots and
 #' returns the selected `Spectra`.
 #'
-#' This function uses *global* variables `sim`, `std_ms2` and `hmdb`
 plot_select_ms2 <- function(query, target, cutoff,
-                            ppm = 40, tolerance = 0) {
+                            ppm = 40, tolerance = 0, sim) {
+    if (missing(sim))
+        stop("Please provide the similarity matrix with parameter 'sim'")
     if (is.null(dim(sim)))
         idx <- which(matrix(sim, length(query), length(target)) > cutoff,
                      arr.ind = TRUE)
     else idx <- which(sim > cutoff, arr.ind = TRUE)
     if (nrow(idx)) {
-        par(mfrow = c(round(sqrt(nrow(idx))), ceiling(sqrt(nrow(idx)))))
+        par(mfrow = c(round(sqrt(nrow(idx))), ceiling(sqrt(nrow(idx)))),
+            mar = c(2, 2, 1, 0.5))
         for (i in seq_len(nrow(idx))) {
             a <- idx[i, 1L]
             b <- idx[i, 2L]
-            plotSpectraMirror(query[a], addProcessing(target[b], scale_int),
-                              main = paste(spectraNames(query)[a], target$name[b]),
-                              ppm = ppm, tolerance = tolerance)
+            plotSpectraMirror(
+                query[a], addProcessing(target[b], scale_int),
+                main = paste(spectraNames(query)[a], target$name[b]),
+                ppm = ppm, tolerance = tolerance)
         }
         query[unique(idx[, "row"])]
     } else cat("No spectra with selected similarity")
