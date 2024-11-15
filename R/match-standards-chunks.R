@@ -285,7 +285,8 @@ fts$ion_adduct <- feature_table[fts$feature_id, "adduct"]
 fts$compound_id <- hmdb_id
 fts$polarity <- POLARITY
 idb <- insertIon(idb, fts, addColumns = TRUE)
-
+pandoc.table(fts, split.tables = Inf, style = "rmarkdown")
+rm(fts)
 
 ## ---- add-ms2-spectra ----
 ms2$original_spectrum_id <- spectraNames(ms2)
@@ -303,6 +304,10 @@ idb <- insertSpectra(
                           "instrument", "precursorMz", "adduct",
                           "original_file", "confidence", "acquisitionNum",
                           "rtime"))
+spectraData(ms2, c("rtime", "original_file", "adduct", "confidence")) |>
+    as.data.frame() |>
+    pandoc.table(style = "rmarkdown", split.tables = Inf)
+rm(ms2)
 
 ## ---- iondb-summary ----
 fts <- ions(idb)

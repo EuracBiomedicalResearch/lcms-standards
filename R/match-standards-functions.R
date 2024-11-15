@@ -23,7 +23,7 @@ group_features <- function(x, features, groupEic = FALSE) {
 
 #' Plot EICs.
 plot_eics <- function(x, std, tab, MP, std_ms2) {
-    eics <- featureChromatograms(x, features = rownames(tab))
+    eics <- featureChromatograms(x, features = rownames(tab), expandRt = 15)
     dr <- file.path(IMAGE_PATH, std)
     dir.create(dr, showWarnings = FALSE)
     col_sample <- col_group[eics$group]
