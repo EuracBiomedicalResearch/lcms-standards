@@ -251,12 +251,12 @@ Heat maps:
 ```{r mix14-serum-pos-Acetylcarnitine-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-pos-Acetylcarnitine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -267,12 +267,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-pos-Acetylcarnitine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-pos-Acetylcarnitine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -294,16 +294,14 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: Acetylcarnitine and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- Acetylcarnitine and 2 very similar molicules found for FT06839, keep B.
+- labels:
 
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** | FT06839 	407.2 	1.652 	37.73 	37 	FG.001.001 	[2M+H]+ 	3 	17.81 	13.99 |
+| **D** | FT01644 	168.1 	7.045 	35.36 	37 	FG.002.001 	[M+H-H4O2]+ 	0 	11.69 	10.02 |
+| **D** | FT01439 	158.1 	2.416 	37.76 	37 	FG.001.001 	[M+H-CH2O2]+ 	0 	12.91 	9.117 |
 
 
 ### ADP-Glucose
@@ -343,12 +341,12 @@ Heat maps:
 ```{r mix14-serum-pos-ADP-Glucose-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-pos-ADP-Glucose-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -359,12 +357,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-pos-ADP-Glucose-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-pos-ADP-Glucose-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -387,14 +385,14 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 #### Summary
 
 - No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: ADP-Glucose and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- `r std` matches with similar, because building block: adenosine in Nadide and
+  Adenosine_Diphosphate for FT07209, which is logical since adduct is 
+  [M+H-Hexose-H2O]+, loss of glc. give B, but bad EIC...
+- labels:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** | FT07209 	428 	4.641 	276.1 	275 	FG.002.001 	[M+H-Hexose-H2O]+ 	1 	20.24 	8.698 |
 
 
 ### 1,5-anhydro D-glucitol
@@ -434,12 +432,12 @@ Heat maps:
 ```{r mix14-serum-pos-1,5-anhydro D-glucitol-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-pos-1,5-anhydro D-glucitol-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -449,13 +447,13 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-pos-1,5-anhydro D-glucitol-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-pos-1,5-anhydro D-glucitol-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -477,15 +475,12 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: "1,5-anhydro D-glucitol" and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels, semi good EICs:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **D** | FT02283 	203 	2.492 	134.7 	135 	FG.001.001 	[M+K]+ 	2 	12.32 	10.45 |
+| **D** | FT00800 	129.1 	1.841 	134.9 	135 	FG.001.001 	[M+H-H4O2]+ 	0 	13.08 	10.78 |
 
 
 ### Glyceraldehyde 2-phosphate
@@ -525,12 +520,12 @@ Heat maps:
 ```{r mix14-serum-pos-Glyceraldehyde 2-phosphate-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-pos-Glyceraldehyde 2-phosphate-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -541,18 +536,40 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-pos-Glyceraldehyde 2-phosphate-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-pos-Glyceraldehyde 2-phosphate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
+```
+
+In addition we match (**all**) the MS2 spectra for the matched features against
+all spectra from HMDB or MassBank identifying reference spectra with a
+similarity larger than 0.7. The results (if any spectra matched) are shown in
+the two following tables.
+
+Highest confidence matches (check B -> A?):
+
+```{r, echo = FALSE, message = FALSE, results = "asis"}
+perform_match(std_ms2, hmdb, sv = c("rtime", "target_name", "score"),
+              name = "target_name", param = csp)
+```
+
+```{r, echo = FALSE, message = FALSE, results = "asis"}
+perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
+              name = "target_name", param = csp)
 ```
 
 #### Summary
 
 - No MS2 reference spectra available in HMDB and MassBank.
-- todo
+- TODO >0.7 see!!!
+- labels:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **D** | FT01674 	171 	1.885 	204.2 	213 	FG.001.001 	[M+H]+ 	0 	13.74 	11.5 |
 
 
 ### Glycerol-3-Phosphate
@@ -584,10 +601,68 @@ than 2 peaks were removed).
 plot_spectra(std_ms2)
 ```
 
+We next match the extracted MS2 spectra against the reference spectra for 
+`r std` from HMDB and MassBank.
+
+Heat maps:
+
+```{r mix14-serum-pos-Glycerol-3-Phosphate-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
+hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
+std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+```
+
+```{r mix14-serum-pos-Glycerol-3-Phosphate-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
+std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+```
+
+For spectra from untargeted features that match with good similarity to some of 
+the HMDB reference spectra for `r std`, we show the mirror plots of the best 
+matches.
+
+Mirror plots (check D -> C or B?):
+
+```{r mix14-serum-pos-Glycerol-3-Phosphate-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+                               tolerance = csp@tolerance, sim_hmdb)
+```
+
+```{r mix14-serum-pos-Glycerol-3-Phosphate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
+```
+
+In addition we match (**all**) the MS2 spectra for the matched features against
+all spectra from HMDB or MassBank identifying reference spectra with a
+similarity larger than 0.7. The results (if any spectra matched) are shown in
+the two following tables.
+
+Highest confidence matches (check B -> A?):
+
+```{r, echo = FALSE, message = FALSE, results = "asis"}
+perform_match(std_ms2, hmdb, sv = c("rtime", "target_name", "score"),
+              name = "target_name", param = csp)
+```
+
+```{r, echo = FALSE, message = FALSE, results = "asis"}
+perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
+              name = "target_name", param = csp)
+```
+
 #### Summary
 
-- No MS2 spectra available.
+- REDO!!!  have ms2
 - todo
+- labels:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** | 
+FT02152 	195 	1.784 	217.8 	222 	FG.001.001 	[M+Na]+ 	0 	12.55 	5.118
+FT05489 	345 	3.803 	218.5 	222 	FG.001.001 	[2M+H]+ 	0 	14.7 	2.415
+FT01719 	173 	2.022 	218.8 	222 	FG.001.001 	[M+H]+ 	1 	18.33 	12.8
+
 
 ### dGTP
 
@@ -645,12 +720,12 @@ Heat maps:
 ```{r mix14-serum-pos-Indolelactic acid-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-pos-Indolelactic acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -661,25 +736,23 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-pos-Indolelactic acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-pos-Indolelactic acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 #### Summary
 
 - No MS2 reference spectra available in HMDB and MassBank.
 - No MS2 spectra available.
-- FYI: Indolelactic acid and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **D** | FT02031 	188.1 	0.1052 	36.98 	37 	FG.001.001 	[M+H-H2O]+ 	0 	13.98 	12.77 |
 
 
 ### Isocitric Acid
@@ -719,12 +792,12 @@ Heat maps:
 ```{r mix14-serum-pos-Isocitric Acid-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-pos-Isocitric Acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -734,13 +807,13 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-pos-Isocitric Acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-pos-Isocitric Acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -762,15 +835,13 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: Isocitric Acid and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **D** | FT03549 	268.9 	1.035 	144.8 	146 	FG.001.001 	[M+2K-H]+ 	0 	13.55 	3.51 |
+| **D** | FT02609 	215 	1.11 	146.8 	146 	FG.001.001 	[M+Na]+ 	0 	13.45 	12.27 |
+| **D** | FT03023 	237 	1.031 	147.4 	146 	FG.001.001 	[M+2Na-H]+ 	2 	14.98 	13.65 |
 
 
 ### 2-Ketoglutaric acid
@@ -806,6 +877,11 @@ plot_spectra(std_ms2)
 
 - No MS2 spectra available.
 - todo
+- labels:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** | 
 
 
 ### Levodopa
@@ -845,12 +921,12 @@ Heat maps:
 ```{r mix14-serum-pos-Levodopa-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-pos-Levodopa-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -861,12 +937,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-pos-Levodopa-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-pos-Levodopa-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -897,6 +973,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
 - FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
 - Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** | 
 
 
 ### NAD
@@ -936,12 +1017,12 @@ Heat maps:
 ```{r mix14-serum-pos-NAD-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-pos-NAD-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -952,12 +1033,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-pos-NAD-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-pos-NAD-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -988,7 +1069,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
 - FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
 - Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels:
 
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** | 
 
 ### Pyridoxic Acid
 
@@ -1027,12 +1112,12 @@ Heat maps:
 ```{r mix14-serum-pos-Pyridoxic Acid-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-pos-Pyridoxic Acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -1043,12 +1128,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-pos-Pyridoxic Acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-pos-Pyridoxic Acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1079,7 +1164,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
 - FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
 - Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels:
 
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** | 
 
 ### Serotonin
 
@@ -1118,12 +1207,12 @@ Heat maps:
 ```{r mix14-serum-pos-Serotonin-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-pos-Serotonin-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -1134,12 +1223,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-pos-Serotonin-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-pos-Serotonin-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1170,7 +1259,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
 - FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
 - Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels:
 
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** | 
 
 ### Ureidopropionic acid
 
@@ -1209,12 +1302,12 @@ Heat maps:
 ```{r mix14-serum-pos-Ureidopropionic acid-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-pos-Ureidopropionic acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -1225,12 +1318,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-pos-Ureidopropionic acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-pos-Ureidopropionic acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1261,7 +1354,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
 - FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
 - Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels:
 
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** | 
 
 ### Xylulose 5-Phosphate
 
@@ -1426,12 +1523,12 @@ Heat maps:
 ```{r mix14-serum-neg-ADP-Glucose-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-neg-ADP-Glucose-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -1442,12 +1539,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-ADP-Glucose-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-ADP-Glucose-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1478,7 +1575,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
 - FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
 - Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels, high ppm:
 
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** | 
 
 ### 1,5-anhydro D-glucitol
 
@@ -1517,12 +1618,12 @@ Heat maps:
 ```{r mix14-serum-neg-1,5-anhydro D-glucitol-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-neg-1,5-anhydro D-glucitol-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -1533,12 +1634,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-1,5-anhydro D-glucitol-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-1,5-anhydro D-glucitol-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1569,6 +1670,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
 - FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
 - Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels, high ppm:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** |
 
 
 ### Glyceraldehyde 2-phosphate
@@ -1627,12 +1733,12 @@ Heat maps:
 ```{r mix14-serum-neg-Glycerol-3-Phosphate-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-neg-Glycerol-3-Phosphate-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -1643,12 +1749,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-Glycerol-3-Phosphate-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-Glycerol-3-Phosphate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1679,6 +1785,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
 - FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
 - Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels, high ppm:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** |
 
 
 ### dGTP
@@ -1718,12 +1829,12 @@ Heat maps:
 ```{r mix14-serum-neg-dGTP-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-neg-dGTP-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -1734,12 +1845,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-dGTP-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-dGTP-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1770,6 +1881,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
 - FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
 - Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels, high ppm:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** |
 
 
 ### Indolelactic acid
@@ -1809,12 +1925,12 @@ Heat maps:
 ```{r mix14-serum-neg-Indolelactic acid-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-neg-Indolelactic acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -1825,12 +1941,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-Indolelactic acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-Indolelactic acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1861,6 +1977,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
 - FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
 - Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels, high ppm:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** |
 
 
 ### Isocitric Acid
@@ -1896,6 +2017,11 @@ plot_spectra(std_ms2)
 
 - No MS2 spectra available.
 - todo D
+- labels, high ppm:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** |
 
 
 ### 2-Ketoglutaric acid
@@ -1935,12 +2061,12 @@ Heat maps:
 ```{r mix14-serum-neg-2-Ketoglutaric acid-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-neg-2-Ketoglutaric acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -1951,12 +2077,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-2-Ketoglutaric acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-2-Ketoglutaric acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1987,6 +2113,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
 - FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
 - Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels, high ppm:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** |
 
 
 ### Levodopa
@@ -2026,12 +2157,12 @@ Heat maps:
 ```{r mix14-serum-neg-Levodopa-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-neg-Levodopa-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -2042,12 +2173,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-Levodopa-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-Levodopa-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -2078,6 +2209,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
 - FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
 - Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels, high ppm:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** |
 
 
 ### NAD
@@ -2117,12 +2253,12 @@ Heat maps:
 ```{r mix14-serum-neg-NAD-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-neg-NAD-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -2133,12 +2269,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-NAD-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-NAD-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -2169,6 +2305,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
 - FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
 - Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels, high ppm:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** |
 
 
 ### Pyridoxic Acid
@@ -2208,12 +2349,12 @@ Heat maps:
 ```{r mix14-serum-neg-Pyridoxic Acid-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-neg-Pyridoxic Acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -2224,12 +2365,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-Pyridoxic Acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-Pyridoxic Acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -2260,6 +2401,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
 - FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
 - Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels, high ppm:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** |
 
 
 ### Serotonin
@@ -2329,6 +2475,11 @@ plot_spectra(std_ms2)
 
 - No MS2 spectra available.
 - todo
+- labels, high ppm:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** |
 
 
 ### Xylulose 5-Phosphate
@@ -2368,12 +2519,12 @@ Heat maps:
 ```{r mix14-serum-neg-Xylulose 5-Phosphate-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix14-serum-neg-Xylulose 5-Phosphate-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -2384,12 +2535,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-Xylulose 5-Phosphate-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-Xylulose 5-Phosphate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -2420,7 +2571,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
 - FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
 - Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- labels, high ppm:
 
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **B** |
 
 
 # Summary on the ion database

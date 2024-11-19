@@ -251,12 +251,12 @@ Heat maps:
 ```{r mix17-serum-pos-Acetylaspartic acid-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix17-serum-pos-Acetylaspartic acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -267,12 +267,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-pos-Acetylaspartic acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-pos-Acetylaspartic acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -369,7 +369,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix17-serum-pos-Epinephrine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -380,12 +380,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-pos-Epinephrine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-pos-Epinephrine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -461,7 +461,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix17-serum-pos-Gluconic Acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -472,12 +472,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-pos-Gluconic Acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-pos-Gluconic Acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -585,7 +585,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix17-serum-pos-Indoxyl sulfate-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -596,12 +596,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-pos-Indoxyl sulfate-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-pos-Indoxyl sulfate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -672,7 +672,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix17-serum-pos-alpha-Lactose-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -683,12 +683,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-pos-alpha-Lactose-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-pos-alpha-Lactose-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -763,7 +763,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix17-serum-pos-7-Methylxanthine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -774,12 +774,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-pos-7-Methylxanthine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.9, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-pos-7-Methylxanthine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.9,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -854,7 +854,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix17-serum-pos-Nicotine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -865,12 +865,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-pos-Nicotine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.9, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-pos-Nicotine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.9,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -981,7 +981,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix17-serum-pos-Ribose 5-Phosphate-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -992,12 +992,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-pos-Ribose 5-Phosphate-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-pos-Ribose 5-Phosphate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1065,7 +1065,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix17-serum-pos-Succinylacetone-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -1076,12 +1076,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-pos-Succinylacetone-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-pos-Succinylacetone-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1178,7 +1178,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix17-serum-pos-Xanthosine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -1189,12 +1189,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-pos-Xanthosine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-pos-Xanthosine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1340,7 +1340,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix17-serum-neg-Acetylaspartic acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -1351,12 +1351,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-neg-Acetylaspartic acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-neg-Acetylaspartic acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1463,7 +1463,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix17-serum-neg-Epinephrine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -1474,12 +1474,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-neg-Epinephrine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-neg-Epinephrine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1552,7 +1552,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix17-serum-neg-Gluconic Acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -1563,12 +1563,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-neg-Gluconic Acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-neg-Gluconic Acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1659,7 +1659,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix17-serum-neg-Indoxyl sulfate-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -1670,12 +1670,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-neg-Indoxyl sulfate-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-neg-Indoxyl sulfate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1744,7 +1744,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix17-serum-neg-alpha-Lactose-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -1755,12 +1755,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-neg-alpha-Lactose-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-neg-alpha-Lactose-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1911,7 +1911,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix17-serum-neg-Ribose 5-Phosphate-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -1922,12 +1922,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-neg-Ribose 5-Phosphate-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-neg-Ribose 5-Phosphate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -2004,7 +2004,7 @@ FYI: 1 row, no visual heat map.
 
 ```{r mix17-serum-neg-Succinylacetone-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -2015,12 +2015,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-neg-Succinylacetone-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-neg-Succinylacetone-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -2115,7 +2115,7 @@ FYI: 1 row, no visual heat map.
 
 ```{r mix17-serum-neg-Xanthosine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 FYI: 1 row, no visual heat map.
@@ -2128,12 +2128,12 @@ Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-neg-Xanthosine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-neg-Xanthosine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
