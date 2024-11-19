@@ -76,6 +76,9 @@ col_group <- col_group[unique(data_all$group)]
 
 
 ## ---- load-reference-databases ----
+#' Maybe we should/need to clean also the reference database the same way we
+#' do with the experimental MS2 spectra, i.e. clean them to remove low
+#' intensity peaks.
 library(CompoundDb)
 
 cdb <- CompDb("data/CompDb.Hsapiens.HMDB.5.0.sqlite")
@@ -92,15 +95,15 @@ hmdb_neg_nl <- hmdb_neg_nl[lengths(hmdb_neg_nl) > 0]
 #' HMDB with only MS2 for current standards
 hmdb_std <- Spectra(cdb, filter = ~ compound_id == std_dilution$HMDB)
 
-library(MsBackendMassbank)
-library(RSQLite)
+## library(MsBackendMassbank)
+## library(RSQLite)
 #con <- dbConnect(SQLite(), "data/MassBank.sqlite") #NO, alternatively do:
 #con <- dbConnect(SQLite(), "data/MassBank.sql") #error
 library(AnnotationHub)
 ah <- AnnotationHub()
 con <- ah[["AH116166"]]
 
-mbank <- Spectra(con, source = MsBackendMassbankSql())
+mbank <- Spectra(con)
 #mbank$name <- mbank$compound_name   #already present in AH116166
 #' Neutral loss spectra
 mbank_nl <- mbank[!is.na(mbank$precursorMz)]
@@ -282,7 +285,8 @@ fts$ion_adduct <- feature_table[fts$feature_id, "adduct"]
 fts$compound_id <- hmdb_id
 fts$polarity <- POLARITY
 idb <- insertIon(idb, fts, addColumns = TRUE)
-
+pandoc.table(fts, split.tables = Inf, style = "rmarkdown")
+rm(fts)
 
 ## ---- add-ms2-spectra ----
 ms2$original_spectrum_id <- spectraNames(ms2)
@@ -300,6 +304,10 @@ idb <- insertSpectra(
                           "instrument", "precursorMz", "adduct",
                           "original_file", "confidence", "acquisitionNum",
                           "rtime"))
+spectraData(ms2, c("rtime", "original_file", "adduct", "confidence")) |>
+    as.data.frame() |>
+    pandoc.table(style = "rmarkdown", split.tables = Inf)
+rm(ms2)
 
 ## ---- iondb-summary ----
 fts <- ions(idb)
