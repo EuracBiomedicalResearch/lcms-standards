@@ -254,7 +254,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix12-serum-pos-Argininosuccinic-acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -344,7 +344,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix12-serum-pos-Carnosine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 #### Summary
@@ -417,7 +417,7 @@ For Massbank:
 
 ```{r mix12-serum-pos-dCMP-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -501,7 +501,7 @@ the parent ion but correctly overlap with `[M+H]+` of folic acid. D -> C
 
 ```{r mix12-serum-pos-Folic-acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 ```{r mix12-serum-pos-Folic-acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
@@ -656,7 +656,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix12-serum-pos-Glucose-6-Phosphate-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 ```{r mix12-serum-pos-Glucose-6-Phosphate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
@@ -737,7 +737,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix12-serum-pos-dGMP-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 Mirror plots:
@@ -816,7 +816,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix12-serum-pos-Guanidoacetic-acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 Mirror plots:
@@ -890,7 +890,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix12-serum-pos-Homocysteine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 Mirror plots:
@@ -1018,7 +1018,7 @@ With the MassBank comparison we don't get any match.
 
 ```{r mix12-serum-pos-Methotrexate-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 ```{r mix12-serum-pos-Methotrexate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
@@ -1137,7 +1137,7 @@ We obtain similar results with the MassBank comparison as we show below.
 
 ```{r mix12-serum-pos-Thiamine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 FYI: no heat map with only 1 row.
 
@@ -1314,7 +1314,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix12-serum-neg-Argininosuccinic-acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 Mirror plots (check D -> C or B?):
@@ -1386,7 +1386,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix12-serum-neg-Carnosine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 #### Summary
@@ -1457,7 +1457,7 @@ For Massbank:
 
 ```{r mix12-serum-neg-dCMP-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1575,7 +1575,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix12-mix12-serum-neg-N-Formyl-L-methionine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 #### Summary
@@ -1667,7 +1667,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix12-serum-neg-Glucose-6-Phosphate-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 Mirror plots (check D -> C or B?):
 
@@ -1764,7 +1764,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix12-serum-neg-dGMP-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 Mirror plots:
@@ -1987,7 +1987,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix12-serum-neg-Sebacic-acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -2093,7 +2093,7 @@ We obtain similar results with the MassBank comparison as we show below.
 
 ```{r mix12-serum-neg-Thiamine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 FYI: no heat map with only 1 row.
 

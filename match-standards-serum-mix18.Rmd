@@ -267,7 +267,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix12-serum-pos-dUTP-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -390,7 +390,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix12-serum-pos-Pantothenic Acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -575,7 +575,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix18-serum-neg-Fructose 6-Phosphate-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
@@ -664,7 +664,7 @@ sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix18-serum-neg-2-Hydroxybutyric acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 For spectra from untargeted features that match with good similarity to some of 
