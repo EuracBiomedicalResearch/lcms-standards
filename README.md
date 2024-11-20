@@ -29,6 +29,31 @@ created/measurable from each compound. In the workflow we first:
   ultimately defines the retention time, the measured ions and related MS/MS
   spectra of the standards in serum.
 
+### Standard mixes process and status
+
+#### Standards spiked with QC Pool samples
+
+- [ ] mix 01.
+- [ ] mix 02.
+- [ ] mix 03.
+- [ ] mix 04.
+- [ ] mix 05.
+- [ ] mix 06.
+- [ ] mix 07.
+- [ ] mix 08.
+- [X] mix 09. 2024-11. Created by Andrea, checked by Jo.
+- [X] mix 10. 2024-11. Created by Andrea, checked by Jo.
+- [X] mix 11. 2024-11. Created by Andrea, checked by Jo.
+- [ ] mix 12.
+- [ ] mix 13.
+- [ ] mix 14.
+- [ ] mix 15.
+- [ ] mix 16.
+- [ ] mix 17.
+- [ ] mix 18.
+- [ ] mix 19.
+- [ ] mix 20.
+
 
 ## Data tables
 
