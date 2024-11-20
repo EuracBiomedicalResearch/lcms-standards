@@ -299,9 +299,9 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct    | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:----------:|:-----:|:---------:|:--------:|
+| **C** | FT02465    | 217.1 | 2.596     | 170   | 170       | FG.001.001    | [M+H]+     | 2     | 21.5      | 17.82    |
 | **D** | FT03206    | 261.1 | 0.1682    | 169   | 170       | FG.003.001    | [M+2Na-H]+ | 0     | 18.49     | 16.37    |
 | **D** | FT02836    | 239.1 | 0.3938    | 169.4 | 170       | FG.003.001    | [M+Na]+    | 0     | 18.32     | 15.57    |
-| **D** | FT02465    | 217.1 | 2.596     | 170   | 170       | FG.001.001    | [M+H]+     | 2     | 21.5      | 17.82    |
 | **D** | FT06986    | 433.3 | 1.559     | 170   | 170       | FG.001.001    | [2M+H]+    | 0     | 10.42     | 4.572    |
 | **D** | FT02157    | 200.1 | 1.946     | 170.2 | 170       | FG.001.001    | [M+H-NH3]+ | 0     | 12.54     | 5.236    |
 | **D** | FT00900    | 131.1 | 20.17     | 177.4 | 170       | FG.002.001    | [M+2Na]2+  | 0     | 15.29     | 14.12    |
@@ -404,9 +404,10 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct    | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:----------:|:-----:|:---------:|:--------:|
 | **B** | FT01509    | 162.1 | 0.8814    | 171   | 170       | FG.002.001    | [M+H]+     | 2     | 20.11     | 16.66    |
+| **C** | FT01144    | 144.1 | 1.269     | 170.6 | 170       | FG.002.001    | [M+H-H2O]+ | 2     | 16.4      | 12.49    |
 | **D** | FT02277    | 206   | 0.5371    | 169.5 | 170       | FG.001.001    | [M+2Na-H]+ | 1     | 16.03     | 12.82    |
 | **D** | FT01886    | 184.1 | 0.6101    | 169.7 | 170       | FG.001.001    | [M+Na]+    | 0     | 15.29     | 11.04    |
-| **D** | FT01144    | 144.1 | 1.269     | 170.6 | 170       | FG.002.001    | [M+H-H2O]+ | 2     | 16.4      | 12.49    |
+
 
 - also other D matches but very high rt dev, so ignore.
 
@@ -910,7 +911,7 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **D** | FT01941    | 186   | 1.427     | 230.4 | 231       | FG.001.001    | [M+H]+    | 3     | 21.09     | 11.81    |
+| **C** | FT01941    | 186   | 1.427     | 230.4 | 231       | FG.001.001    | [M+H]+    | 3     | 21.09     | 11.81    |
 | **D** | FT05858    | 371   | 3.189     | 230.6 | 231       | FG.001.003    | [2M+H]+   | 0     | 16.79     | NA       |
 
 
@@ -1130,7 +1131,7 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix15-serum-neg-alpha-Aminoadipic acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.2, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
@@ -1162,8 +1163,8 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 | label |  feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct       | n_ms2 | mean_high | mean_low |
 |:-----:|:---------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:-------------:|:-----:|:---------:|:--------:|
+| **C** | FT0522    | 160.1 | 21.21     | 170.1 | 170       | FG.001.001    | [M-H]-        | 2     | 16.3      | 12.11    |
 | **D** | FT1343    | 228   | 15.77     | 169.3 | 170       | FG.001.001    | [M-H+HCOONa]- | 0     | 13.65     | 10.74    |
-| **D** | FT0522    | 160.1 | 21.21     | 170.1 | 170       | FG.001.001    | [M-H]-        | 2     | 16.3      | 12.11    |
 
 
 ### FAD
@@ -1548,7 +1549,7 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct       | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:-------------:|:-----:|:---------:|:--------:|
-| **D** | FT0498     | 158.1 | 21.83     | 36.84 | 37        | FG.001.001    | [M-H]-        | 2     | 20.08     | 18.75    |
+| **C** | FT0498     | 158.1 | 21.83     | 36.84 | 37        | FG.001.001    | [M-H]-        | 2     | 20.08     | 18.75    |
 | **D** | FT2570     | 317.2 | 15.91     | 36.76 | 37        | FG.001.001    | [2M-H]-       | 0     | 16.88     | 13.74    |
 | **D** | FT1052     | 204.1 | 20.34     | 36.78 | 37        | FG.001.001    | [M+CHO2]-     | 0     | 13.42     | 11.74    |
 | **D** | FT0495     | 158.1 | 23.42     | 44.78 | 37        | FG.002.001    | [M-H]-        | 0     | 18.41     | 15.71    |
@@ -1821,7 +1822,6 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 - No MS2 reference spectra available in HMDB and MassBank.
 - matches >0.7 to Phosphoserine, but also to other compounds for FT0799, so B.
-  in heatmap looks as 1.0 match, so B.
 - Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
 
 - labels, high ppm:
@@ -1829,7 +1829,7 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
 | **B** | FT0799     | 184   | 17.22     | 232.1 | 231       | FG.001.001    | [M-H]-    | 3     | 20.27     | 10.85    |
-| **B** | FT3326     | 369   | 16.17     | 232.1 | 231       | FG.001.001    | [2M-H]-   | 4     | 20.78     | 3.528    |
+| **C** | FT3326     | 369   | 16.17     | 232.1 | 231       | FG.001.001    | [2M-H]-   | 4     | 20.78     | 3.528    |
 
 
 # Summary on the ion database

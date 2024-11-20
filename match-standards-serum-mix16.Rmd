@@ -266,7 +266,7 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix16-serum-pos-Acetyl-Glucosamine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
@@ -364,12 +364,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix12-serum-pos-Acetylmethionine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.2, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix12-serum-pos-Acetylmethionine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.5, ppm = csp@ppm,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1, ppm = csp@ppm,
                            tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
@@ -392,14 +392,14 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No similarity, D for:
+- low similarity for FT02151 and FT02150, labels:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct      | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:------------:|:-----:|:---------:|:--------:|
+| **C** | FT02151    | 192.1 | 0.7651    | 37.22 | 37        | FG.001.001    | [M+H]+       | 1     | 18.48     | 16.73    |
+| **C** | FT02150    | 192.1 | 1.141     | 44.79 | 37        | FG.002.001    | [M+H]+       | 2     | 16.86     | 13.51    |
 | **D** | FT01257    | 146.1 | 1.756     | 37.09 | 37        | FG.001.001    | [M+H-CH2O2]+ | 0     | 13.33     | 11.68    |
 | **D** | FT01805    | 174.1 | 2.039     | 37.22 | 37        | FG.001.001    | [M+H-H2O]+   | 0     | 14.84     | 13.05    |
-| **D** | FT02151    | 192.1 | 0.7651    | 37.22 | 37        | FG.001.001    | [M+H]+       | 1     | 18.48     | 16.73    |
-| **D** | FT02150    | 192.1 | 1.141     | 44.79 | 37        | FG.002.001    | [M+H]+       | 2     | 16.86     | 13.51    |
 
 
 ### Dihydroxyacetone phosphate
@@ -489,12 +489,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix16-serum-pos-1,7-Dimethyluric acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.9, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix16-serum-pos-1,7-Dimethyluric acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.5, ppm = csp@ppm,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1, ppm = csp@ppm,
                            tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -803,12 +803,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix16-serum-neg-Acetyl-Glucosamine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix16-serum-neg-Acetyl-Glucosamine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.5, ppm = csp@ppm,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1, ppm = csp@ppm,
                            tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -898,7 +898,7 @@ std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
 ```
 
 ```{r mix16-serum-neg-Acetylmethionine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.5, ppm = csp@ppm,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1, ppm = csp@ppm,
                            tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -985,12 +985,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix16-serum-neg-Dihydroxyacetone phosphate-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.2, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix16-serum-neg-Dihydroxyacetone phosphate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.5, ppm = csp@ppm,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1, ppm = csp@ppm,
                            tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -1076,12 +1076,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix16-serum-neg-1,7-Dimethyluric acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix16-serum-neg-1,7-Dimethyluric acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.5, ppm = csp@ppm,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1, ppm = csp@ppm,
                            tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -1210,12 +1210,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix16-serum-neg-6-Phosphogluconic Acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix16-serum-neg-6-Phosphogluconic Acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.5, ppm = csp@ppm,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1, ppm = csp@ppm,
                            tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -1238,11 +1238,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- D for, high ppm:
+- C for, high ppm:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **D** | FT1899     | 275   | 16.56     | 268.3 | 265       | FG.001.001    | [M-H]-    | 3     | 15.69     | 7.024    |
+| **C** | FT1899     | 275   | 16.56     | 268.3 | 265       | FG.001.001    | [M-H]-    | 3     | 15.69     | 7.024    |
 
 
 ### Quinolinic acid

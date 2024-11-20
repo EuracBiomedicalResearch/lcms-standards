@@ -272,7 +272,7 @@ std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
 
 ```{r mix17-serum-pos-Acetylaspartic acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -385,7 +385,7 @@ std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
 
 ```{r mix17-serum-pos-Epinephrine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
-                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -477,7 +477,7 @@ std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
 
 ```{r mix17-serum-pos-Gluconic Acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
-                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -601,7 +601,7 @@ std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
 
 ```{r mix17-serum-pos-Indoxyl sulfate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
-                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -682,13 +682,13 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-pos-alpha-Lactose-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-pos-alpha-Lactose-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -779,7 +779,7 @@ std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.9, ppm = csp@ppm,
 
 ```{r mix17-serum-pos-7-Methylxanthine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.9,
-                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -870,7 +870,7 @@ std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.9, ppm = csp@ppm,
 
 ```{r mix17-serum-pos-Nicotine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.9,
-                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -997,7 +997,7 @@ std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
 
 ```{r mix17-serum-pos-Ribose 5-Phosphate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1075,13 +1075,13 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-pos-Succinylacetone-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-pos-Succinylacetone-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1194,7 +1194,7 @@ std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
 
 ```{r mix17-serum-pos-Xanthosine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1350,13 +1350,13 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-neg-Acetylaspartic acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-neg-Acetylaspartic acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1478,8 +1478,8 @@ std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
 ```
 
 ```{r mix17-serum-neg-Epinephrine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1568,7 +1568,7 @@ std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
 
 ```{r mix17-serum-neg-Gluconic Acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
-                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1675,7 +1675,7 @@ std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
 
 ```{r mix17-serum-neg-Indoxyl sulfate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1760,7 +1760,7 @@ std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
 
 ```{r mix17-serum-neg-alpha-Lactose-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
-                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -1786,9 +1786,9 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **C** | FT3500 | 377.1 | 14.54 | 194.6 | 194 | FG.001.002 | [M+Cl]- | 2 | 19.59 | 17.61 |
 | **D** | FT3498 | 377.1 | 17.4 | 186.8 | 194 | FG.002.001 | [M+Cl]- | 0 | 12.66 | 11.17 |
 | **D** | FT3712 | 387.1 | 14.94 | 193.7 | 194 | FG.001.001 | [M+CHO2]- | 0 | 18.83 | 12.63 |
-| **D** | FT3500 | 377.1 | 14.54 | 194.6 | 194 | FG.001.002 | [M+Cl]- | 2 | 19.59 | 17.61 |
 | **D** | FT2964 | 341.1 | 18.26 | 194.7 | 194 | FG.001.001 | [M-H]- | 0 | 15.72 | 9.024 |
 | **D** | FT7171 | 683.2 | 6.94 | 195 | 194 | FG.001.001 | [2M-H]- | 0 | 11.69 | NA |
 
@@ -1921,13 +1921,13 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix17-serum-neg-Ribose 5-Phosphate-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
 ```{r mix17-serum-neg-Ribose 5-Phosphate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -2020,7 +2020,7 @@ std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
 
 ```{r mix17-serum-neg-Succinylacetone-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
-                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank, sim = sim_hmdb)
+                           ppm = csp@ppm, tolerance = csp@tolerance, sim = sim_mbank)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -2159,7 +2159,7 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **D** | FT1991 | 283.1 | 17.27 | 152.6 | 153 | FG.001.001 | [M-H]- | 1 | 20.35 | 16.87 |
+| **C** | FT1991 | 283.1 | 17.27 | 152.6 | 153 | FG.001.001 | [M-H]- | 1 | 20.35 | 16.87 |
 | **D** | FT6196 | 567.1 | 9.088 | 152.8 | 153 | FG.001.001 | [2M-H]- | 0 | 15.2 | 6.66 |
 | **D** | FT3124 | 351 | 17.26 | 153.1 | 153 | FG.001.001 | [M-H+HCOONa]- | 0 | 19.45 | 17.28 |
 

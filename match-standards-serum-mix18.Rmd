@@ -400,12 +400,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix12-serum-pos-Pantothenic Acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix12-serum-pos-Pantothenic Acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.5,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
                            ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -435,9 +435,9 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct    | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:----------:|:-----:|:---------:|:--------:|
 | **A** | FT02568    | 225.1 | 1.155     | 165.1 | 163       | FG.002.001    | [M+H]+     | 2     | 19.8      | 15.53    |
+| **C** | FT02312    | 208.1 | 0.3687    | 164.8 | 163       | FG.002.001    | [M+H-NH3]+ | 3     | 17.8      | 13.31    |
 | **D** | FT02918    | 247.1 | 0.1955    | 164.3 | 163       | FG.001.001    | [M+Na]+    | 0     | 19.43     | 15.24    |
 | **D** | FT03254    | 269.1 | 0.2754    | 164.6 | 163       | FG.001.001    | [M+2Na-H]+ | 1     | 19.11     | 14.99    |
-| **D** | FT02312    | 208.1 | 0.3687    | 164.8 | 163       | FG.002.001    | [M+H-NH3]+ | 3     | 17.8      | 13.31    |
 | **D** | FT02288    | 207.1 | 22.61     | 165.1 | 163       | FG.002.001    | [M+H-H2O]+ | 0     | 11.75     | 10.9     |
 
 - Reference MS2: FT02568: F07.S0510, F08.S0555
@@ -614,12 +614,12 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 #### Summary
 
 - MS spectra contain "phosphate" and "hexose" fragments for FT1560 in HMDB,
-  but doesn't match to `r std` so D.
+  but doesn't match to `r std` >0.7, so C.
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **D** | FT4653     | 519   | 9.382     | 233.8 | 235       | FG.001.001    | [2M-H]-   | 2     | 17.42     | 0.2109   |
-| **D** | FT1560     | 259   | 16.87     | 234.5 | 235       | FG.001.001    | [M-H]-    | 4     | 19.12     | 11.64    |
+| **C** | FT4653     | 519   | 9.382     | 233.8 | 235       | FG.001.001    | [2M-H]-   | 2     | 17.42     | 0.2109   |
+| **C** | FT1560     | 259   | 16.87     | 234.5 | 235       | FG.001.001    | [M-H]-    | 4     | 19.12     | 11.64    |
 
 
 ### 2-Hydroxybutyric acid
@@ -703,13 +703,13 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 #### Summary
 
 - No reliable MS2 spectra matches.
-- D for:
+- labels:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct       | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:-------------:|:-----:|:---------:|:--------:|
+| **C** | FT0078     | 103   | 24.29     | 37.85 | 37        | FG.001.001    | [M-H]-        | 3     | 19.27     | 17.05    |
 | **D** | FT0569     | 171   | 12.14     | 35.59 | 37        | FG.001.001    | [M-H+HCOONa]- | 0     | 13.63     | 11.6     |
 | **D** | FT0398     | 149   | 27.11     | 36.92 | 37        | FG.001.001    | [M+CHO2]-     | 0     | 11.63     | 9.444    |
-| **D** | FT0078     | 103   | 24.29     | 37.85 | 37        | FG.001.001    | [M-H]-        | 3     | 19.27     | 17.05    |
 
 
 ### 3-Hydroxy-DL-kynurenine

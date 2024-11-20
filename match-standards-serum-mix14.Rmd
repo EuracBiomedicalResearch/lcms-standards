@@ -266,7 +266,7 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-pos-Acetylcarnitine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.3, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
@@ -299,9 +299,9 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** | FT06839 	407.2 	1.652 	37.73 	37 	FG.001.001 	[2M+H]+ 	3 	17.81 	13.99 |
-| **D** | FT01644 	168.1 	7.045 	35.36 	37 	FG.002.001 	[M+H-H4O2]+ 	0 	11.69 	10.02 |
-| **D** | FT01439 	158.1 	2.416 	37.76 	37 	FG.001.001 	[M+H-CH2O2]+ 	0 	12.91 	9.117 |
+| **B** | FT06839 | 407.2 | 1.652 | 37.73 | 37 | FG.001.001 | [2M+H]+ | 3 | 17.81 | 13.99 |
+| **D** | FT01644 | 168.1 | 7.045 | 35.36 | 37 | FG.002.001 | [M+H-H4O2]+ | 0 | 11.69 | 10.02 |
+| **D** | FT01439 | 158.1 | 2.416 | 37.76 | 37 | FG.001.001 | [M+H-CH2O2]+ | 0 | 12.91 | 9.117 |
 
 
 ### ADP-Glucose
@@ -387,12 +387,12 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 - No MS2 reference spectra available in HMDB and MassBank.
 - `r std` matches with similar, because building block: adenosine in Nadide and
   Adenosine_Diphosphate for FT07209, which is logical since adduct is 
-  [M+H-Hexose-H2O]+, loss of glc. give B, but bad EIC...
+  [M+H-Hexose-H2O]+, loss of glc. give B, but bad EIC and high ppm for pos mode
 - labels:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** | FT07209 	428 	4.641 	276.1 	275 	FG.002.001 	[M+H-Hexose-H2O]+ 	1 	20.24 	8.698 |
+| **B** | FT07209 | 428 | 4.641 | 276.1 | 275 | FG.002.001 | [M+H-Hexose-H2O]+ | 1 | 20.24 | 8.698 |
 
 
 ### 1,5-anhydro D-glucitol
@@ -479,8 +479,8 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **D** | FT02283 	203 	2.492 	134.7 	135 	FG.001.001 	[M+K]+ 	2 	12.32 	10.45 |
-| **D** | FT00800 	129.1 	1.841 	134.9 	135 	FG.001.001 	[M+H-H4O2]+ 	0 	13.08 	10.78 |
+| **D** | FT02283 | 203 | 2.492 | 134.7 | 135 | FG.001.001 | [M+K]+ | 2 | 12.32 | 10.45 |
+| **D** | FT00800 | 129.1 | 1.841 | 134.9 | 135 | FG.001.001 | [M+H-H4O2]+ | 0 | 13.08 | 10.78 |
 
 
 ### Glyceraldehyde 2-phosphate
@@ -544,32 +544,14 @@ tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
                            ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
-In addition we match (**all**) the MS2 spectra for the matched features against
-all spectra from HMDB or MassBank identifying reference spectra with a
-similarity larger than 0.7. The results (if any spectra matched) are shown in
-the two following tables.
-
-Highest confidence matches (check B -> A?):
-
-```{r, echo = FALSE, message = FALSE, results = "asis"}
-perform_match(std_ms2, hmdb, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp)
-```
-
-```{r, echo = FALSE, message = FALSE, results = "asis"}
-perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp)
-```
-
 #### Summary
 
 - No MS2 reference spectra available in HMDB and MassBank.
-- TODO >0.7 see!!!
 - labels:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **D** | FT01674 	171 	1.885 	204.2 	213 	FG.001.001 	[M+H]+ 	0 	13.74 	11.5 |
+| **D** | FT01674 | 171 | 1.885 | 204.2 | 213 | FG.001.001 | [M+H]+ | 0 | 13.74 | 11.5 |
 
 
 ### Glycerol-3-Phosphate
@@ -612,10 +594,14 @@ std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
+FYI: 1 row so no visual heat map.
+
 ```{r mix14-serum-pos-Glycerol-3-Phosphate-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
+
+FYI: 1 row so no visual heat map.
 
 For spectra from untargeted features that match with good similarity to some of 
 the HMDB reference spectra for `r std`, we show the mirror plots of the best 
@@ -624,12 +610,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-pos-Glycerol-3-Phosphate-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-pos-Glycerol-3-Phosphate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
                            ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -652,16 +638,16 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- REDO!!!  have ms2
-- todo
+- high matches with phosphate building block for FT01719, but also other 
+  compounds, so keep C. very low match as best (2 fragment peaks).  
 - labels:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** | 
-FT02152 	195 	1.784 	217.8 	222 	FG.001.001 	[M+Na]+ 	0 	12.55 	5.118
-FT05489 	345 	3.803 	218.5 	222 	FG.001.001 	[2M+H]+ 	0 	14.7 	2.415
-FT01719 	173 	2.022 	218.8 	222 	FG.001.001 	[M+H]+ 	1 	18.33 	12.8
+| **C** | FT01719 | 173 | 2.022 | 218.8 | 222 | FG.001.001 | [M+H]+ | 1 | 18.33 | 12.8 |
+| **D** | FT02152 | 195 | 1.784 | 217.8 | 222 | FG.001.001 | [M+Na]+ | 0 | 12.55 | 5.118 |
+| **D** | FT05489 | 345 | 3.803 | 218.5 | 222 | FG.001.001 | [2M+H]+ | 0 | 14.7 | 2.415 |
+
 
 
 ### dGTP
@@ -752,7 +738,7 @@ tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **D** | FT02031 	188.1 	0.1052 	36.98 	37 	FG.001.001 	[M+H-H2O]+ 	0 	13.98 	12.77 |
+| **D** | FT02031 | 188.1 | 0.1052 | 36.98 | 37 | FG.001.001 | [M+H-H2O]+ | 0 | 13.98 | 12.77 |
 
 
 ### Isocitric Acid
@@ -839,9 +825,9 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **D** | FT03549 	268.9 	1.035 	144.8 	146 	FG.001.001 	[M+2K-H]+ 	0 	13.55 	3.51 |
-| **D** | FT02609 	215 	1.11 	146.8 	146 	FG.001.001 	[M+Na]+ 	0 	13.45 	12.27 |
-| **D** | FT03023 	237 	1.031 	147.4 	146 	FG.001.001 	[M+2Na-H]+ 	2 	14.98 	13.65 |
+| **D** | FT03549 | 268.9 | 1.035 | 144.8 | 146 | FG.001.001 | [M+2K-H]+ | 0 | 13.55 | 3.51 |
+| **D** | FT02609 | 215 | 1.11 | 146.8 | 146 | FG.001.001 | [M+Na]+ | 0 | 13.45 | 12.27 |
+| **D** | FT03023 | 237 | 1.031 | 147.4 | 146 | FG.001.001 | [M+2Na-H]+ | 2 | 14.98 | 13.65 |
 
 
 ### 2-Ketoglutaric acid
@@ -876,12 +862,7 @@ plot_spectra(std_ms2)
 #### Summary
 
 - No MS2 spectra available.
-- todo
-- labels:
-
-| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
-|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** | 
+- no good EIC, no high conc peaks found.
 
 
 ### Levodopa
@@ -936,12 +917,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-pos-Levodopa-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.2, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-pos-Levodopa-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
                            ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -964,20 +945,18 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: Levodopa and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- Levodopa, DL-Dopa and 3,4-Dihydroxy-L-phenylalanine are synonyms, so A for
+  FT02189
+- Reference MS2: FT02189: F07.S0671, F07.S0581, F08.S0658
 - labels:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** | 
+| **A** | FT02189 | 198.1 | 0.3303 | 170.9 | 170 | FG.001.001 | [M+H]+ | 4 | 19.62 | 14.16 |
+| **C** | FT01316 | 152.1 | 0.1875 | 170.9 | 170 | FG.001.001 | [M+H-CH2O2]+ | 2 | 15.12 | 9.439 |
+| **C** | FT01884 | 181 | 1.788 | 170.9 | 170 | FG.001.001 | [M+H-NH3]+ | 2 | 14.81 | 8.368 |
+| **D** | FT03090 | 242 | 0.3854 | 169.3 | 170 | FG.001.001 | [M+2Na-H]+ | 0 | 14.61 | 11.59 |
+| **D** | FT02693 | 220.1 | 0.1825 | 170.4 | 170 | FG.001.001 | [M+Na]+ | 1 | 12.57 | 5.797 |
 
 
 ### NAD
@@ -1061,19 +1040,15 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 #### Summary
 
 - No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: NAD and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- NAD = Nicotinamide-Adenine-Dinucleotide, nadine is NAD+, the ionized form,
+  of NAD, but also 2 other matches so B for FT10599.
 - labels:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** | 
+| **B** | FT10599 | 664.1 | 4.785 | 226.4 | 225 | FG.001.001 | [M+H]+ | 3 | 20.38 | 2.483 |
+| **D** | FT05205 | 332.6 | 1.758 | 226.7 | 225 | FG.001.001 | [M+2H]2+ | 0 | 19.42 | 1.869 |
+
 
 ### Pyridoxic Acid
 
@@ -1127,12 +1102,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-pos-Pyridoxic Acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-pos-Pyridoxic Acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
                            ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -1155,20 +1130,16 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: Pyridoxic Acid and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- Pyridoxic Acid and 4-Pyridoxic acid are synonyms, but also other compounds
+  are found, so B for FT01951 and FT01598.
 - labels:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** | 
+| **B** | FT01951 | 184.1 | 0.7738 | 89.66 | 85 | FG.001.001 | [M+H]+ | 6 | 23.89 | 21.71 |
+| **B** | FT01598 | 166 | 0.4633 | 89.58 | 85 | FG.001.001 | [M+H-H2O]+ | 5 | 19.52 | 17.26 |
+| **B** | FT01231 | 148 | 0.08577 | 90.51 | 85 | FG.002.001 | [M+H-H4O2]+ | 2 | 18.71 | 16.48 |
+
 
 ### Serotonin
 
@@ -1222,12 +1193,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-pos-Serotonin-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.9, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-pos-Serotonin-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.9,
                            ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -1250,20 +1221,23 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
 - FYI: Serotonin and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- 2-methylquinolin-8-ol is building block of `r std`, so keep A for FT01484
+  and FT01487.
+- keep B for FT01814 (carted EIC) and FT01813, also other high hits.
+- Reference MS2: FT01484: F08.S0471, F08.S0414, F07.S0406, F07.S0368
+- Reference MS2: FT01487: F08.S0471
 - labels:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** | 
+| **A** | FT01487 | 160.1 | 0.5538 | 136.7 | 132 | FG.001.001 | [M+H-NH3]+ | 1 | 21.59 | 18.72 |
+| **A** | FT01484 | 160.1 | 1.633 | 122.6 | 132 | FG.002.001 | [M+H-NH3]+ | 4 | 23.03 | 16.81 |
+| **B** | FT01814 | 177.1 | 1.762 | 123.7 | 132 | FG.002.001 | [M+H]+ | 3 | 20.31 | 13.52 |
+| **B** | FT01813 | 177.1 | 0.1966 | 136.7 | 132 | FG.001.001 | [M+H]+ | 3 | 20.06 | 17.02 |
+| **D** | FT05712 | 353.2 | 0.2199 | 137.1 | 132 | FG.001.001 | [2M+H]+ | 0 | 12.56 | 7.604 |
+| **D** | FT02611 | 215.1 | 1.126 | 137.6 | 132 | FG.001.001 | [M+K]+ | 0 | 11.61 | 6.825 |
+
 
 ### Ureidopropionic acid
 
@@ -1317,12 +1291,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-pos-Ureidopropionic acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.2, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-pos-Ureidopropionic acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
                            ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -1345,20 +1319,13 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: Ureidopropionic acid and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
 - labels:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** | 
+| **C** | FT00906 | 133.1 | 0.864 | 89.58 | 88 | FG.001.001 | [M+H]+ | 2 | 20.04 | 18.23 |
+| **C** | FT00578 | 115.1 | 1.77 | 89.78 | 88 | FG.001.001 | [M+H-H2O]+ | 3 | 19.69 | 18.07 |
+
 
 ### Xylulose 5-Phosphate
 
@@ -1392,8 +1359,11 @@ plot_spectra(std_ms2)
 #### Summary
 
 - No MS2 spectra available.
-- todo
+- labels:
 
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **D** | FT02152 | 195 | 14.12 | 217.8 | 225 | FG.002.001 | [M+H-H4O2]+ | 0 | 12.55 | 5.118 |
 
 
 # Serum, negative polarity
@@ -1567,19 +1537,12 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 #### Summary
 
 - No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: ADP-Glucose and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
-- labels, high ppm:
+- labels, high ppm, shoulder peak present:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** | 
+| **B** | FT5777 | 588.1 | 7.934 | 278.1 | 275 | FG.001.001 | [M-H]- | 6 | 20.45 | 5.855 |
+
 
 ### 1,5-anhydro D-glucitol
 
@@ -1621,10 +1584,14 @@ std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
+FYI: 1 row gives no visual heat map.
+
 ```{r mix14-serum-neg-1,5-anhydro D-glucitol-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
+
+FYI: 1 row gives no visual heat map.
 
 For spectra from untargeted features that match with good similarity to some of 
 the HMDB reference spectra for `r std`, we show the mirror plots of the best 
@@ -1633,12 +1600,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-1,5-anhydro D-glucitol-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-1,5-anhydro D-glucitol-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
                            ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -1661,20 +1628,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: "1,5-anhydro D-glucitol" and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
 - labels, high ppm:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** |
+| **D** | FT1017 | 209.1 | 14.16 | 133.7 | 135 | FG.001.001 | [M+CHO2]- | 1 | 19.24 | 17.75 |
 
 
 ### Glyceraldehyde 2-phosphate
@@ -1748,12 +1706,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-Glycerol-3-Phosphate-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-Glycerol-3-Phosphate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
                            ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -1776,20 +1734,16 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: Glycerol-3-Phosphate and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- multiple other matches (>0.7), but also others in massbank, so B for FT2755
+- mostly (5-)phosphate linkage, phospholipids (containing G3P), but also 
+  non-related, so C for FT0547. since no match with `r std` itself >0.7.
 - labels, high ppm:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** |
+| **B** | FT2755 | 343 | 9.976 | 221.5 | 222 | FG.001.001 | [2M-H]- | 5 | 18.73 | 5.358 |
+| **C** | FT0547 | 171 | 14.19 | 221.6 | 222 | FG.001.001 | [M-H]- | 3 | 20.11 | 13.52 |
+| **D** | FT1118 | 217 | 9.953 | 221 | 222 | FG.001.001 | [M+CHO2]- | 0 | 11.95 | 3.817 |
 
 
 ### dGTP
@@ -1844,12 +1798,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-dGTP-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-dGTP-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
                            ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -1872,20 +1826,12 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: dGTP and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- No MS2 reference spectra available in MassBank.
 - labels, high ppm:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** |
+| **D** | FT5673 | 574 | 6.19 | 231.7 | 233 | FG.001.001 | [M-H+HCOONa]- | 2 | 10.82 | 1.263 |
 
 
 ### Indolelactic acid
@@ -1940,12 +1886,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-Indolelactic acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-Indolelactic acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
                            ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -1969,19 +1915,15 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 #### Summary
 
 - No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: Indolelactic acid and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
 - labels, high ppm:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** |
+| **D** | FT0958 | 204.1 | 16.5 | 45.32 | 37 | FG.002.001 | [M-H]- | 2 | 19.12 | 16.06 |
+| **D** | FT3823 | 409.1 | 13.27 | 37.23 | 37 | FG.001.001 | [2M-H]- | 0 | 15.49 | 12.6 |
+| **D** | FT0959 | 204.1 | 16.77 | 37.31 | 37 | FG.001.001 | [M-H]- | 1 | 19.75 | 18.21 |
+| **D** | FT1441 | 250.1 | 15.38 | 37.34 | 37 | FG.001.001 | [M+CHO2]- | 0 | 14.84 | 12.52 |
+| **D** | FT1677 | 272.1 | 7.891 | 45.08 | 37 | FG.002.001 | [M-H+HCOONa]- | 2 | 15.26 | 11.5 |
 
 
 ### Isocitric Acid
@@ -2016,12 +1958,7 @@ plot_spectra(std_ms2)
 #### Summary
 
 - No MS2 spectra available.
-- todo D
-- labels, high ppm:
-
-| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
-|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** |
+- both EICs bad.
 
 
 ### 2-Ketoglutaric acid
@@ -2064,10 +2001,14 @@ std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
+FYI: 1 row so no visual heat map.
+
 ```{r mix14-serum-neg-2-Ketoglutaric acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
+
+FYI: 1 row so no visual heat map.
 
 For spectra from untargeted features that match with good similarity to some of 
 the HMDB reference spectra for `r std`, we show the mirror plots of the best 
@@ -2076,12 +2017,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-2-Ketoglutaric acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-2-Ketoglutaric acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
                            ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -2104,20 +2045,11 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: 2-Ketoglutaric acid and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
 - labels, high ppm:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** |
+| **D** | FT0321 | 145 | 5.543 | 67.45 | 75 | FG.001.001 | [M-H]- | 1 | 20.62 | 18.14 |
 
 
 ### Levodopa
@@ -2172,12 +2104,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-Levodopa-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-Levodopa-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
                            ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -2200,20 +2132,16 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: Levodopa and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- Levodopa, DL-Dopa and 3,4-Dihydroxy-L-phenylalanine are synonyms, so A for
+  FT0857
+- Reference MS2: FT0857: F15.S0481, F16.S0497
 - labels, high ppm:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** |
+| **A** | FT0857 | 196.1 | 12.24 | 170.2 | 170 | FG.002.001 | [M-H]- | 2 | 17.05 | 10.91 |
+| **D** | FT1570 | 264 | 15.81 | 169.8 | 170 | FG.002.001 | [M-H+HCOONa]- | 0 | 13.71 | 10.09 |
+| **D** | FT3559 | 393.1 | 11.55 | 170.8 | 170 | FG.001.001 | [2M-H]- | 0 | 14.03 | 7.303 |
 
 
 ### NAD
@@ -2297,19 +2225,14 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 #### Summary
 
 - No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: NAD and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- NAD and Nadide (reduced NAD+) are synonyms so A for Nadide.
+- Reference MS2: FT6384: F15.S0708, F16.S0683
 - labels, high ppm:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** |
+| **A** | FT6384 | 662.1 | 6.199 | 226.6 | 225 | FG.001.001 | [M-H]- | 2 | 16.97 | 2.178 |
+| **D** | FT6667 | 708.1 | 6.102 | 226.9 | 225 | FG.001.001 | [M+CHO2]- | 0 | 11.61 | 1.128 |
 
 
 ### Pyridoxic Acid
@@ -2364,12 +2287,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-Pyridoxic Acid-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.9, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-Pyridoxic Acid-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
                            ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -2394,18 +2317,13 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 - No MS2 reference spectra available in HMDB and MassBank.
 - No MS2 spectra available.
-- FYI: Pyridoxic Acid and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- FYI: Pyridoxic Acid and 4-Pyridoxic acid are synonyms, but also other hits so
+  B for FT0689, EIC with long tail.
 - labels, high ppm:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** |
+| **B** | FT0689 | 182 | 11.55 | 76.04 | 85 | FG.002.001 | [M-H]- | 3 | 24.24 | 23.03 |
 
 
 ### Serotonin
@@ -2440,6 +2358,11 @@ plot_spectra(std_ms2)
 #### Summary
 
 - No MS2 spectra available.
+- labels, high ppm:
+
+| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
+|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
+| **D** | FT1048 | 211.1 | 16.35 | 134 | 132 | FG.001.001 | [M+Cl]- | 0 | 13.27 | 11.81 |
 
 
 ### Ureidopropionic acid
@@ -2474,12 +2397,7 @@ plot_spectra(std_ms2)
 #### Summary
 
 - No MS2 spectra available.
-- todo
-- labels, high ppm:
-
-| label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
-|:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** |
+- no good EICs.
 
 
 ### Xylulose 5-Phosphate
@@ -2534,12 +2452,12 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix14-serum-neg-Xylulose 5-Phosphate-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.95, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
 ```{r mix14-serum-neg-Xylulose 5-Phosphate-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1,
                            ppm = csp@ppm, tolerance = csp@tolerance, sim_mbank)
 ```
 
@@ -2562,20 +2480,17 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FYI: Xylulose 5-Phosphate and Amethopterin are synonyms
-- FT08081 (RT = 455.2, 1.585 ppm, `[M+H]+` ion) with confidence **A**
-- FT08863 (RT = 499.1, 1.695 ppm, `[M+2Na-H]+` ion) with confidence **D**
-- FT08464 (RT = 477.2, 0.931 ppm, `[M+Na]+` ion) with confidence **D**
-- FT03045 (RT = 228.1, 0.1243 ppm, `[M+2H]2+` ion) with confidence **D**
-- FT09407 (RT = 531.1, 27.14 ppm, `[M+2K-H]+` ion) with confidence **D**
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
+- No MS2 reference spectra available in MassBank.
+- highest matches for FT1239 with Xylulose 5-Phosphate (0.97 and 0.96), but
+  also with other hexose-n-phosphate and other (phosphate) compounds, so **B**.
+- high match was exclusive for FT4544, so **A**.
+- Reference MS2: FT4544: F16.S0657, F16.S0723, F15.S0740, F15.S0671
 - labels, high ppm:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
-| **B** |
+| **A** | FT4544 | 459 | 9.107 | 226.6 | 225 | FG.001.001 | [2M-H]- | 4 | 18.48 | 3.306 |
+| **B** | FT1239 | 229 | 15.48 | 226.9 | 225 | FG.001.001 | [M-H]- | 5 | 19.77 | 13.02 |
 
 
 # Summary on the ion database

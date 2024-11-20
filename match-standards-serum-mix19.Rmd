@@ -266,7 +266,7 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix19-serum-pos-Adenine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
@@ -299,7 +299,7 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct    | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:----------:|:-----:|:---------:|:--------:|
-| **A** | FT01064    | 136.1 | 1.504     | 133.2 | 133       | FG.001.001    | [M+H]+     | 2     | 23.07     | 21.14    |
+| **B** | FT01064    | 136.1 | 1.504     | 133.2 | 133       | FG.001.001    | [M+H]+     | 2     | 23.07     | 21.14    |
 | **D** | FT00763    | 119   | 2.986     | 133.2 | 133       | FG.001.001    | [M+H-NH3]+ | 0     | 18.67     | 14.62    |
 
 - Reference MS2: FT01064: F08.S0417, F07.S0427
@@ -378,7 +378,7 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix19-serum-pos-Homocysteinethiolactone-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
@@ -503,7 +503,7 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix19-serum-pos-UMP-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.1, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
@@ -540,7 +540,7 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
 |:-----:|:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:---------:|:-----:|:---------:|:--------:|
 | **B** | FT04738    | 325   | 2.39      | 222.6 | 225       | FG.001.001    | [M+H]+    | 5     | 18.7      | 11.87    |
-| **D** | FT09502    | 649.1 | 2.453     | 222.8 | 225       | FG.001.001    | [2M+H]+   | 2     | 15.11     | 2.721    |
+| **C** | FT09502    | 649.1 | 2.453     | 222.8 | 225       | FG.001.001    | [2M+H]+   | 2     | 15.11     | 2.721    |
 | **D** | FT05284    | 347   | 4.308     | 222.9 | 225       | FG.001.001    | [M+Na]+   | 2     | 17.04     | 7.324    |
 | **D** | FT05610    | 363   | 12.08     | 222.9 | 225       | FG.001.001    | [M+K]+    | 2     | 15.16     | 5.591    |
 
@@ -668,7 +668,7 @@ matches.
 Mirror plots (check D -> C or B?):
 
 ```{r mix19-serum-neg-Adenine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.5, ppm = csp@ppm,
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim_hmdb)
 ```
 
