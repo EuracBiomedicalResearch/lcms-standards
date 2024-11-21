@@ -13,6 +13,7 @@ library(RColorBrewer)
 library(MetaboAnnotation)
 library(pheatmap)
 library(MsFeatures)
+library(MSnbase)
 # setMSnbaseFastLoad(TRUE)
 setMSnbaseFastLoad(FALSE)
 register(SerialParam())
@@ -23,7 +24,7 @@ source("R/match-standards-functions.R")
 MIX_NAME <- paste0("Mix", ifelse(MIX < 10, paste0(0, MIX), MIX)) 
 IMAGE_PATH <- paste0("images/match-standards-", tolower(MATRIX), "-",
                      tolower(MIX_NAME), "/")
-if (dir.exists(IMAGE_PATH)) unlink(IMAGE_PATH, recursive = TRUE)
+#if (dir.exists(IMAGE_PATH)) unlink(IMAGE_PATH, recursive = TRUE)
 RDATA_PATH <- paste0("data/RData/match-standards-", tolower(MATRIX), "-",
                      tolower(MIX_NAME), "/")
 dir.create(IMAGE_PATH, showWarnings = FALSE, recursive = TRUE)
@@ -75,6 +76,9 @@ col_group <- col_group[unique(data_all$group)]
 
 
 ## ---- load-reference-databases ----
+#' Maybe we should/need to clean also the reference database the same way we
+#' do with the experimental MS2 spectra, i.e. clean them to remove low
+#' intensity peaks.
 library(CompoundDb)
 
 cdb <- CompDb("data/CompDb.Hsapiens.HMDB.5.0.sqlite")
@@ -91,11 +95,16 @@ hmdb_neg_nl <- hmdb_neg_nl[lengths(hmdb_neg_nl) > 0]
 #' HMDB with only MS2 for current standards
 hmdb_std <- Spectra(cdb, filter = ~ compound_id == std_dilution$HMDB)
 
-library(MsBackendMassbank)
-library(RSQLite)
-con <- dbConnect(SQLite(), "data/MassBank.sqlite")
-mbank <- Spectra(con, source = MsBackendMassbankSql())
-mbank$name <- mbank$compound_name
+## library(MsBackendMassbank)
+## library(RSQLite)
+#con <- dbConnect(SQLite(), "data/MassBank.sqlite") #NO, alternatively do:
+#con <- dbConnect(SQLite(), "data/MassBank.sql") #error
+library(AnnotationHub)
+ah <- AnnotationHub()
+con <- ah[["AH116166"]]
+
+mbank <- Spectra(con)
+#mbank$name <- mbank$compound_name   #already present in AH116166
 #' Neutral loss spectra
 mbank_nl <- mbank[!is.na(mbank$precursorMz)]
 mbank_nl <- neutralLoss(mbank_nl, param = nl_param)
@@ -131,7 +140,7 @@ all_ms2 <- setBackend(all_ms2, MsBackendDataFrame())
 all_ms2 <- applyProcessing(all_ms2)
 
 
-## ---- compare-spectra-param
+## ---- compare-spectra-param ----
 ## Settings for matchSpectra
 csp <- CompareSpectraParam(ppm = 40, requirePrecursor = FALSE)
 ## Settings for matchSpectra with neutral loss spectra
@@ -215,12 +224,13 @@ ttest <- t(apply(fVlog2, 1, function(x) {
 ## ---- define-adducts-pos ----
 adducts <- c("[M+H]+", "[M+2H]2+", "[M+Na]+", "[M+K]+", "[M+NH4]+",
              "[M+H-H2O]+", "[M+H+Na]2+", "[M+2Na]2+", "[M+H-NH3]+",
-             "[M+2Na-H]+", "[M+2K-H]+")
+             "[M+2Na-H]+", "[M+2K-H]+",
+             "[2M+H]+", "[M+H-H4O2]+", "[M+H-Hexose-H2O]+", "[M+H-CH2O2]+")
 
 ## ---- define-adducts-neg ----
-adducts <- adducts("negative")[c("[M-H]-", "[M+Cl]-"),
+adducts <- adducts("negative")[c("[M-H]-", "[M+Cl]-", "[M-H+HCOONa]-",
+                                 "[2M-H]-", "[M+CHO2]-"),
                                c("mass_multi", "mass_add")] 
-adducts <- rbind(adducts, "[M+HCOO]-" = c(1, calculateMass("HCOO"))) 
 
 ## ---- match-features ----
 prm <- Mass2MzParam(adducts = adducts, ppm = 30)
@@ -233,6 +243,7 @@ mD <- matchedData(
                            "high_low_diff", "pvalue", "mean_high",
                            "mean_low"))
 mD <- mD[-which(mD$high_low_diff < 0.7), ]
+mD <- mD[which(abs(mD$rtmed - mD$target_RT) < 10), ]  #max 10s rt deviation, 2-sided
 mD <- mD[order(mD$target_name), ]
 
 
@@ -271,14 +282,15 @@ fts$ion_relative_intensity <- feature_table[fts$feature_id, "mean_high"]
 fts$ion_relative_intensity <- fts$ion_relative_intensity /
     max(fts$ion_relative_intensity)
 fts$ion_adduct <- feature_table[fts$feature_id, "adduct"]
-fts$compound_id <- hmdb_id
+fts$compound_id <- std_dilution$HMDB[std_dilution$name == std]
 fts$polarity <- POLARITY
 idb <- insertIon(idb, fts, addColumns = TRUE)
-
+pandoc.table(fts, split.tables = Inf, style = "rmarkdown")
+rm(fts)
 
 ## ---- add-ms2-spectra ----
 ms2$original_spectrum_id <- spectraNames(ms2)
-ms2$compound_id <- hmdb_id
+ms2$compound_id <- std_dilution$HMDB[std_dilution$name == std]
 ms2$original_file <- basename(ms2$dataOrigin)
 ms2$collisionEnergy <- 20
 ms2$collisionEnergy[grep("CE30", ms2$original_file)] <- 30
@@ -292,6 +304,10 @@ idb <- insertSpectra(
                           "instrument", "precursorMz", "adduct",
                           "original_file", "confidence", "acquisitionNum",
                           "rtime"))
+spectraData(ms2, c("rtime", "original_file", "adduct", "confidence")) |>
+    as.data.frame() |>
+    pandoc.table(style = "rmarkdown", split.tables = Inf)
+rm(ms2)
 
 ## ---- iondb-summary ----
 fts <- ions(idb)
