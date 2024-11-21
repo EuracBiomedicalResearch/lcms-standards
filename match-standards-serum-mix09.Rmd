@@ -1431,9 +1431,8 @@ std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
-Spectra from feature FT4760 match with good similarity some of the HMDB
-reference spectra for `r std`. Below we show the mirror plots of the best
-matches (similarity score greater than 0.7).
+Below we show the mirror plots of the best matches (similarity score greater
+than 0.7).
 
 ```{r mix09-serum-neg-cdp-ethanolamine-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
@@ -1494,14 +1493,6 @@ We next plot the EIC for the assigned feature and visually inspect these.
 plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
-The cleaned MS2 spectra for the features matched to `r std` are shown below
-(peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks were removed).
-
-```{r mix09-serum-neg-ctp-ms2, echo = FALSE}
-plot_spectra(std_ms2)
-```
-
 #### Summary
 
 - No MS2 spectra available.
@@ -1523,13 +1514,6 @@ We next plot the EIC for the assigned feature and visually inspect these.
 plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
-The cleaned MS2 spectrum for the features matched to `r std` is shown below
-(peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks were removed).
-
-```{r mix09-serum-neg-l-cysteine-ms2, echo = FALSE}
-plot_spectra(std_ms2)
-```
 
 #### Summary
 
@@ -1585,9 +1569,8 @@ std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
-Spectra from feature FT0981 match with good similarity some of the HMDB
-reference spectra for `r std`. Below we show the mirror plots of the best
-matches (similarity score greater than 0.7).
+Below we show the mirror plots of the best matches (similarity score greater
+than 0.7).
 
 ```{r mix09-serum-neg-erythrose-4-phosphate-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
@@ -1660,9 +1643,8 @@ std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
-Spectra from features FT1706, FT1709 match with good similarity some of the
-HMDB reference spectra for `r std`. Below we show the mirror plots of the best
-matches (similarity score greater than 0.7).
+Below we show the mirror plots of the best matches (similarity score greater
+than 0.7).
 
 ```{r mix09-serum-neg-glucose-1-phosphate-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
@@ -1958,13 +1940,6 @@ We next plot the EIC for the assigned feature and visually inspect these.
 plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
-The cleaned MS2 spectra for the features matched to `r std` are shown below
-(peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks were removed).
-
-```{r mix09-serum-neg-pipecolic-acid-ms2, echo = FALSE}
-plot_spectra(std_ms2)
-```
 
 #### Summary
 
