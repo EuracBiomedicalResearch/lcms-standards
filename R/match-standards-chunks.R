@@ -282,7 +282,7 @@ fts$ion_relative_intensity <- feature_table[fts$feature_id, "mean_high"]
 fts$ion_relative_intensity <- fts$ion_relative_intensity /
     max(fts$ion_relative_intensity)
 fts$ion_adduct <- feature_table[fts$feature_id, "adduct"]
-fts$compound_id <- hmdb_id
+fts$compound_id <- std_dilution$HMDB[std_dilution$name == std]
 fts$polarity <- POLARITY
 idb <- insertIon(idb, fts, addColumns = TRUE)
 pandoc.table(fts, split.tables = Inf, style = "rmarkdown")
@@ -290,7 +290,7 @@ rm(fts)
 
 ## ---- add-ms2-spectra ----
 ms2$original_spectrum_id <- spectraNames(ms2)
-ms2$compound_id <- hmdb_id
+ms2$compound_id <- std_dilution$HMDB[std_dilution$name == std]
 ms2$original_file <- basename(ms2$dataOrigin)
 ms2$collisionEnergy <- 20
 ms2$collisionEnergy[grep("CE30", ms2$original_file)] <- 30
