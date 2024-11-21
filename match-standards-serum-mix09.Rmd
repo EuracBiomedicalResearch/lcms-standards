@@ -297,7 +297,7 @@ ms2$confidence <- c("low", "low")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -372,7 +372,7 @@ ms2$confidence <- c("low")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -457,7 +457,7 @@ ms2$confidence <- c("high")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -580,7 +580,7 @@ ms2$confidence <- c("high", "high", "low", "low")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -719,7 +719,7 @@ ms2$confidence <- c("low")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -807,7 +807,7 @@ ms2$confidence <- c("low")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -886,7 +886,7 @@ ms2$confidence <- c("low")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1009,7 +1009,7 @@ ms2$confidence <- c("low")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1094,7 +1094,7 @@ ms2$confidence <- c("low", "low", "high", "high")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1189,7 +1189,7 @@ ms2$confidence <- c("low")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1203,6 +1203,7 @@ POLARITY <- "NEG"
 data <- filterFile(data_all, which(data_all$polarity == POLARITY))
 hmdb <- hmdb_neg
 hmdb_nl <- hmdb_neg_nl
+csp@tolerance <- 0.01
 ```
 
 ```{r, preprocessing, eval = !file.exists(paste0(RDATA_PATH, "processed_data_", POLARITY, ".RData")), message = FALSE}
@@ -1329,7 +1330,7 @@ ms2$confidence <- c("high")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1396,7 +1397,7 @@ ms2$confidence <- c("high")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1474,7 +1475,7 @@ ms2$confidence <- c("high", "high", "low", "low")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1623,7 +1624,7 @@ ms2$confidence <- c("high", "high")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1707,7 +1708,7 @@ ms2$confidence <- c("low", "low", "high", "high", "high", "high",
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1778,7 +1779,7 @@ ms2$confidence <- c("high")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1859,7 +1860,7 @@ ms2$confidence <- c("high", "high", "low", "low", "low")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1935,7 +1936,7 @@ ms2$confidence <- c("high")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 ### Pipecolic acid
@@ -2073,7 +2074,7 @@ ms2$confidence <- c("low", "low", "high", "high", "high", "high",
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -2082,6 +2083,11 @@ ms2$confidence <- c("low", "low", "high", "high", "high", "high",
 ### Eplerone
 
 # Summary on the ion database
+
+Summarizing the content that was added to the `IonDb`.
+
+```{r, iondb-summary, echo = FALSE, results = "asis"}
+```
 
 # Session information
 

@@ -294,7 +294,7 @@ ms2$confidence <- c("high")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 ### Adenosine
@@ -379,7 +379,7 @@ ms2$confidence <- c("high", "high", "low", "low", "low", "low")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -458,7 +458,7 @@ ms2$confidence <- c("low", "low", "high", "high")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 ### Citric Acid
@@ -616,7 +616,7 @@ ms2$confidence <- c("low", "low", "high", "high")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -714,7 +714,7 @@ ms2$confidence <- c("low")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 ### Ribulose 5-Phosphate
@@ -810,7 +810,7 @@ ms2$confidence <- c("high", "high")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -914,7 +914,7 @@ ms2$confidence <- c("high", "low", "high", "low", "low")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -996,7 +996,7 @@ ms2$confidence <- c("high")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 	
@@ -1166,7 +1166,7 @@ ms2$confidence <- c("low", "low", "high")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 ### L-Aspartic Acid
@@ -1237,7 +1237,7 @@ ms2$confidence <- c("high")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 ### Citric Acid
@@ -1309,7 +1309,7 @@ ms2$confidence <- c("high")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1390,7 +1390,7 @@ ms2$confidence <- c("low")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 ### Fumaric Acid
@@ -1469,7 +1469,7 @@ ms2$confidence <- c("low", "low")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 ### GDP
@@ -1619,7 +1619,7 @@ ms2$confidence <- c("low", "high", "high", "high", "high")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1697,7 +1697,7 @@ ms2$confidence <- c("low", "high")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1776,7 +1776,7 @@ ms2$confidence <- c("low", "low")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1857,7 +1857,7 @@ ms2$confidence <- c("low", "low")
 ```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 ## Standards without any matching feature
@@ -1867,6 +1867,9 @@ ms2$confidence <- c("low", "low")
 # Summary on the ion database
 
 Summarizing the content that was added to the `IonDb`.
+
+```{r, iondb-summary, echo = FALSE, results = "asis"}
+```
 
 # Session information
 
