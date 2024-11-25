@@ -280,6 +280,14 @@ sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
   | **FT01052** | 132.1 |   1.523   | 173.5 |    37     |  FG.002.001   |   [M+H]+   |   0   |   16.73   |  15.56   |
   | **FT01541** |  154  |  0.1341   | 50.8  |    37     |  FG.003.001   |  [M+Na]+   |   1   |   15.87   |  15.06   |
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT00694", "FT01049", "FT00673"),
+                  confidence_level = c("D", 'D', 'D'))
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
 
 ### Acetylneuraminic Acid
 
@@ -361,7 +369,7 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- Reference MS2: FT05055: F08.S0691
+- Reference MS2: FT05055: F08.S0691 (>0.7), F07.S0699, F07.S0774
 - labels: 
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
@@ -393,6 +401,22 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   
   - FT06975 good EIC but probably other compound, high ppm
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT05055", "FT04434", "FT03740", "FT01412", "FT06063", "FT03968", "FT06196", "FT05642"),
+                  confidence_level = c("A", "C", "D", "D", "D", "D", "D", "D"))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT05055_F08.S0691", "FT05055_F07.S0699", "FT05055_F07.S0774", 
+                       "FT04434_F07.S0773", "FT04434_F07.S0697", "FT04434_F08.S0690"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c('high', 'high', 'high',
+                    'high', 'high', 'high')
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
+```
 
 
 ### Dopamine
@@ -495,7 +519,7 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   
   - bad EICs but good MS2 matches: FT01547, FT01548, FT01550, FT01145, FT01147
   - Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
-  - other < D for, high rt dev:
+  - other < D for, high rt dev: No for FT02069, is B label for Indoleacetic acid...
   
   |   feature   | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct    | n_ms2 | mean_high | mean_low |
   |:-----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:----------:|:-----:|:---------:|:--------:|
@@ -503,6 +527,23 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   | **FT02069** | 176.1 |   12.73   | 35.25 |    140    |  FG.002.001   |  [M+Na]+   |   1   |   18.5    |    17    |
   | **FT01125** | 136.1 |  0.5747   | 35.53 |    140    |  FG.002.001   | [M+H-H2O]+ |   0   |   11.91   |  10.22   |
   | **FT02506** | 198.1 |   7.213   | 35.4  |    140    |  FG.002.001   | [M+2Na-H]+ |   0   |   9.71    |  6.632   |
+
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT01142", "FT01546", "FT03142", "FT04904"),
+                  confidence_level = c("B", "B", "D", "D"))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT01142_F08.S0562", "FT01142_F07.S0548", 
+                       "FT01546_F07.S0549", "FT01546_F08.S0563"), 
+                     spectraNames(std_ms2))]
+ms2$confidence <- c('high', 'high',
+                    'high', 'high')
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
+```
 
 
 ### Fructose-1,6-Diphosphate
@@ -575,11 +616,19 @@ plot_spectra(std_ms2)
 - Results previous:
   - other D for, high rt dev:
   
-  |   feature    | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct    | n_ms2 | mean_high | mean_low |
+  |   feature   | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct    | n_ms2 | mean_high | mean_low |
   |:-----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:----------:|:-----:|:---------:|:--------:|
   | **FT04197** |  283  |   12.68   | 194.5 |    31     |  FG.011.001   | [M+2K-H]+  |   0   |   13.08   |  9.801   |
   
   - MS2 match but bad EIC and high ppm and rt dev: FT02358
+
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT02364", "FT01706", "FT01895"),
+                  confidence_level = c("D", 'D', 'D'))
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
 
 
 ### Indoleacetic acid
@@ -676,6 +725,21 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 | **D** | FT02427 | 193.1 | 7.299 | 35.42 | 35 | FG.001.001 | [M+NH4]+ | 0 | 10.23 | 8.723 |
 
 - Results previous: already included above
+
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT02069", "FT00980", 'FT02506', 'FT02427'),
+                  confidence_level = c("B", "D", 'D', 'D'))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT02069_F08.S0127"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("low")
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
+```
 
 
 ### 1-Methylhistidine
@@ -779,6 +843,25 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   | **FT01856** | 170.1 |   1.511   | 207.3 |    182    |  FG.004.001   |   [M+H]+   |   0   |   16.62   |  7.942   |
   | **FT01859** | 170.1 |   1.617   | 196.8 |    182    |  FG.007.001   |   [M+H]+   |   1   |   17.77   |  9.079   |
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT01854", "FT00866", "FT01858", "FT05847", "FT01499", "FT01519", "FT02414", "FT02750"),
+                  confidence_level = c("C", "C", "C", "D", "D", "D", "D", "D"))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT01854_F07.S0708", "FT01854_F07.S0770", "FT01854_F08.S0741", "FT01854_F08.S0683", 
+                       "FT00866_F07.S0721", "FT00866_F08.S0711", 
+                       'FT01858_F08.S0683'),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c('high', 'high', 'low', 'low',
+                    'low', 'low',
+                    'low')
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
+```
+
 
 ### 8-Oxo-2-Deoxyguanosine
 
@@ -877,6 +960,16 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   | **FT04227** | 284.1 |   2.468   | 189.5 |    159    |  FG.004.001   |   [M+H]+   |   0   |   9.749   |  5.253   |
   | **FT04657** | 301.1 |   12.39   | 35.3  |    159    |  FG.005.001   |  [M+NH4]+  |   0   |   14.37   |  10.43   |
   
+#### Summary
+
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT04843", "FT05546"),
+                  confidence_level = c("D", 'D'))
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
 
 ### Pantothenic Acid
 
@@ -986,6 +1079,25 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   
   - nice EIC but other compound: FT03323, FT03325
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT02951", "FT02573", "FT02239", "FT03323", "FT03601", "FT04520"),
+                  confidence_level = c("B", "C", "C", "D", "D", "D"))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT02951_F07.S0144", "FT02951_F07.S0212", "FT02951_F08.S0148", "FT02951_F08.S0213", 
+                       "FT02573_F08.S0170", "FT02573_F08.S0234", "FT02573_F07.S0171", 
+                       'FT02239_F08.S0200', 'FT02239_F07.S0170'),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c('high', 'high', 'high', 'high',
+                    'low', 'low', 'low',
+                    'low', 'low')
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
+```
+
 
 ### Phenylacetic acid
 
@@ -1087,6 +1199,14 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   | **FT00768** |  119  |   3.533   |  141.1  |    33     |  FG.002.001   | [M+H-H2O]+ |   2   |   14.89   |  10.45   |
   | **FT02168** |  181  |   27.61   |  194.5  |    33     |  FG.009.001   | [M+2Na-H]+ |   0   |   12.32   |  3.579   |
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT01143"),
+                  confidence_level = c("D"))
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
 
 ### Phosphorylcholine
 
@@ -1126,6 +1246,14 @@ plot_spectra(std_ms2)
 | **D** | FT06557 | 367.1 | 0.2163 | 196.2 | 195 | FG.001.001 | [2M+H]+ | 1 | 16.82 | 4.298 |
 | **D** | FT02230 | 184.1 | 1.888 | 196.5 | 195 | FG.001.001 | [M+H]+ | 2 | 20.03 | 5.582 |
 | **D** | FT02705 | 206.1 | 0.9206 | 196.5 | 195 | FG.001.001 | [M+Na]+ | 0 | 11.9 | 5.11 |
+
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT06557", "FT02230", "FT02705"),
+                  confidence_level = c("D", 'D', 'D'))
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
 
 
 ### Sorbitol
@@ -1178,6 +1306,14 @@ plot_spectra(std_ms2)
   |:-----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:----------:|:-----:|:---------:|:--------:|
   | **FT03086** | 227.1 |   13.4    | 34.15 |    165    |  FG.002.001   | [M+2Na-H]+ |   0   |   11.38   |  9.877   |
 
+
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT01770", "FT02209", "FT03085", "FT02682", "FT01378"),
+                  confidence_level = c("D", 'D', 'D', 'D', 'D'))
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
 
 
 ### Spermine
@@ -1285,6 +1421,23 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   |:-----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:----------:|:-----:|:---------:|:--------:|
   | **FT00652** | 113.1 |   8.691   | 144.1 |    204    |  FG.006.001   | [M+H+Na]2+ |   0   |   10.09   |  3.142   |
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT02624", "FT02623", "FT00474", "FT02309", "FT02308", "FT00473"),
+                  confidence_level = c("B", "B", "D", "D", "D", "D"))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT02624_F07.S0800", "FT02624_F07.S0832", "FT02624_F08.S0782", 
+                       "FT02623_F07.S0800", "FT02623_F07.S0832", "FT02623_F07.S0171"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c('high', 'high', 'high',
+                    'high', 'high', 'high')
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
+```
+
 
 ### Uridine
 
@@ -1382,6 +1535,14 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   | **FT04353** |  289  |   8.782   |  169  |    124    |  FG.003.001   | [M+2Na-H]+ |   0   |   11.51   |   10.6   |
   | **FT03692** | 262.1 |   5.042   | 196.8 |    124    |  FG.008.001   |  [M+NH4]+  |   0   |   9.767   |  4.392   |
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT05365", "FT04196"),
+                  confidence_level = c("D", 'D'))
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
 
 ### dUTP
 
@@ -1431,6 +1592,14 @@ plot_spectra(std_ms2)
   | **FT03576** |  257  |   18.38   | 169.3 |    33     |  FG.001.001   | [M+2Na]2+ |   0   |   11.54   |  10.68   |
   | **FT08875** |  486  |   22.69   | 122.4 |    33     |  FG.002.001   | [M+NH4]+  |   0   |   13.41   |  8.942   |
   | **FT08876** |  486  |   22.84   | 158.4 |    33     |  FG.003.001   | [M+NH4]+  |   0   |   11.03   |  6.585   |
+
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT09893"),
+                  confidence_level = c("D")
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
 
 
 # Serum, negative polarity
@@ -1566,6 +1735,13 @@ sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
   |:-----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:----------:|:-----:|:---------:|:--------:|
   | **FT0218**  |  130  |   19.57   |  52   |    37     |  FG.001.001   |  [M-H]-    |   2   |   19.98   |  18.16   |
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT0679"),
+                  confidence_level = c("D")
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
 
 
 ### Acetylneuraminic Acid
@@ -1703,6 +1879,14 @@ plot_spectra(std_ms2)
   |:------------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:-------------:|:-----:|:---------:|:--------:|
   | **FT1196**   | 220.1 |   4.619   | 35.53 |    140    |  FG.007.001   | [M-H+HCOONa]- |   0   |   12.63   |  10.61   |
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT0429", 'FT2304'),
+                  confidence_level = c("D", 'D')
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
 
 ### Fructose-1,6-Diphosphate
 
@@ -1769,6 +1953,14 @@ plot_spectra(std_ms2)
   |:-----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:----------:|:-----:|:---------:|:--------:|
   | **FT1008** | 205.1 |   16.89   | 31.6  |    31     |  FG.001.001    |  [M-H]-    |   0   |   14.39   |  12.83   |
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT1008'),
+                  confidence_level = c("D")
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
 
 ### Indoleacetic acid
 
@@ -1811,6 +2003,14 @@ plot_spectra(std_ms2)
   | **FT3094**  | 349.1 |   14.62   | 35.25 |    35     |  FG.001.001   |    [2M-H]-    |   0   |   12.55   |  10.22   |
   | **FT0655**  | 174.1 |   19.23   | 35.53 |    35     |  FG.001.001   |    [M-H]-     |   0   |   16.92   |  14.43   |
   | **FT1196**  | 220.1 |   15.46   | 35.53 |    35     |  FG.001.001   |   [M+CHO2]-   |   0   |   12.63   |  10.61   |
+
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT3094", 'FT0655', 'FT1196'),
+                  confidence_level = c("D", 'D', 'D')
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
 
 
 ### 1-Methylhistidine
@@ -1905,6 +2105,14 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   |:-----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:----------:|:-----:|:---------:|:--------:|
   | **FT0586**  | 168.1 |   19.38   | 185.7 |    182    |  FG.001.001   |  [M-H]-    |   1   |   13.45   |    NA    |
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT0586'),
+                  confidence_level = c("D")
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
 
 ### 8-Oxo-2-Deoxyguanosine
 
@@ -1949,6 +2157,14 @@ plot_spectra(std_ms2)
   | **FT3106** | 350.1 |   16.92   | 159.4 |    159    |  FG.001.001   | [M-H+HCOONa]- |   0   |   14.3    |  11.01   |
   | **FT6082** | 565.2 |   8.871   | 159.9 |    159    |  FG.001.001   |    [2M-H]-    |   0   |   10.54   |  2.635   |
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT1927", 'FT2584', 'FT3106', 'FT6082'),
+                  confidence_level = c("D", 'D', 'D', 'D')
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
 
 ### Pantothenic Acid
 
@@ -1968,13 +2184,13 @@ pandoc.table(feature_table, style = "rmarkdown",
 - No filtered feature table, no potential peaks found.
 - No MS2 spectra available (because no potential peaks for `r std`).
 - Results previous (wo rt filter):
-  - **B** for, high ppm:
+  - **B** for, high ppm and rt:
    
   |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct       | n_ms2 | mean_high | mean_low |
   |:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:-------------:|:-----:|:---------:|:--------:|
   | **FT1171** | 218.1 |   15.09   | 61.82 |    38     |  FG.002.001   |    [M-H]-     |   3   |   22.1    |  20.12   |
 
-  - **D** for, high ppm:
+  - **D** for, high ppm and rt:
   
   |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct       | n_ms2 | mean_high | mean_low |
   |:----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:-------------:|:-----:|:---------:|:--------:|
@@ -2017,11 +2233,19 @@ plot_spectra(std_ms2)
 
 - exact same as before, no new adducts found
 - Results previous:
-  - D for, high ppm, goor rt:
+  - D for, high ppm, good rt:
   
   |   feature   | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct    | n_ms2 | mean_high | mean_low |
   |:-----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:----------:|:-----:|:---------:|:--------:|
   | **FT0290**  |  135  |   21.93   | 33.69 |    33     |  FG.001.001   |    [M-H]-  |   0   |   12.78   |  10.62   |
+
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT0290"),
+                  confidence_level = c("D"))
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
 
 
 ### Phosphorylcholine
@@ -2072,6 +2296,14 @@ plot_spectra(std_ms2)
   | **FT06492** | 365.1 |   22.69   | 35.16 |    195    |  FG.003.001   | [2M-H]-    |   0   |   12.27   |   10.9   |
   | **FT06493** | 365.1 |   4.989   | 195.9 |    195    |  FG.004.001   | [2M-H]-    |   0   |   10.74   |  8.426   |
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT1291", "FT1163"),
+                  confidence_level = c("D", 'D'))
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
 
 ### Sorbitol
 
@@ -2121,6 +2353,14 @@ plot_spectra(std_ms2)
   |:-----------:|:-----:|:---------:|:-----:|:---------:|:-------------:|:----------:|:-----:|:---------:|:--------:|
   | **FT0733**  | 181.1 |   18.42   | 112.2 |    165    |  FG.003.001   |  [M-H]-    |   0   |   17.13   |  13.72   |
   | **FT1278**  | 227.1 |   17.15   | 112.3 |    165    |  FG.003.001   | [M+CHO2]-  |   0   |   16.65   |  13.46   |
+
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT0735", "FT1151", 'FT1280'),
+                  confidence_level = c("D", 'D', 'D'))
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
 
 
 ### Spermine
@@ -2237,6 +2477,23 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   - No filtered feature table, no potential peaks found.
   - No MS2 spectra available (because no potential peaks for `r std`).
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT1445", "FT2045", 'FT1883', 'FT2434'),
+                  confidence_level = c("B", "B", 'D', 'D'))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT1445_F15.S0303", "FT1445_F16.S0304",
+                       "FT2045_F15.S0305", 'FT2045_F16.S0305'),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c('high', 'high',
+                    'high', 'high')
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
+```
+
 
 ### dUTP
 
@@ -2259,6 +2516,11 @@ pandoc.table(feature_table, style = "rmarkdown",
 
 
 # Summary on the ion database
+
+Summarizing the content that was added to the `IonDb`.
+
+```{r, iondb-summary, echo = FALSE, results = "asis"}
+```
 
 # Session information
 

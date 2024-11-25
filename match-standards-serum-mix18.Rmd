@@ -325,6 +325,14 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   | **D** | **FT02849** |  243   |   4.096   | 210.8 |    235    |  FG.004.001   | [M+H-H2O]+        |   0   |   12.06   |  7.187   |
   | **D** | **FT00383** | +-98.9 |   -       | +-210 |    235    |  -            | [M+H-Hexose-H2O]+ |   -   |   -       |  -       |
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT03536", "FT03874"),
+                  confidence_level = c("D", 'D'))
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
 
 ### 2-Hydroxybutyric acid
 
@@ -441,7 +449,24 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 | **D** | FT02288    | 207.1 | 22.61     | 165.1 | 163       | FG.002.001    | [M+H-H2O]+ | 0     | 11.75     | 10.9     |
 
 - Reference MS2: FT02568: F07.S0510, F08.S0555
-  
+
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT02568", "FT02312", 'FT02918', 'FT03254', 'FT02288'),
+                  confidence_level = c("A", "C", 'D', 'D', 'D'))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT02568_F07.S0510", "FT02568_F08.S0555",
+                       'FT02312_F08.S0554', 'FT02312_F08.S0627'),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c('high', 'high',
+                    'high', 'high')
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
+```
+
 
 ### Succinyl-CoA
 
@@ -621,6 +646,23 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 | **C** | FT4653     | 519   | 9.382     | 233.8 | 235       | FG.001.001    | [2M-H]-   | 2     | 17.42     | 0.2109   |
 | **C** | FT1560     | 259   | 16.87     | 234.5 | 235       | FG.001.001    | [M-H]-    | 4     | 19.12     | 11.64    |
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT4653", "FT1560"),
+                  confidence_level = c("C", "C"))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT4653_F16.S0694",
+                       'FT1560_F15.S0568', 'FT1560_F15.S0598'),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c('high', 
+                    'high', 'high')
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
+```
+
 
 ### 2-Hydroxybutyric acid
 
@@ -711,6 +753,21 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 | **D** | FT0569     | 171   | 12.14     | 35.59 | 37        | FG.001.001    | [M-H+HCOONa]- | 0     | 13.63     | 11.6     |
 | **D** | FT0398     | 149   | 27.11     | 36.92 | 37        | FG.001.001    | [M+CHO2]-     | 0     | 11.63     | 9.444    |
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT0078", "FT0569", 'FT0398'),
+                  confidence_level = c("C", "D", 'D'))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT0078_F15.S0112"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("low")
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
+```
+
 
 ### 3-Hydroxy-DL-kynurenine
 
@@ -751,6 +808,14 @@ plot_spectra(std_ms2)
 | **D** | **FT1195** | 223.1 |   16.97   | 164.4 |    163    |  FG.001.001   |    [M-H]-     |   0   |   15.31   |  10.39   |
 | **D** | **FT1959** | 291.1 |   16.08   | 164.6 |    163    |  FG.001.001   | [M-H+HCOONa]- |   0   |   12.33   |  10.44   |
 
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT1564", "FT1195", "FT1959"),
+                  confidence_level = c("D", 'D', 'D'))
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
 
 ### Succinyl-CoA
 
@@ -772,6 +837,11 @@ pandoc.table(feature_table, style = "rmarkdown",
 
 
 # Summary on the ion database
+
+Summarizing the content that was added to the `IonDb`.
+
+```{r, iondb-summary, echo = FALSE, results = "asis"}
+```
 
 # Session information
 
