@@ -363,13 +363,13 @@ We next match the extracted MS2 spectra against the reference spectra for
 
 Heat maps:
 
-```{r mix12-serum-pos-Acetylmethionine-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix16-serum-pos-Acetylmethionine-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
 hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim_hmdb <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
-```{r mix12-serum-pos-Acetylmethionine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
+```{r mix16-serum-pos-Acetylmethionine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
@@ -380,12 +380,12 @@ matches.
 
 Mirror plots (check D -> C or B?):
 
-```{r mix12-serum-pos-Acetylmethionine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
+```{r mix16-serum-pos-Acetylmethionine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.2, ppm = csp@ppm,
                                tolerance = csp@tolerance, sim = sim_hmdb)
 ```
 
-```{r mix12-serum-pos-Acetylmethionine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
+```{r mix16-serum-pos-Acetylmethionine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
 tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.1, ppm = csp@ppm,
                            tolerance = csp@tolerance, sim = sim_mbank)
 ```
@@ -419,7 +419,7 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 | **D** | FT01805    | 174.1 | 2.039     | 37.22 | 37        | FG.001.001    | [M+H-H2O]+   | 0     | 14.84     | 13.05    |
 
 ```{r, echo = FALSE}
-fts <- data.frame(feature_id = c("FT02361", "FT02150", 'FT01257', 'FT01805'),
+fts <- data.frame(feature_id = c("FT02151", "FT02150", 'FT01257', 'FT01805'),
                   confidence_level = c("C", "C", 'D', 'D'))
 ## Get MS2 spectra:
 ms2 <- std_ms2[match(c('FT02151_F07.S0175',
@@ -548,7 +548,6 @@ perform_match(std_ms2, hmdb, sv = c("rtime", "target_name", "score"),
 perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
-
 #### Summary
 
 - No MS2 reference spectra available in MassBank.
@@ -1225,18 +1224,18 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 | **B** | FT0918     | 195   | 18.2      | 119   | 119       | FG.001.001    | [M-H]-    | 4     | 23.87     | 19.98    |
 | **B** | FT3856     | 391.1 | 14.34     | 119   | 119       | FG.001.001    | [2M-H]-   | 1     | 23.2      | 16.45    |
 
-- Reference MS2: FT0918: F15.S0370
-- Reference MS2: FT3856: F16.S0293, F16.S0322, F15.S0377
+- Reference MS2: FT0918: F16.S0293, F16.S0322, F15.S0370, F16.S0249 
+- Reference MS2: FT3856: F15.S0377
 
 ```{r, echo = FALSE}
 fts <- data.frame(feature_id = c("FT0918", 'FT3856'),
                   confidence_level = c("B", "B"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[match(c("FT0918_F15.S0370",
-                       "FT3856_F16.S0293", "FT3856_F16.S0322", "FT3856_F15.S0377"),
+ms2 <- std_ms2[match(c("FT0918_F16.S0293", "FT0918_F16.S0322", "FT0918_F15.S0370", 'FT0918_F16.S0249',
+                       "FT3856_F15.S0377"),
                      spectraNames(std_ms2))]
-ms2$confidence <- c("high", 
-                    'high', 'high', 'low')
+ms2$confidence <- c("high", 'high', 'high', 'high',
+                    'low')
 ```
 
 ```{r, add-ions, echo = FALSE, results = "asis"}

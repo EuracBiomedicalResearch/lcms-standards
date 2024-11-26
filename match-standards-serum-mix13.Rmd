@@ -1426,10 +1426,10 @@ fts <- data.frame(feature_id = c("FT02624", "FT02623", "FT00474", "FT02309", "FT
                   confidence_level = c("B", "B", "D", "D", "D", "D"))
 ## Get MS2 spectra:
 ms2 <- std_ms2[match(c("FT02624_F07.S0800", "FT02624_F07.S0832", "FT02624_F08.S0782", 
-                       "FT02623_F07.S0800", "FT02623_F07.S0832", "FT02623_F07.S0171"),
+                       "FT02623_F07.S0800", "FT02623_F07.S0832"),
                      spectraNames(std_ms2))]
 ms2$confidence <- c('high', 'high', 'high',
-                    'high', 'high', 'high')
+                    'high', 'high')
 ```
 
 ```{r, add-ions, echo = FALSE, results = "asis"}
@@ -1595,7 +1595,7 @@ plot_spectra(std_ms2)
 
 ```{r, echo = FALSE}
 fts <- data.frame(feature_id = c("FT09893"),
-                  confidence_level = c("D")
+                  confidence_level = c("D"))
 ```
 
 ```{r, add-ions, echo = FALSE, results = "asis"}
@@ -1737,7 +1737,7 @@ sim_mbank <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 
 ```{r, echo = FALSE}
 fts <- data.frame(feature_id = c("FT0679"),
-                  confidence_level = c("D")
+                  confidence_level = c("D"))
 ```
 
 ```{r, add-ions, echo = FALSE, results = "asis"}
@@ -1881,7 +1881,7 @@ plot_spectra(std_ms2)
 
 ```{r, echo = FALSE}
 fts <- data.frame(feature_id = c("FT0429", 'FT2304'),
-                  confidence_level = c("D", 'D')
+                  confidence_level = c("D", 'D'))
 ```
 
 ```{r, add-ions, echo = FALSE, results = "asis"}
@@ -1954,8 +1954,8 @@ plot_spectra(std_ms2)
   | **FT1008** | 205.1 |   16.89   | 31.6  |    31     |  FG.001.001    |  [M-H]-    |   0   |   14.39   |  12.83   |
 
 ```{r, echo = FALSE}
-fts <- data.frame(feature_id = c("FT1008'),
-                  confidence_level = c("D")
+fts <- data.frame(feature_id = c("FT1008"),
+                  confidence_level = c("D"))
 ```
 
 ```{r, add-ions, echo = FALSE, results = "asis"}
@@ -2006,7 +2006,7 @@ plot_spectra(std_ms2)
 
 ```{r, echo = FALSE}
 fts <- data.frame(feature_id = c("FT3094", 'FT0655', 'FT1196'),
-                  confidence_level = c("D", 'D', 'D')
+                  confidence_level = c("D", 'D', 'D'))
 ```
 
 ```{r, add-ions, echo = FALSE, results = "asis"}
@@ -2106,8 +2106,8 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
   | **FT0586**  | 168.1 |   19.38   | 185.7 |    182    |  FG.001.001   |  [M-H]-    |   1   |   13.45   |    NA    |
 
 ```{r, echo = FALSE}
-fts <- data.frame(feature_id = c("FT0586'),
-                  confidence_level = c("D")
+fts <- data.frame(feature_id = c("FT0586"),
+                  confidence_level = c("D"))
 ```
 
 ```{r, add-ions, echo = FALSE, results = "asis"}
@@ -2159,7 +2159,7 @@ plot_spectra(std_ms2)
 
 ```{r, echo = FALSE}
 fts <- data.frame(feature_id = c("FT1927", 'FT2584', 'FT3106', 'FT6082'),
-                  confidence_level = c("D", 'D', 'D', 'D')
+                  confidence_level = c("D", 'D', 'D', 'D'))
 ```
 
 ```{r, add-ions, echo = FALSE, results = "asis"}

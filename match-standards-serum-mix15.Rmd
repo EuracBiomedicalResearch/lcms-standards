@@ -1921,8 +1921,8 @@ fts <- data.frame(feature_id = c("FT1413", "FT0572", 'FT1146'),
 ms2 <- std_ms2[match(c("FT1413_F16.S0446", "FT1413_F15.S0414", 'FT1413_F15.S0486',
                        'FT0572_F15.S0411'),
                      spectraNames(std_ms2))]
-ms2$confidence <- c("high",
-                    "high")
+ms2$confidence <- c("low", 'low', 'low',
+                    "low")
 ```
 
 ```{r, add-ions, echo = FALSE, results = "asis"}
@@ -2014,8 +2014,6 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 - No MS2 reference spectra available in HMDB and MassBank.
 - matches >0.7 to Phosphoserine, but also to other compounds for FT0799, so B.
-- Reference MS2: FT08081 `[M+H]+`: F08.S0507, F07.S0524 (high confidence)
-
 - labels, high ppm:
 
 | label |   feature  | mzmed | ppm_error | rtmed | target_RT | feature_group |  adduct   | n_ms2 | mean_high | mean_low |
@@ -2024,14 +2022,14 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 | **C** | FT3326     | 369   | 16.17     | 232.1 | 231       | FG.001.001    | [2M-H]-   | 4     | 20.78     | 3.528    |
 
 ```{r, echo = FALSE}
-fts <- data.frame(feature_id = c("FT1413", "FT3326"),
+fts <- data.frame(feature_id = c("FT0799", "FT3326"),
                   confidence_level = c("B", "C"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[match(c("FT1413_F16.S0446", "FT1413_F15.S0414", 'FT1413_F15.S0486',
-                       'FT3326_F15.S0726 	', 'FT3326_F15.S0775', 'FT3326_F15.S0411', 'FT3326_F15.S0411'),
+ms2 <- std_ms2[match(c("FT0799_F16.S0777", "FT0799_F15.S0743", 'FT0799_F15.S0788',
+                       'FT3326_F15.S0726', 'FT3326_F15.S0775', 'FT3326_F16.S0770', 'FT3326_F16.S0821'),
                      spectraNames(std_ms2))]
-ms2$confidence <- c("high",
-                    "low", "low", "high", "high")
+ms2$confidence <- c("high", "high", "high",
+                    "low", "low", "low", "low")
 ```
 
 ```{r, add-ions, echo = FALSE, results = "asis"}

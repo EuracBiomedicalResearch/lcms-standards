@@ -308,7 +308,7 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 fts <- data.frame(feature_id = c("FT01064", "FT00763"),
                   confidence_level = c("B", "D"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[match(c("FT01064_F08.S0417", "FT01064_FT00763"),
+ms2 <- std_ms2[match(c("FT01064_F08.S0417", "FT01064_F07.S0427"),
                      spectraNames(std_ms2))]
 ms2$confidence <- c("high", "high")
 ```
@@ -937,7 +937,7 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 fts <- data.frame(feature_id = c("FT2528", "FT6303"),
                   confidence_level = c("B", "D"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[match(c("FT2528_F16.S0655", "FT2528_F15.S0629""FT2528_F15.S0676", "FT2528_F15.S0699", "FT2528_F16.S0701"),
+ms2 <- std_ms2[match(c("FT2528_F16.S0655", "FT2528_F15.S0629", "FT2528_F15.S0676", "FT2528_F15.S0699", "FT2528_F16.S0701"),
                      spectraNames(std_ms2))]
 ms2$confidence <- c("high", 'high', "high", "high", "high")
 ```

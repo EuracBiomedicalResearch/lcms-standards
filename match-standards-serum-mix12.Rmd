@@ -739,11 +739,11 @@ plot_spectra(std_ms2)
     - FT03005 (RT = 167, 0.7415 ppm, `[M+2Na-H]+` ion) with confidence **D**
   - < **D** for, high ppm:
     - FT02204 (RT = 167.3, 10.55 ppm, `[M+H]+` ion)
-    - FT1183 (RT = 165.8, 22.41 ppm, `[M+Cl]+` ion)
+    - FT1183 (RT = 165.8, 22.41 ppm, `[M+Cl]+` ion), not in table so can't add
   - FT03006 dropped, to high rt dev. 
 
 ```{r, echo = FALSE}
-fts <- data.frame(feature_id = c("FT02599", "FT03005", "FT02204", "FT1183"),
+fts <- data.frame(feature_id = c("FT02599", "FT03005", "FT02204"),
                   confidence_level = c("D"))
 ```
 
@@ -1042,7 +1042,7 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 fts <- data.frame(feature_id = c("FT00757", "FT01801", 'FT01208', 'FT00412', 'FT00114'),
                   confidence_level = c("B", 'D', 'D', 'D', 'D'))
 ## Get MS2 spectra:
-ms2 <- std_ms2[match(c("FT00757_F07.S0597", "FT00757_F07.S0632"),
+ms2 <- std_ms2[match(c("FT00757_F07.S0597", "FT00757_F08.S0632"),
                      spectraNames(std_ms2))]
 ms2$confidence <- c("high", 'high')
 ```
@@ -2235,7 +2235,8 @@ fts <- data.frame(feature_id = c("FT5503", "FT1643", 'FT2360'),
 ms2 <- std_ms2[match(c("FT5503_F16.S0824", "FT5503_F16.S0784",
                        "FT1643_F16.S0788"),
                      spectraNames(std_ms2))]
-ms2$confidence <- c("high", "low")
+ms2$confidence <- c("high", "high",
+                    'high')
 ```
 
 ```{r, add-ions, echo = FALSE, results = "asis"}
