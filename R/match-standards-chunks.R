@@ -328,3 +328,8 @@ fts <- cbind(name = std_dilution[idx, "name"],
              old_rt = std_dilution[idx, "RT"])
 pandoc.table(fts[, c("name", "rt", "old_rt", "n_ms2", "adducts")],
              style = "rmarkdown", split.table = Inf)
+
+## ---- no-ion-table ----
+tmp <- std_dilution[!std_dilution$HMDB %in% rownames(fts), ]
+pandoc.table(tmp[, c("name", "HMDB", "POS", "NEG", "RT")], style = "rmarkdown",
+             caption = "Standards without identified ions.")
