@@ -51,8 +51,8 @@ created/measurable from each compound. In the workflow we first:
 - [X] mix 16. 2024-12. Created by Marilyn, checked by Jo.
 - [X] mix 17. 2024-12. Created by Marilyn, checked by Jo.
 - [X] mix 18. 2024-12. Created by Marilyn, checked by Jo.
-- [ ] mix 19.
-- [ ] mix 20.
+- [X] mix 19. 2024-12. Created by Marilyn, checked by Jo.
+- [X] mix 20. 2024-12. Created by Marilyn, checked by Jo.
 
 
 ## Data tables

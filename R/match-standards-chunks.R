@@ -256,20 +256,24 @@ pandoc.table(std_dilution[!std_dilution$name %in% mD$target_name,
 
 ## ---- table-feature-matches ----
 feature_table <- as.data.frame(mD[mD$target_name == std, ])
-feature_table <- feature_table[order(feature_table$rtmed), ]
-feature_table$feature_group <- group_features(data_FS, rownames(feature_table))
-std_ms2 <- extract_ms2(data, rownames(feature_table), ppm = FEATURE_MS2_PPM,
-                       tolerance = FEATURE_MS2_TOLERANCE)
-feature_table$n_ms2 <- 0
-if(length(std_ms2)) {
-   nms2 <- table(std_ms2$feature_id)
-   feature_table[names(nms2), "n_ms2"] <- unname(nms2) 
+if (nrow(feature_table)) {
+    feature_table <- feature_table[order(feature_table$rtmed), ]
+    feature_table$feature_group <- group_features(data_FS, rownames(feature_table))
+    std_ms2 <- extract_ms2(data, rownames(feature_table), ppm = FEATURE_MS2_PPM,
+                           tolerance = FEATURE_MS2_TOLERANCE)
+    feature_table$n_ms2 <- 0
+    if(length(std_ms2)) {
+        nms2 <- table(std_ms2$feature_id)
+        feature_table[names(nms2), "n_ms2"] <- unname(nms2) 
+    }
 }
-pandoc.table(feature_table[, c("mzmed", "ppm_error", "rtmed", "target_RT",
-                               "feature_group", "adduct", "n_ms2", 
-                               "mean_high", "mean_low")], style = "rmarkdown",
-             split.tables = Inf,
-             caption = paste0("Feature to standards matches for ", std))
+pandoc.table(
+    feature_table[, colnames(feature_table) %in%
+                    c("mzmed", "ppm_error", "rtmed", "target_RT",
+                      "feature_group", "adduct", "n_ms2", 
+                      "mean_high", "mean_low")], style = "rmarkdown",
+    split.tables = Inf,
+    caption = paste0("Feature to standards matches for ", std))
 
 
 ## ---- add-ions ----

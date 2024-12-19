@@ -2135,7 +2135,6 @@ ms2$confidence <- c("low")
 ```
 
 
-
 # Summary on the ion database
 
 Summarizing the content that was added to the `IonDb`.

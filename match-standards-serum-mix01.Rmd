@@ -26,7 +26,7 @@ FEATURE_MS2_TOLERANCE <- 0.05
 ```{r, general-settings, echo = FALSE, message = FALSE}
 ```
 
-**Current version: 0.10.0, 2022-05-05.**
+**Current version: 0.10.1, 2024-10-29.**
 
 # Introduction
 
@@ -219,7 +219,6 @@ criteria to determine the annotation confidence:
 - signal is higher for samples with higher concentration.
 - MS2 spectra matches reference spectra for the standard (if available).
 - MS2 spectra don't match MS2 spectra of other compounds.
-
 
 ### 3-Phosphoglyceric Acid
 
@@ -1712,6 +1711,71 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 - Inconclusive.
 
+### propionic acid
+
+```{r, echo = FALSE}
+std <- "propionic acid"
+```
+LLLLLL
+The table below lists all features that were matched to one of the adducts of 
+`r print(std)` that have in addition also on average a twice as high signal in
+samples with higher concentrations than in those with lower concentrations.
+
+```{r, table-feature-matches, results = "asis", echo = FALSE}
+```
+
+Based on their retention time, it seems that these features represent signal
+from two compounds.
+
+We next plot the EIC for the assigned feature and visually inspect these.
+
+```{r, echo = FALSE}
+plot_eics(data, std, feature_table, "SP", std_ms2)
+```
+
+Signal is very low for all of the features. 
+
+
+```{r mix01-serum-pos-uric-acid-ms2, echo = FALSE}
+plot_spectra(std_ms2)
+```
+
+```{r mix01-serum-pos-uric-acid-ms2-hmdb-heatmap, fig.cap = "Similarities of MS2 spectra for selected features against reference spectra for uric acid from HMDB.", echo = FALSE, fig.width = 5, fig.height = 5}
+hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
+std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
+sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
+```
+
+The spectra don't match. We repeat the comparison using MassBank reference
+spectra and we obtain similar results as shown below.
+
+```{r mix01-water-pos-xanthine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
+std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
+sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
+```
+
+In addition we match (**all**) the MS2 spectra for the matched features against
+all spectra from HMDB or MassBank identifying reference spectra with a
+similarity larger than 0.7. The results (if any spectra matched) are shown in
+the two following tables.
+
+```{r, echo = FALSE, message = FALSE, results = "asis"}
+std_ms2_sel <- Spectra()
+perform_match(std_ms2, hmdb, sv = c("rtime", "target_name", "score"),
+              name = "target_name", param = csp)
+```
+
+```{r, echo = FALSE, message = FALSE, results = "asis"}
+perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
+              name = "target_name", param = csp)
+```
+
+
+#### Summary
+
+- Inconclusive.
+
+
 # Serum, negative polarity
 
 We now perform the analysis on the samples with the standards still solved in
@@ -2672,8 +2736,6 @@ plot_spectra(std_ms2)
 
 - FT0491 (RT=140.2 `[M-H]-` ion): confidence level **D**.
 - FT1090 (RT=140.1 `[M+HCOO]-` ion): confidence level **D**.
-
-## Standards without any matching feature
 
 ### C3 Carnitine
 ### Creatine
