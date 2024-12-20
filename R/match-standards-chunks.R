@@ -233,7 +233,7 @@ adducts <- adducts("negative")[c("[M-H]-", "[M+Cl]-", "[M-H+HCOONa]-",
                                c("mass_multi", "mass_add")] 
 
 ## ---- match-features ----
-prm <- Mass2MzParam(adducts = adducts, ppm = 30)
+prm <- Mass2MzParam(adducts = adducts, ppm = 40)
 fmat <- c(featureDefinitions(data), ttest)
 mtchs <- matchMz(fmat, std_dilution, param = prm, mzColname = "mzmed")
 mtchs_sub <- mtchs[whichQuery(mtchs)]
@@ -243,7 +243,7 @@ mD <- matchedData(
                            "high_low_diff", "pvalue", "mean_high",
                            "mean_low"))
 mD <- mD[-which(mD$high_low_diff < 0.7), ]
-mD <- mD[which(abs(mD$rtmed - mD$target_RT) < 10), ]  #max 10s rt deviation, 2-sided
+mD <- mD[which(abs(mD$rtmed - mD$target_RT) < 20), ]  #max 10s rt deviation, 2-sided
 mD <- mD[order(mD$target_name), ]
 
 

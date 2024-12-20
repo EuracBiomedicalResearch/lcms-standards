@@ -33,7 +33,7 @@ created/measurable from each compound. In the workflow we first:
 
 #### Standards spiked with QC Pool samples
 
-- [ ] mix 01.
+- [X] mix 01. 2024-12. Created by Andrea, checked by Jo.
 - [ ] mix 02.
 - [ ] mix 03.
 - [ ] mix 04.
