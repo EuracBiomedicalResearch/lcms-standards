@@ -25,7 +25,7 @@ FEATURE_MS2_TOLERANCE <- 0.05
 ```{r, general-settings, echo = FALSE, message = FALSE}
 ```
 
-**Current version: 0.10.0, 2022-05-31.**
+**Current version: 0.10.1, 2024-10-29.**
 
 # Introduction
 
@@ -203,7 +203,7 @@ In the next sections we investigate for each standard which assignment would be
 the correct one or, for those for which no signal was detected, why that was the
 case.
 
-## Standards with matching features
+## Standards evaluation
 
 While for some standards a matching feature was found we still need to evaluate
 whether this matching is correct. For each standard we thus first evaluate the
@@ -226,10 +226,6 @@ std <- "Ascorbic Acid"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
 
 We next plot the EICs for the assigned features and visually inspect these.
 
@@ -254,12 +250,9 @@ std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
-Spectra F07.S0389 from FT01572 and F07.S0398 and F08.S0394 from FT01902 match
-reference spectra from `r std`, the latter two with a lower score.
-
 ```{r mix02-serum-pos-ascorbic-acid-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.4, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim)
 ```
 
 ```{r mix02-serum-pos-ascorbic-acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
@@ -284,45 +277,24 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-For completeness, we also perform a neutral loss spectra comparison with HMDB
-and MassBank.
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, hmdb_nl, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, mbank_nl,
-              sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
 #### Summary
 
-- FT01902 (RT = 128.8, `[M+H]+` ion) confidence level **C**.
-- FT01572 (RT = 127.5, `[M+H-H2O]+` ion) with confidence level **C**.
-- FT03383 (RT = 127.5, `[M+2K-H]+` ion) confidence level **C**.
-- Reference MS2: `[M+H]+`: FT01572_F07.S0389; low confidence. `[M+H-H2O]+`:
-  FT01572_F08.S0393, FT01572_F07.S0389; low confidence. `[M+2K-H]+`:
-  FT03383_F07.S0390, FT03383_F07.S0428, FT03383_F08.S0387; low confidence.
-
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
-## Define the feature (ion) and MS2 spectra to insert
-fts <- data.frame(feature_id = c("FT01902", "FT01572", "FT03383"),
-                  confidence_level = c("C", "C", "C"))
+fts <- data.frame(feature_id = c("FT01570", "FT03382", "FT01900"),
+                  confidence_level = c("C-", "C-", "C"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[c("FT01572_F07.S0389", "FT01572_F08.S0393", "FT01572_F07.S0389",
-                 "FT03383_F07.S0390", "FT03383_F07.S0428", "FT03383_F08.S0387")]
-ms2$confidence <- "low"
+ms2 <- std_ms2[match(c("FT01570_F08.S0393", "FT01570_F07.S0389",
+                       "FT03382_F07.S0390", "FT03382_F07.S0428",
+                       "FT03382_F08.S0387", "FT01900_F07.S0398",
+                       "FT01900_F08.S0394"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c(rep("low", 5), "high", "high")
 ```
 
-```{r, add-ions, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -335,10 +307,6 @@ std <- "C4 Carnitine"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -368,25 +336,6 @@ std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
-In both cases we don't find any match. In addition, since some of the extracted
-spectra are associated to ions different from `[M+H]+` we perform a neutral
-loss spectra comparison.
-
-```{r mix02-serum-pos-c4-carnitine-ms2-hmdb_nl, echo = FALSE, fig.width = 5, fig.height = 5}
-std_hmdb_nl <- hmdb_nl[hmdb_nl$compound_id == hmdb_id]
-std_ms2_nl <- neutralLoss(std_ms2, nl_param)
-sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_hmdb_nl, csp_nl)
-```
-
-```{r mix02-serum-pos-c4-carnitine-ms2-mbank_nl, echo = FALSE, fig.width = 5, fig.height = 5}
-std_mbank_nl <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey), nl = TRUE)
-std_ms2_nl <- neutralLoss(std_ms2, nl_param)
-sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_mbank_nl, csp_nl)
-```
-
-For the HMDB comparison we don't find matches while for the MassBank one
-the neutral loss spectra cannot be computed. 
-
 Since the chemical formula used for this standard is essentially the one of
 Butyrylcarnitine (C4 Carnitine) and not the one of Isobotyryl-L-carnitine (the
 standard that was bought from Sigma Aldrich) we also match the MS2 spectra
@@ -403,7 +352,7 @@ Butyrylcarnitine.
 
 ```{r mix02-serum-pos-ascorbic-butyrylcarnitine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7,
-                               ppm = csp@ppm, tolerance = csp@tolerance)
+                               ppm = csp@ppm, tolerance = csp@tolerance, sim)
 ```
 
 Similarity is quite high arguing that the standard measured here is
@@ -429,48 +378,67 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-For completeness, we also perform a neutral loss spectra comparison with HMDB
-and MassBank.
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, hmdb_nl, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, mbank_nl,
-              sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
 #### Summary
 
-- FT02888 (RT = 37, `[M+H+]` ion) confidence level **A** (for
-  butyrylcarnitine).
-- FT03406 (RT = 36.46, `[M+Na]+` ion).
-- FT03708 (RT = 36.31, `[M+K]+` ion).
-- Reference MS2 (assign to butyrylcarnitine).
-
-The associated ion and MS2 spectra are added to the database.
+**We assign these features/ions to butyrylcarnitine**.
 
 ```{r, echo = FALSE}
-## Define the feature (ion) and MS2 spectra to insert
-fts <- data.frame(feature_id = c("FT02888", "FT03406", "FT03708"),
-                  confidence_level = c("A", "A-", "A-"))
+fts <- data.frame(feature_id = c("FT02551", "FT03707", "FT03405",
+                                 "FT02887", "FT08077"),
+                  confidence_level = c("A-", "A-", "A-", "A", "A-"))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT03405_F07.S0130", "FT03405_F07.S0187",
+                       "FT03405_F07.S0243", "FT03405_F08.S0144",
+                       "FT03405_F08.S0217", "FT02887_F07.S0128",
+                       "FT02887_F07.S0185", "FT02887_F08.S0131",
+                       "FT02887_F08.S0182", "FT02887_F08.S0234",
+                       "FT08077_F07.S0144", "FT08077_F08.S0145"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c(rep("low", 5), rep("high", 5), "low", "low")
+```
+
+```{r, echo = FALSE, results = "asis"}
+stopifnot(all(fts$feature_id %in% rownames(feature_table)))
+fts$sample_matrix <- MATRIX
+fts$original_sample <- paste0("Std_", MIX_NAME)
+fts$ion_mz <- feature_table[fts$feature_id, "mzmed"]
+fts$ion_rt <- round(feature_table[fts$feature_id, "rtmed"])
+fts$ion_relative_intensity <- feature_table[fts$feature_id, "mean_high"]
+fts$ion_relative_intensity <- fts$ion_relative_intensity /
+    max(fts$ion_relative_intensity)
+fts$ion_adduct <- feature_table[fts$feature_id, "adduct"]
+fts$compound_id <- "HMDB0002013"
+fts$polarity <- POLARITY
 fts$note <- paste0("Ambiguous: standard is isobutyryl-L-carnitine (Sigma ",
                    "Aldrich 51085), but matches butyrylcarnitine.")
-## Get MS2 spectra:
-ms2 <- std_ms2[c("FT02888_F07.S0128", "FT02888_F07.S0185", "FT02893_F07.S0241",
-                 "FT02891_F07.S0287", "FT02890_F07.S0400")]
-ms2$confidence <- "high"
+idb <- insertIon(idb, fts, addColumns = TRUE)
+pandoc.table(fts, split.tables = Inf, style = "rmarkdown")
+rm(fts)
+
 ```
 
-```{r, add-ions, echo = FALSE}
-```
+```{r, echo = FALSE, results = "asis"}
+ms2$original_spectrum_id <- spectraNames(ms2)
+ms2$compound_id <- "HMDB0002013"
+ms2$original_file <- basename(ms2$dataOrigin)
+ms2$collisionEnergy <- 20
+ms2$collisionEnergy[grep("CE30", ms2$original_file)] <- 30
+ms2$predicted <- FALSE
+ms2$instrument_type <- "LC-ESI-QTOF"
+ms2$instrument <- "Sciex TripleTOF 5600+"
+ms2$adduct <- feature_table[ms2$feature_id, "adduct"]
+idb <- insertSpectra(
+    idb, ms2, columns = c("original_spectrum_id", "compound_id", "polarity",
+                          "collisionEnergy", "predicted", "instrument_type",
+                          "instrument", "precursorMz", "adduct",
+                          "original_file", "confidence", "acquisitionNum",
+                          "rtime"))
+spectraData(ms2, c("rtime", "original_file", "adduct", "confidence")) |>
+    as.data.frame() |>
+    pandoc.table(style = "rmarkdown", split.tables = Inf)
+rm(ms2)
 
-```{r, add-ms2-spectra, echo = FALSE}
 ```
-
 
 
 ### Fructose
@@ -481,10 +449,6 @@ std <- "Fructose"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -514,30 +478,6 @@ std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
-In both cases we don't find any match. In addition, since all the extracted
-spectra are associated to ions different from `[M+H]+` we perform a neutral
-loss spectra comparison.
-
-```{r mix02-serum-pos-fructose-ms2-hmdb_nl, echo = FALSE, fig.width = 5, fig.height = 5}
-std_hmdb_nl <- hmdb_nl[hmdb_nl$compound_id == hmdb_id]
-std_ms2_nl <- neutralLoss(std_ms2, nl_param)
-sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_hmdb_nl, csp_nl)
-```
-
-```{r mix02-serum-pos-fructose-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2_nl, std_hmdb_nl, 0.05,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
-```
-
-```{r mix02-serum-pos-fructose-ms2-mbank_nl, echo = FALSE, fig.width = 5, fig.height = 5}
-std_mbank_nl <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey), nl = TRUE)
-std_ms2_nl <- neutralLoss(std_ms2, nl_param)
-sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_mbank_nl, csp_nl)
-```
-
-For the HMDB comparison we don't find good matches while for the MassBank one
-the neutral loss spectra cannot be computed. 
-
 In addition we match (**all**) the MS2 spectra for the matched features against
 all spectra from HMDB or MassBank identifying reference spectra with a
 similarity larger than 0.7. The results (if any spectra matched) are shown in
@@ -554,36 +494,21 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-For completeness, we also perform a neutral loss spectra comparison with HMDB
-and MassBank.
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, hmdb_nl, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, mbank_nl,
-              sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
 #### Summary
 
-- FT02330 (RT = 150.7, `[M+Na]+` ion) confidence level **D**.
-- FT02615 (RT = 147.2, `[M+K]+` ion) confidence level **D**.
-- Reference MS2: `[M+Na]+`: FT02330_F08.S0476; low confidence. `[M+K]+`:
-  FT02615_F07.S0456; low confidence.
-
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
-## Define the feature (ion) and MS2 spectra to insert
-fts <- data.frame(feature_id = c("FT02330", "FT02615"),
-                  confidence_level = c("D", "D"))
+fts <- data.frame(feature_id = c("FT02613", "FT02719", "FT02328"),
+                  confidence_level = c("D"))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT02613_F07.S0456", "FT02328_F08.S0476"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("low")
 ```
 
-```{r, add-ions, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -620,8 +545,8 @@ sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
 ```{r mix02-serum-pos-glycine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-st2_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+st2_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
+                               tolerance = csp@tolerance, sim)
 ```
 
 Only the precursor peak matches, but the reference spectra have only a single
@@ -633,13 +558,12 @@ sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
 ```{r mix02-serum-pos-glycine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7,
-                           ppm = csp@ppm, tolerance = csp@tolerance)
+tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7, ppm = csp@ppm,
+                           tolerance = csp@tolerance, sim)
 ```
 
 For both HMDB and MassBank we find high similarity matches (involving only one
-peak) for the only available extracted spectrum (i.e. F07.S0587 from feature
-FT00174).
+peak).
 
 In addition we match (**all**) the MS2 spectra for the matched features against
 all spectra from HMDB or MassBank identifying reference spectra with a
@@ -658,24 +582,19 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- FT00174 (RT = 173.1, `[M+H]+` ion) with confidence **A**. 
-- Reference MS2: `[M+H]+`: FT00174_F07.S0587; high confidence.
-  
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
-## Define the feature (ion) and MS2 spectra to insert
-fts <- data.frame(feature_id = c("FT00174"),
+fts <- data.frame(feature_id = c("FT00172"),
                   confidence_level = c("A"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[c("FT00174_F07.S0587")]
-ms2$confidence <- "high"
+ms2 <- std_ms2[match(c("FT00172_F07.S0587"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("low")
 ```
 
-```{r, add-ions, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
   
@@ -687,10 +606,6 @@ std <- "cGMP"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -715,24 +630,14 @@ std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
-The MS2 spectra from FT05702 match with high similarity score reference spectra
-from `r std`. We also have matches with very low similarity involving spectra
-from FT06569.
-
 ```{r mix02-serum-pos-cgmp-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots", fig.width = 10, fig.height = 10}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim)
 ```
 
 ```{r mix02-serum-pos-cgmp-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
-```
-We observe similar results also from the MassBank comparison.
-
-```{r mix02-serum-pos-cgmp-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -750,48 +655,25 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-For completeness, we also perform a neutral loss spectra comparison with HMDB
-and MassBank.
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, hmdb_nl, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, mbank_nl,
-              sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
 #### Summary
 
-- FT05702 (RT = 216, `[M+H]+` ion): confidence **A**.
-- FT06194 (RT = 214.1, ion `[M+Na]+`): confidence **A-**.
-- FT06570 (RT = 218.1, ion `[M+K]+`): confidence **A-**.
-- Reference MS2: `[M+H]+`: FT05702_F07.S0757, FT05702_F07.S0775,
-  FT05702_F07.S0796, FT05702_F08.S0766, FT05702_F08.S0788, FT05702_F08.S0808;
-  high confidence. `[M+Na]+`: FT06194_F08.S0782; low confidence.
-  
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
-## Define the feature (ion) and MS2 spectra to insert
-fts <- data.frame(feature_id = c("FT05702", "FT06194", "FT06570"),
-                  confidence_level = c("A", "A-", "A-"))
+fts <- data.frame(feature_id = c("FT04380", "FT06194", "FT05703", "FT11448"),
+                  confidence_level = c("A-", "A-", "A", "A-"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[c("FT05702_F07.S0757", "FT05702_F07.S0775", "FT05702_F07.S0796",
-                 "FT05702_F08.S0766", "FT05702_F08.S0788", "FT05702_F08.S0808",
-                 "FT06194_F08.S0782")]
-ms2$confidence <- c(rep("high", 6), "low")
+ms2 <- std_ms2[match(c("FT06194_F08.S0782", "FT05703_F07.S0757",
+                       "FT05703_F07.S0775", "FT05703_F07.S0796",
+                       "FT05703_F08.S0766", "FT05703_F08.S0788",
+                       "FT05703_F08.S0808", "FT11448_F08.S0783"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("low", rep("high", 6), "low")
 ```
 
-```{r, add-ions, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
-
 
 
 ### Histidine
@@ -802,10 +684,6 @@ std <- "Histidine"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from two different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -830,13 +708,9 @@ std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
-We have matches for spectra from FT01452 (F07.S0670, F07.S0729, F08.S0695),
-FT01455 (F07.S0729), FT01453 (F07.S0729, F07.S0763, F08.S0773),
-FT01456 (F08.S0773, F08.S0800).
-
 ```{r mix02-serum-pos-histidine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.9, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
+                               tolerance = csp@tolerance, sim)
 ```
 
 ```{r mix02-serum-pos-histidine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
@@ -859,44 +733,26 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-For completeness, we also perform a neutral loss spectra comparison with HMDB
-and MassBank.
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, hmdb_nl, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, mbank_nl,
-              sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
 #### Summary
 
-- FT01452 (RT = 189.4, `[M+H]+` ion) confidence level **A**. Other features for
-  that ion represent signal from the tail of this feature and are thus discarded
-  (along with their MS2 spectra).
-- FT01920 (RT = 189.1, `[M+Na]+` ion) confidence level **A-**.
-- FT02188 (RT = 185.3, `[M+K]+` ion) confidence level **A-**.
-- Reference MS2: `[M+H]+`: FT01452_F07.S0670, FT01452_F07.S0729,
-  FT01452_F08.S0695; high confidence.
-  
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
-## Define the feature (ion) and MS2 spectra to insert
+fts <- data.frame(feature_id = c("FT01918", "FT00527", "FT04832", "FT01450"),
+                  confidence_level = c("A-", "A-", "A-", "A"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[c("FT01452_F07.S0670", "FT01452_F07.S0729", "FT01452_F08.S0695")]
-ms2$confidence <- "high"
+ms2 <- std_ms2[match(c("FT00527_F07.S0666", "FT00527_F08.S0692",
+                       "FT01450_F07.S0670", "FT01450_F07.S0729",
+                       "FT01450_F08.S0695"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("low", "low", "high", "high", "high")
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-  
-  
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
+```
+
+
 ### Hydroxyproline
 
 ```{r, echo = FALSE}
@@ -905,10 +761,6 @@ std <- "Hydroxyproline"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -932,13 +784,10 @@ hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
-
-The best matchings spectra are F07.S0648 and F08.S0686 from FT00922.
-Also F07.S0623 and F08.S0648 from FT00598 match (with similarity around 0.4).
  
 ```{r mix02-serum-pos-hydroxyproline-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7,
-                               ppm = csp@ppm, tolerance = csp@tolerance)
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
+                               tolerance = csp@tolerance, sim)
 ```
 
 ```{r mix02-serum-pos-hydroxyproline-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
@@ -962,48 +811,24 @@ perform_match(std_ms2, mbank,
               name = "target_name", param = csp)
 ```
 
-For completeness, we also perform a neutral loss spectra comparison with HMDB
-and MassBank.
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, hmdb_nl, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
-Interestingly, some MS2 spectra associated with FT00922 match reference spectra
-from creatine.
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, mbank_nl,
-              sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
 #### Summary
 
-- FT00922 (RT = 178, `[M+H]+`): confidence level **A**.
-- FT00598 (RT = 176, `[M+H-H2O]+`): confidence level **A-**.
-- FT01418 (RT = 175.8, `[M+Na]+`): confidence level **A-**.
-- Reference MS2: `[M+H]+`: FT00922_F07.S0648, FT00922_F08.S0686; high
-  confidence. `[M+H-H2O]+`: FT00598_F07.S0623, FT00598_F08.S0648; low
-  confidence.
-  
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
-## Define the feature (ion) and MS2 spectra to insert
-fts <- data.frame(feature_id = c("FT00922", "FT00598", "FT01418"),
-                  confidence_level = c("A", "A-", "A-"))
+fts <- data.frame(feature_id = c("FT00271", "FT00596", "FT00920"),
+                  confidence_level = c("A", "A-", "A"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[c("FT00922_F07.S0648", "FT00922_F08.S0686", "FT00598_F07.S0623",
-                 "FT00598_F08.S0648")]
-ms2$confidence <- c("high", "high", "low", "low")
+ms2 <- std_ms2[match(c("FT00271_F07.S0621", "FT00271_F08.S0625",
+                       "FT00596_F07.S0623", "FT00596_F08.S0648",
+                       "FT00920_F07.S0570", "FT00920_F07.S0648",
+                       "FT00920_F08.S0593", "FT00920_F08.S0686"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("low", "low", "low", "low", "low", "high", "low", "high")
 ```
 
-```{r, add-ions, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1015,10 +840,6 @@ std <- "Hypoxanthine"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -1042,23 +863,16 @@ hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
-
-The best matches involve F07.S0377, F07.S0412, F08.S0381, F08.S0412 from
-FT01048. We have low similarity matches for F07.S0386 (around 0.25) and
-F08.S0390 (around 0.4) from FT00681.
  
 ```{r mix02-serum-pos-hypoxanthine-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim)
 ```
 
 ```{r mix02-serum-pos-hypoxanthine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
-
-No good match is found with MassBank comparison (only low similarity ones
-for spectra from FT01048).
 
 In addition we match (**all**) the MS2 spectra for the matched features against
 all spectra from HMDB or MassBank identifying reference spectra with a
@@ -1075,54 +889,28 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-For completeness, we also perform a neutral loss spectra comparison with HMDB
-and MassBank.
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, hmdb_nl, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, mbank_nl,
-              sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
 #### Summary
 
-- FT01048 (RT = 127, `[M+H]+` ion): confidence level **A** (although the MS2
-  match also another compound with high confidence, but the precursor m/z
-  differs by 0.02).
-- FT01850 (RT = 125.9, `[M+K]+` ion): confidence level **A**.
-- FT00681 (RT = 126.8, `[M+H-H2O]+` ion): confidence level **A-**.
-- FT01572 (RT = 127.5, `[M+Na]+` ion): confidence level **A-**.
-- Reference MS2: `[M+H]+`: FT01048_F07.S0377, FT01048_F07.S0412,
-  FT01048_F08.S0381, FT01048_F08.S0412; high confidence. `[M+K]+`:
-  FT01850_F07.S0378, FT01850_F08.S0382, FT01850_F08.S0414; low
-  confidence. `[M+H-H2O]+`: FT00681_F07.S0386, FT00681_F08.S0390; low
-  confidence. `[M+Na]+`: FT01572_F08.S0393, FT01572_F07.S0389; low confidence.
-  
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
-## Define the feature (ion) and MS2 spectra to insert
-fts <- data.frame(feature_id = c("FT01048", "FT01850", "FT00681", "FT01572"),
-                  confidence_level = c("A", "A-", "A-", "A-"))
+fts <- data.frame(feature_id = c("FT01848", "FT00679", "FT01046",
+                                 "FT01570", "FT03765"),
+                  confidence_level = c("B-", "B-", "B", "B-", "B-"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[c("FT01048_F07.S0377", "FT01048_F07.S0412", "FT01048_F08.S0381",
-                 "FT01048_F08.S0412", "FT01850_F07.S0378", "FT01850_F08.S0382",
-                 "FT01850_F08.S0414", "FT00681_F07.S0386", "FT00681_F08.S0390",
-                 "FT01572_F08.S0393", "FT01572_F07.S0389")]
-ms2$confidence <- c(rep("high", 4), rep("low", 7))
+ms2 <- std_ms2[match(c("FT01848_F07.S0378", "FT01848_F08.S0382",
+                       "FT01848_F08.S0414", "FT00679_F07.S0386",
+                       "FT00679_F08.S0390", "FT01046_F07.S0377",
+                       "FT01046_F07.S0412", "FT01046_F08.S0381",
+                       "FT01046_F08.S0412", "FT01570_F08.S0393",
+                       "FT01570_F07.S0389"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c(rep("low", 5), rep("high", 4), "low", "low")
 ```
 
-```{r, add-ions, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
-
 
 
 ### L-Kynurenine
@@ -1133,10 +921,6 @@ std <- "L-Kynurenine"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -1161,12 +945,9 @@ std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
-We find matches with high similarity for extracted MS2 spectra from FT02454
-(F07.S0465 and F08.S0478).
-
 ```{r mix02-serum-pos-l-kynurenine-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim)
 ```
 
 We repeat the same with MassBank obtaining similar results.
@@ -1191,40 +972,25 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-For completeness, we also perform a neutral loss spectra comparison with HMDB
-and MassBank.
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, hmdb_nl, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, mbank_nl,
-              sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
 #### Summary
 
-- FT02454 (RT = 156.6, `[M+H]+` ion) with confidence level **A**.
-- FT03386 (RT = 157, `[M+2Na-H]+` ion) with confidence **A-**.
-- FT02859 (RT = 156.6, `[M+Na]+` ion) with confidence **A-**.
-- FT02158 (RT = 156.8, `[M+H-NH3]+` ion): with confidence **A-**.
-- Reference MS2: `[M+H]+`: FT02454_F07.S0465, FT02454_F08.S0478; high
-  confidence. `[M+Na]+`: FT02859_F08.S0480; low confidence. `[M+2Na-H]+`:
-  FT03386_F07.S0469, FT03386_F08.S0482; low confidence.
-
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT02858", "FT02452", "FT02156",
+                                 "FT03385", "FT01657"),
+                  confidence_level = c("A-", "A", "A-", "A-", "A-"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[c("FT02454_F07.S0465", "FT02454_F08.S0478", "FT02859_F08.S0480",
-                 "FT03386_F07.S0469", "FT03386_F08.S0482")]
-ms2$confidence <- c(rep("high", 2), rep("low", 3))
+ms2 <- std_ms2[match(c("FT02858_F07.S0467", "FT02858_F08.S0480",
+                       "FT02452_F07.S0465", "FT02452_F08.S0478",
+                       "FT02156_F07.S0463", "FT02156_F08.S0475",
+                       "FT03385_F07.S0469", "FT03385_F08.S0482"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("low", "low", "high", "high", rep("low", 4))
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1237,24 +1003,9 @@ std <- "Lactic acid"
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
 
-We next plot the EIC for the assigned feature and visually inspect these.
-
-```{r, echo = FALSE}
-plot_eics(data, std, feature_table, "SP", std_ms2)
-```
-
-The cleaned MS2 spectra for the features matched to `r std` are shown below
-(peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks were removed).
-
-```{r mix02-serum-pos-lactic-acid-ms2, echo = FALSE}
-plot_spectra(std_ms2)
-```
-
 #### Summary
 
-- Inconclusive. Low/no signal.
-
+No signal.
 
 ### 1-Methylxanthine
 
@@ -1264,10 +1015,6 @@ std <- "1-Methylxanthine"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -1292,12 +1039,9 @@ std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
-The MS2 spectra from feature FT01720 (F07.S0197, F07.S0247, F08.S0196,
-F08.S0240, F08.S0266) and feature FT01719 (F07.S0273 and F08.S0266).
-
 ```{r mix02-serum-pos-1-methylxanthine-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.9, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
+                               tolerance = csp@tolerance, sim)
 ```
 
 ```{r mix02-serum-pos-1-methylxanthine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
@@ -1320,47 +1064,24 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-For completeness, we also perform a neutral loss spectra comparison with HMDB
-and MassBank.
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, hmdb_nl, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, mbank_nl,
-              sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
 #### Summary
 
-- FT01719 (RT = 81.6, `[M+H]+` ion) with confidence level **A**.
-- FT02107 (RT = 81, `[M+Na]+` ion) with confidence level **A-**.
-- FT02478 (RT = 80.8, `[M+2Na-H]+` ion) with confidence level **A-**.
-- Tricky situation since also FT01720 (`[M+H]+` ion has MS2 matching the
-  standard, but the retention time is 60 seconds). Maybe add both?
-- Reference MS2: `[M+H]+`: FT01719_F07.S0273, FT01719_F08.S0266; high
-  confidence. `[M+Na]+`: FT02107_F08.S0273; low confidence. `[M+2Na-H]+`:
-  FT02478_F08.S0285; low confidence.
-
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
-## Define the feature (ion) and MS2 spectra to insert
-fts <- data.frame(feature_id = c("FT02478"),
-                  confidence_level = c("A-"))
+fts <- data.frame(feature_id = c("FT01718", "FT02476", "FT02105", "FT01717"),
+                  confidence_level = c("A", "A-", "A-", "A"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[c("FT01719_F07.S0273", "FT01719_F08.S0266", "FT02107_F08.S0273",
-                 "FT02478_F08.S0285")]
-ms2$confidence <- c("high", "high", "low", "low")
+ms2 <- std_ms2[match(c("FT01718_F07.S0197", "FT01718_F07.S0247",
+                       "FT01718_F08.S0240", "FT01718_F08.S0266",
+                       "FT02476_F08.S0285", "FT02105_F08.S0273",
+                       "FT01717_F07.S0273", "FT01717_F08.S0266"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c(rep("high", 4), "low", "low", "high", "high")
 ```
 
-```{r, add-ions, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1372,10 +1093,6 @@ std <- "3-Nitrotyrosine"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -1399,11 +1116,10 @@ hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
 std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
-We have very good matches for F07.S0483 and F08.S0493 from feature FT02778.
 
 ```{r mix02-serum-pos-3-nitrotyrosine-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim)
 ```
 
 ```{r mix02-serum-pos-3-nitrotyrosine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
@@ -1426,36 +1142,23 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-For completeness, we also perform a neutral loss spectra comparison with HMDB
-and MassBank.
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, hmdb_nl, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, mbank_nl,
-              sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
 #### Summary
 
-- FT02778 (RT=156.8, `[M+H]+` ion) with confidence level **A**.
-- FT03724 (RT=156.9, `[M+2Na-H]+` ion) with confidence level **A-**.
-- Reference MS2: `[M+H]+`: FT02778_F07.S0483, FT02778_F08.S0493; high
-  confidence. `[M+2Na-H]+`: FT03724_F08.S0510; low confidence.
-  
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT01966", "FT02776", "FT03723"),
+                  confidence_level = c("A-", "A", "A"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[c("FT02778_F07.S0483", "FT02778_F08.S0493", "FT03724_F08.S0510")]
-ms2$confidence <- c("high", "high", "low")
+ms2 <- std_ms2[match(c("FT01966_F07.S0481", "FT01966_F08.S0509",
+                       "FT02776_F07.S0483", "FT02776_F08.S0493",
+                       "FT03723_F08.S0510"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("low", "low", "high", "high", "low")
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1467,10 +1170,6 @@ std <- "Phosphocreatine"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -1488,7 +1187,13 @@ plot_spectra(std_ms2)
 
 #### Summary
 
-- Inconclusive.
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT02494", "FT02493"),
+                  confidence_level = c("D"))
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
 
 
 ### UDP-glucuronate
@@ -1500,90 +1205,10 @@ std <- "UDP-glucuronate"
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
 
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
-
-We next plot the EIC for the assigned feature and visually inspect these.
-
-```{r, echo = FALSE}
-plot_eics(data, std, feature_table, "SP", std_ms2)
-```
-
-The only available MS2 spectrum (cleaned) for the features matched to `r std` is
-shown below (peaks with an intensity below 5% of the maximum peak and spectra
-with less than 2 peaks were removed).
-
-```{r mix02-serum-pos-udp-glucuronate-ms2, echo = FALSE}
-plot_spectra(std_ms2)
-```
-
-We next match the extracted MS2 spectra against the reference spectra for 
-`r std` from HMDB and MassBank.
-
-```{r mix02-serum-pos-udp-glucuronate-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
-hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
-std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
-```
-
-```{r mix02-serum-pos-udp-glucuronate-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
-std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
-```
-
-In both cases we don't find any match. In addition, some extracted
-spectra are associated to an ion different from `[M+H]+` we perform a neutral
-loss spectra comparison.
-
-```{r mix02-serum-pos-udp-glucuronate-ms2-hmdb_nl, echo = FALSE, fig.width = 5, fig.height = 5}
-std_hmdb_nl <- hmdb_nl[hmdb_nl$compound_id == hmdb_id]
-std_ms2_nl <- neutralLoss(std_ms2, nl_param)
-sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_hmdb_nl, csp_nl)
-```
-
-```{r mix02-serum-pos-udp-glucuronate-ms2-mbank_nl, echo = FALSE, fig.width = 5, fig.height = 5}
-std_mbank_nl <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey), nl = TRUE)
-std_ms2_nl <- neutralLoss(std_ms2, nl_param)
-sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_mbank_nl, csp_nl)
-```
-
-Still we don't find any good match.
-
-In addition we match (**all**) the MS2 spectra for the matched features against
-all spectra from HMDB or MassBank identifying reference spectra with a
-similarity larger than 0.7. The results (if any spectra matched) are shown in
-the two following tables.
-
-```{r, echo = FALSE, message = FALSE, results = "asis"}
-perform_match(std_ms2, hmdb, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp)
-```
-
-```{r, echo = FALSE, message = FALSE, results = "asis"}
-perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp)
-```
-
-For completeness, we also perform a neutral loss spectra comparison with HMDB
-and MassBank.
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, hmdb_nl, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, mbank_nl,
-              sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
 
 #### Summary
 
-- Inconclusive. Available MS2 spectra don't match and no features found for the
-  previously defined retention time.
-
+- no signal.
 
 ### Valine
 
@@ -1619,19 +1244,13 @@ sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 
 ```{r mix02-serum-pos-valine-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim)
 ```
-
-The spectra F07.S0550 and F08.S0573 from FT00670 matches reference spectra for
-`r std`.
 
 ```{r mix02-serum-pos-valine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
-
-We obtain similar matches (with similarity scores a bit lower) also for
-MassBank.
 
 In addition we match (**all**) the MS2 spectra for the matched features against
 all spectra from HMDB or MassBank identifying reference spectra with a
@@ -1650,20 +1269,21 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- FT00670 (RT= 166.9, `[M+H]+` ion) with confidence level **B**.
-- FT01634 (RT = 167.1, `[M+2Na-H]+` ion) with confidence level **B-**.
-- Reference MS2: `[M+H+]`: FT00670_F07.S0550, FT00670_F08.S0573; high
-  confidence. `[M+2Na-H]+`: FT01634_F08.S0568; low confidence.
-  
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT00668", "FT01632", "FT00137"),
+                  confidence_level = c("A", "A-", "A"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[c("FT00670_F07.S0550", "FT00670_F08.S0573", "FT01634_F08.S0568")]
-ms2$confidence <- c("high", "high", "low")
+ms2 <- std_ms2[match(c("FT00668_F07.S0550", "FT00668_F08.S0573",
+                       "FT01632_F08.S0568", "FT00137_F07.S0549",
+                       "FT00137_F08.S0572"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("high", "high", "low", "high", "high")
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1677,6 +1297,7 @@ POLARITY <- "NEG"
 data <- filterFile(data_all, which(data_all$polarity == POLARITY))
 hmdb <- hmdb_neg
 hmdb_nl <- hmdb_neg_nl
+csp@tolerance <- 0.01
 ```
 
 ```{r, preprocessing, eval = !file.exists(paste0(RDATA_PATH, "processed_data_", POLARITY, ".RData")), message = FALSE}
@@ -1723,7 +1344,7 @@ In the next sections we investigate for each standard which assignment would be
 the correct one or, for those for which no signal was detected, why that was the
 case.
 
-## Standards with matching features
+## Standards evaluation
 
 ### Ascorbic Acid
 
@@ -1733,10 +1354,6 @@ std <- "Ascorbic Acid"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
 
 We next plot the EICs for the assigned features and visually inspect these.
 
@@ -1761,19 +1378,15 @@ std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
-Some MS2 spectra match the reference, but with a low similarity score.
-
 ```{r mix02-serum-neg-ascorbic-acid-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.6, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
+                               tolerance = csp@tolerance, sim)
 ```
 
 ```{r mix02-serum-neg-ascorbic-acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
-
-No match was found for reference spectra from MassBank.
 
 In addition we match (**all**) the MS2 spectra for the matched features against
 all spectra from HMDB or MassBank identifying reference spectra with a
@@ -1790,26 +1403,26 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-
 #### Summary
 
-- FT0705 (RT = 126.5, `[M-H]-` ion) with confidence **C**.
-- Reference MS2: `[M-H]-`: FT0705_F15.S0305, FT0705_F15.S0342, FT0705_F16.S0347;
-  low confidence.
-
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT0705", "FT3302"),
+                  confidence_level = c("A", "A-"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[c("FT0705_F15.S0305", "FT0705_F15.S0342", "FT0705_F16.S0347")]
-ms2$confidence <- "low"
+ms2 <- std_ms2[match(c("FT0705_F15.S0305", "FT0705_F15.S0342",
+                       "FT0705_F16.S0347"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("high")
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
-### C4 Carnitine
+### C4 Carnitine (Isobutyryl-L-carnitine)
 
 ```{r, echo = FALSE}
 std <- "C4 Carnitine"
@@ -1836,19 +1449,31 @@ plot_spectra(std_ms2)
 
 #### Summary
 
-- Inconclusive.
-- FT1390 (RT = 34.54, `[M-H]-` ion) confidence level **D**. But only if we have
-  some other evidence (from pos, or water) too.
-
-The associated ion and MS2 spectra are added to the database.
+**We assign these features/ions to butyrylcarnitine**.
 
 ```{r, echo = FALSE}
-## Define the feature (ion) and MS2 spectra to insert
-fts <- data.frame(feature_id = c("FT1390"),
+fts <- data.frame(feature_id = c("FT1391"),
                   confidence_level = c("D"))
 ```
 
-```{r, add-ions, echo = FALSE}
+```{r, echo = FALSE, results = "asis"}
+stopifnot(all(fts$feature_id %in% rownames(feature_table)))
+fts$sample_matrix <- MATRIX
+fts$original_sample <- paste0("Std_", MIX_NAME)
+fts$ion_mz <- feature_table[fts$feature_id, "mzmed"]
+fts$ion_rt <- round(feature_table[fts$feature_id, "rtmed"])
+fts$ion_relative_intensity <- feature_table[fts$feature_id, "mean_high"]
+fts$ion_relative_intensity <- fts$ion_relative_intensity /
+    max(fts$ion_relative_intensity)
+fts$ion_adduct <- feature_table[fts$feature_id, "adduct"]
+fts$compound_id <- "HMDB0002013"
+fts$polarity <- POLARITY
+fts$note <- paste0("Ambiguous: standard is isobutyryl-L-carnitine (Sigma ",
+                   "Aldrich 51085), but matches butyrylcarnitine.")
+idb <- insertIon(idb, fts, addColumns = TRUE)
+pandoc.table(fts, split.tables = Inf, style = "rmarkdown")
+rm(fts)
+
 ```
 
 
@@ -1887,8 +1512,8 @@ The available spectrum F16.S0457 from FT0761 matches reference spectra from
 show the matches with similarity score higher than 0.3.
 
 ```{r mix02-serum-neg-fructose-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.3, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+tmp_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.2, ppm = csp@ppm,
+                               tolerance = csp@tolerance, sim)
 ```
 
 ```{r mix02-serum-neg-fructose-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
@@ -1913,28 +1538,21 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-
 #### Summary
 
-- FT0761 (RT = 151.5, `[M-H]-` ion) with confidence level **C**.
-- Other features of other ions exist, but their EIC looks different.
-- Reference MS2: `[M-H]-`: FT0761_F16.S0457; high confidence.
-
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
-## Define the feature (ion) and MS2 spectra to insert
 fts <- data.frame(feature_id = c("FT0761"),
                   confidence_level = c("C"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[c("FT0761_F16.S0457")]
-ms2$confidence <- "high"
+ms2 <- std_ms2[match(c("FT0761_F16.S0457"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("low")
 ```
 
-```{r, add-ions, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -1946,8 +1564,6 @@ std <- "Glycine"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-One a single feature has been assigned to this standard based on m/z matching.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -1965,8 +1581,13 @@ plot_spectra(std_ms2)
 
 #### Summary
 
-- FT0017 (RT=174, `[M-H]-` ion) with confidence level **D**. No MS2 spectra
-  available.
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT0355", "FT0017"),
+                  confidence_level = c("D"))
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
 
 
 ### cGMP
@@ -1977,10 +1598,6 @@ std <- "cGMP"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -2005,22 +1622,14 @@ std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
-All the spectra from FT3159 (F15.S0685, F15.S0721, F16.S0711, F16.S0742,
-F16.S0767) seem to match.
-
 ```{r mix02-serum-neg-cgmp-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim)
 ```
 
 ```{r mix02-serum-neg-cgmp-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
-```
-
-```{r mix02-serum-neg-cgmp-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.7, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -2040,21 +1649,22 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- FT3159 (RT = 219, `[M-H]-` ion) with confidence level **A**.
-- FT4018 (RT = 219, `[M+HCOO]-` ion) confidence level **A-**.
-- Reference MS2: `[M-H]-`: FT3159_F15.S0685, FT3159_F15.S0721, FT3159_F16.S0711,
-  FT3159_F16.S0742, FT3159_F16.S0767; high confidence.
-  
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT7760", "FT3159", "FT4017", "FT4409"),
+                  confidence_level = c("A-", "A", "A-", "A-"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[c("FT3159_F15.S0685", "FT3159_F15.S0721", "FT3159_F16.S0711",
-                 "FT3159_F16.S0742", "FT3159_F16.S0767")]
-ms2$confidence <- "low"
+ms2 <- std_ms2[match(c("FT7761_F16.S0716", "FT7761_F16.S0743",
+                       "FT3159_F15.S0685", "FT3159_F15.S0721",
+                       "FT3159_F16.S0711", "FT3159_F16.S0742",
+                       "FT3159_F16.S0767", "FT4409_F15.S0715"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("low", "low", rep("high", 5), "low")
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -2066,10 +1676,6 @@ std <- "Histidine"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -2098,7 +1704,7 @@ All the extracted spectra match reference spectra from HMDB.
 
 ```{r mix02-serum-neg-histidine-mirror-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim)
 ```
 
 We repeat the same with MassBank and we obtain similar results as shown below.
@@ -2106,11 +1712,6 @@ We repeat the same with MassBank and we obtain similar results as shown below.
 ```{r mix02-serum-neg-histidine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
-```
-
-```{r mix02-serum-neg-histidine-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.8, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
 ```
 
 In addition we match (**all**) the MS2 spectra for the matched features against
@@ -2130,27 +1731,19 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
 
 #### Summary
 
-- FT0466 (RT = 188.3, `[M-H]-` ion) with confidence level **A**.
-- FT0888 (RT = , `[M+Cl]-` ion) with confidence level **A-**.
-- FT0468 (RT = 224, `[M-H]-` ion) with confidence level **A**? Maybe that's just
-  some leftover from the column?
-- Reference MS2: `[M-H]-`: FT0466_F15.S0603, FT0466_F15.S0684; high confidence.
-
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
-## Define the feature (ion) and MS2 spectra to insert
-fts <- data.frame(feature_id = c("FT0466", "FT0888"),
-                  confidence_level = c("A", "A-"))
+fts <- data.frame(feature_id = c("FT2564", "FT0888", "FT0466"),
+                  confidence_level = c("A-", "A-", "A"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[c("FT0466_F15.S0603", "FT0466_F15.S0684")]
-ms2$confidence <- "high"
+ms2 <- std_ms2[match(c("FT0466_F15.S0603", "FT0466_F15.S0684"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("high")
 ```
 
-```{r, add-ions, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -2192,11 +1785,6 @@ std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
-```{r mix02-serum-neg-hydroxyproline-mirror-mbank, echo = TRUE, fig.cap = "Mirror plots"}
-tmp_sel <- plot_select_ms2(std_ms2, std_mbank, 0.8, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
-```
-
 In addition we match (**all**) the MS2 spectra for the matched features against
 all spectra from HMDB or MassBank identifying reference spectra with a
 similarity larger than 0.7. The results (if any spectra matched) are shown in
@@ -2212,16 +1800,22 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-
 #### Summary
 
-- Inconclusive.
-- FT0244 (RT = 176.2, `[M-H]-` ion) looks good, but the MS2 spectrum (which is
-  also measured **before** the actual compound) matches creatine. Need thus
-  evidence from other matrices/polarity to decide.
-- FT0591 (RT = 176.9, `[M+Cl]-` ion).
-- FT0720 (RT = 174.9, `[M+HCOO]-` ion).
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT0720", "FT1764", "FT0244", "FT0591"),
+                  confidence_level = c("D"))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT0244_F16.S0553"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("low")
+```
 
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
+```
 
 
 ### Hypoxanthine
@@ -2232,10 +1826,6 @@ std <- "Hypoxanthine"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -2260,21 +1850,15 @@ std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
-We find matches with high similarity involving F15.S0316 and F16.S0337 from
-FT0318.
-
 ```{r mix02-serum-neg-hypoxanthine-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim)
 ```
 
 ```{r mix02-serum-neg-hypoxanthine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
 std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
-
-With the MassBank comparison we find the similar matches but with very low
-similarity score.
 
 In addition we match (**all**) the MS2 spectra for the matched features against
 all spectra from HMDB or MassBank identifying reference spectra with a
@@ -2291,35 +1875,21 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-For completeness, we also perform a neutral loss spectra comparison with HMDB
-and MassBank.
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, hmdb_nl, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, mbank_nl,
-              sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
 #### Summary
 
-- FT0318 (RT = 123.6, `[M-H]-` ion) with confidence level **B**.
-- FT0786 (RT = 124.6, `[M+HCOO]-` ion) with confidence level **B-**.
-- Reference MS2: `[M-H]-`: FT0318_F15.S0316, FT0318_F16.S0337; high confidence.
-
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT0318", "FT0786"),
+                  confidence_level = c("B", "B-"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[c("FT0318_F15.S0316", "FT0318_F16.S0337")]
-ms2$confidence <- "high"
+ms2 <- std_ms2[match(c("FT0318_F15.S0316", "FT0318_F16.S0337"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("low")
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -2331,10 +1901,6 @@ std <- "L-Kynurenine"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -2364,117 +1930,6 @@ std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
 ```
 
-Since the available extracted MS2 spectrum is associated to an ion different
-from `[M-H]-` we also perform a neutral loss comparison against reference
-spectra from HMDB and MassBank.
-
-```{r mix02-serum-neg-l-kynurenine-ms2-hmdb_nl, echo = FALSE, fig.width = 5, fig.height = 5}
-std_hmdb_nl <- hmdb_nl[hmdb_nl$compound_id == hmdb_id]
-std_ms2_nl <- neutralLoss(std_ms2, nl_param)
-sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_hmdb_nl, csp_nl)
-```
-
-```{r mix02-serum-neg-l-kynurenine-ms2-mbank_nl, echo = FALSE, fig.width = 5, fig.height = 5}
-std_mbank_nl <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey), nl = TRUE)
-std_ms2_nl <- neutralLoss(std_ms2, nl_param)
-sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_mbank_nl, csp_nl)
-```
-
-Again we find matches(?) with very low score score. In addition we match
-(**all**) the MS2 spectra for the matched features against all spectra from
-HMDB or MassBank identifying reference spectra with a similarity larger than
-0.7. The results (if any spectra matched) are shown in the two following tables.
-
-```{r, echo = FALSE, message = FALSE, results = "asis"}
-perform_match(std_ms2, hmdb, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp)
-```
-
-```{r, echo = FALSE, message = FALSE, results = "asis"}
-perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp)
-```
-
-For completeness, we also perform a neutral loss spectra comparison with HMDB
-and MassBank.
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, hmdb_nl, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, mbank_nl,
-              sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
-```
-
-#### Summary
-
-- Inconclusive. Depends on results from water and positive polarity.
-- FT1099 (RT = 156, `[M-H]-` ion) with confidence level **D**.
-- FT1642 (RT = 150.5, `[M+HCOO]-` ion) with confidence level **D-**.
-- FT1525 (RT = 156.1, `[M+Cl]-` ion) with confidence level **D-**.
-
-
-### Lactic acid
-
-```{r, echo = FALSE}
-std <- "Lactic acid"
-```
-
-```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
-```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
-
-We next plot the EIC for the assigned feature and visually inspect these.
-
-```{r, echo = FALSE}
-plot_eics(data, std, feature_table, "SN", std_ms2)
-```
-
-The cleaned MS2 spectra for the features matched to `r std` are shown below
-(peaks with an intensity below 5% of the maximum peak and spectra with less
-than 2 peaks were removed).
-
-```{r mix02-serum-neg-lactic-acid-ms2, echo = FALSE}
-plot_spectra(std_ms2)
-```
-
-We next match the extracted MS2 spectra against the reference spectra for 
-`r std` from HMDB and MassBank.
-
-```{r mix02-serum-neg-lactic-acid-ms2-hmdb, echo = FALSE, fig.width = 5, fig.height = 5}
-hmdb_id <- std_dilution$HMDB[std_dilution$name == std]
-std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
-```
-
-```{r mix02-serum-neg-lactic-acid-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
-std_mbank <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey))
-sim <- plot_ms2_similarity_heatmap(std_ms2, std_mbank, csp)
-```
-
-In both cases we don't find any match. In addition, since all the
-extracted spectra are associated to ions different from `[M-H]-` we perform
-a neutral loss spectra comparison but we don't find additional matches as shown
-below.
-
-```{r mix02-serum-neg-lactic-acid-ms2-hmdb_nl, echo = FALSE, fig.width = 5, fig.height = 5}
-std_hmdb_nl <- hmdb_nl[hmdb_nl$compound_id == hmdb_id]
-std_ms2_nl <- neutralLoss(std_ms2, nl_param)
-sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_hmdb_nl, csp_nl)
-```
-
-```{r mix02-serum-neg-lactic-acid-ms2-mbank_nl, echo = FALSE, fig.width = 5, fig.height = 5}
-std_mbank_nl <- get_mbank(mbank, inchikey = unique(std_hmdb$inchikey), nl = TRUE)
-std_ms2_nl <- neutralLoss(std_ms2, nl_param)
-sim <- plot_ms2_similarity_heatmap(std_ms2_nl, std_mbank_nl, csp_nl)
-```
-
 In addition we match (**all**) the MS2 spectra for the matched features against
 all spectra from HMDB or MassBank identifying reference spectra with a
 similarity larger than 0.7. The results (if any spectra matched) are shown in
@@ -2490,25 +1945,36 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-For completeness, we also perform a neutral loss spectra comparison with HMDB
-and MassBank.
+#### Summary
 
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, hmdb_nl, sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT1643", "FT1099", "FT1970", "FT1526"),
+                  confidence_level = c("D"))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT1643_F16.S0425"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("low")
 ```
 
-```{r, echo = FALSE, message = FALSE, results = "asis", eval = ALL_NL_MATCH}
-perform_match(std_ms2_nl, mbank_nl,
-              sv = c("rtime", "target_name", "score"),
-              name = "target_name", param = csp_nl)
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
+```
+
+
+### Lactic acid
+
+```{r, echo = FALSE}
+std <- "Lactic acid"
+```
+
+```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
 
 #### Summary
 
-- Inconclusive. No signal at the expected RT.
-- FT0318 is in fact **Hypoxanthine**.
-
+- No signal.
 
 ### 1-Methylxanthine
 
@@ -2518,10 +1984,6 @@ std <- "1-Methylxanthine"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -2546,12 +2008,9 @@ std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
-The MS2 spectra from FT0585 (F15.S0210, F16.S0219, F16.S0251) seem to match
-reference spectra from `r std`.
-
 ```{r mix02-serum-neg-1-methylxanthine-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim)
 ```
 
 ```{r mix02-serum-neg-1-methylxanthine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
@@ -2573,24 +2032,23 @@ perform_match(std_ms2, hmdb, sv = c("rtime", "target_name", "score"),
 perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
-
-
+	
 #### Summary
 
-- FT0585 (RT = 71.6, `[M-H]-` ion) with confidence level **A**.
-- FT1146 (RT = 72.3, `[M+HCOO]-` ion) with confidence level **A-**.
-- Reference MS2: `[M-H]-`: FT0585_F15.S0210, FT0585_F16.S0219, FT0585_F16.S0251;
-  high confidence.
-
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT0585", "FT1146"),
+                  confidence_level = c("A", "A-"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[c("FT0585_F15.S0210", "FT0585_F16.S0219", "FT0585_F16.S0251")]
-ms2$confidence <- "high"
+ms2 <- std_ms2[match(c("FT0585_F15.S0210", "FT0585_F16.S0219",
+                       "FT0585_F16.S0251"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("high")
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
+
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -2602,10 +2060,6 @@ std <- "3-Nitrotyrosine"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Many features have been assigned to this standard based on
-m/z matching. Based on their retention times, these seem however to represent
-ions from different compounds.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -2630,12 +2084,9 @@ std_hmdb <- Spectra(cdb, filter = ~ compound_id == hmdb_id)
 sim <- plot_ms2_similarity_heatmap(std_ms2, std_hmdb, csp)
 ```
 
-We find good matches for spectra from FT1305 (especially F15.S0425 but also
-F16.S0459).
-
 ```{r mix02-serum-neg-3-nitrotyrosine-hmdb, echo = TRUE, fig.cap = "Mirror plots"}
 std_ms2_sel <- plot_select_ms2(std_ms2, std_hmdb, 0.7, ppm = csp@ppm,
-                               tolerance = csp@tolerance)
+                               tolerance = csp@tolerance, sim)
 ```
 
 ```{r mix02-serum-neg-3-nitrotyrosine-ms2-mbank, echo = FALSE, fig.width = 5, fig.height = 5}
@@ -2658,28 +2109,22 @@ perform_match(std_ms2, mbank, sv = c("rtime", "target_name", "score"),
               name = "target_name", param = csp)
 ```
 
-
 #### Summary
 
-- FT1305 (RT = 156.1, `[M-H]-` ion) with confidence **A**.
-- FT1761 (RT = 157.4, `[M+Cl]-` ion) with confidence **A-**.
-- Reference MS2: `[M-H]-`: FT1305_F15.S0425, FT1305_F16.S0459; high confidence.
-
-The associated ion and MS2 spectra are added to the database.
-
 ```{r, echo = FALSE}
-## Define the feature (ion) and MS2 spectra to insert
-fts <- data.frame(feature_id = c("FT1305", "FT1761"),
-                  confidence_level = c("A", "A-"))
+fts <- data.frame(feature_id = c("FT2262", "FT1305", "FT5047", "FT1762"),
+                  confidence_level = c("A-", "A", "A-", "A-"))
 ## Get MS2 spectra:
-ms2 <- std_ms2[c("FT1305_F15.S0425", "FT1305_F16.S0459")]
-ms2$confidence <- "high"
+ms2 <- std_ms2[match(c("FT2262_F15.S0428", "FT2262_F16.S0428",
+                       "FT1305_F15.S0425", "FT1305_F16.S0459"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("low", "low", "high", "high")
 ```
 
-```{r, add-ions, echo = FALSE}
+```{r, add-ions, echo = FALSE, results = "asis"}
 ```
 
-```{r, add-ms2-spectra, echo = FALSE}
+```{r, add-ms2-spectra, echo = FALSE, results = "asis"}
 ```
 
 
@@ -2691,8 +2136,6 @@ std <- "Phosphocreatine"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Only a single feature was found.
 
 We next plot the EIC for the assigned feature and visually inspect these.
 
@@ -2710,8 +2153,13 @@ plot_spectra(std_ms2)
 
 #### Summary
 
-- Inconclusive? Low signal.
-- FT1136 (RT = 206, `[M-H]-` ion) with confidence **D**.
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT1136"),
+                  confidence_level = c("D"))
+```
+
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
 
 
 ### UDP-glucuronate
@@ -2723,26 +2171,9 @@ std <- "UDP-glucuronate"
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
 
-A single feature was found, with low intensity and not at the expected RT.
-
-We next plot the EIC for the assigned feature and visually inspect these.
-
-```{r, echo = FALSE}
-plot_eics(data, std, feature_table, "SN", std_ms2)
-```
-
-The only available MS2 spectrum (cleaned) for the features matched to `r std` is
-shown below (peaks with an intensity below 5% of the maximum peak and spectra
-with less than 2 peaks were removed).
-
-```{r mix02-serum-neg-udp-glucuronate-ms2, echo = FALSE}
-plot_spectra(std_ms2)
-```
-
 #### Summary
 
-- Inconclusive. Signal of the only feature is low, and also no large difference
-  between low and high concentration.
+- No signal.
 
 
 ### Valine
@@ -2753,9 +2184,6 @@ std <- "Valine"
 
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
-
-Two features with about the same retention time were found.
-We next plot the EIC for the assigned feature and visually inspect these.
 
 ```{r, echo = FALSE}
 plot_eics(data, std, feature_table, "SN", std_ms2)
@@ -2771,17 +2199,23 @@ plot_spectra(std_ms2)
 
 #### Summary
 
-- FT0152 (RT = 166.7, `[M-H]-` ion) with confidence **D**.
-- FT0542 (RT = 166.8, `[M+HCOO]-` ion) with confidence **D-**.
+```{r, echo = FALSE}
+fts <- data.frame(feature_id = c("FT0827", "FT0152"),
+                  confidence_level = c("D"))
+```
 
+```{r, add-ions, echo = FALSE, results = "asis"}
+```
 
-## Standards without any matching feature
 
 # Summary on the ion database
 
 Summarizing the content that was added to the `IonDb`.
 
 ```{r, iondb-summary, echo = FALSE, results = "asis"}
+```
+
+```{r no-ion-table, echo = FALSE, results = "asis"}
 ```
 
 # Session information
