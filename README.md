@@ -39,7 +39,7 @@ created/measurable from each compound. In the workflow we first:
 
 - [X] mix 01. 2024-12. Created by Andrea, checked by Jo.
 - [X] mix 02. 2024-12. Created by Andrea, checked by Jo.
-- [ ] mix 03.
+- [X] mix 03. 2025-01. Created by Andrea, checked by Jo.
 - [ ] mix 04.
 - [ ] mix 05.
 - [ ] mix 06.
