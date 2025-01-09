@@ -306,16 +306,12 @@ std <- "3-Chloro-5-(trifluoromethyl)-2-pyrindol"
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
 
-Many features have been assigned to this standard based on m/z matching. Based
-on their retention times, these seem however to represent ions from different
-compounds.
-
 We next plot the EIC for the assigned feature and visually inspect these.
 
 EICs (check D?):
 
 ```{r, echo = FALSE}
-plot_eics(data, std, feature_table, "WP", std_ms2)
+plot_eics(data, std, feature_table, "SP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -334,17 +330,22 @@ plot_spectra(std_ms2)
 ```{r, echo = FALSE}
 fts <- data.frame(feature_id = c("FT02079"),
                   confidence_level = c("D"))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT02079_F07.S0101", "FT02079_F08.S0099"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("low")
 ```
 
-```{r, add-ions-3-Chloro-5-(trifluoromethyl)-2-pyrindol, echo = FALSE, results = "asis"}
+```{r, echo = FALSE, results = "asis"}
 #' make new entry std
 temp_mass <- calculateMass("C6H3ClF3NO")
-cmp <- data.frame(compound_id = "CID725436",     #PubChem CID
-                  name = "3-Chloro-5-(trifluoromethyl)-2-pyrindol", 
-                  inchi = "InChI=1S/C6H3ClF3NO/c7-4-1-3(6(8,9)10)2-11-5(4)12/h1-2H,(H,11,12)", 
-                  inchikey = "AJPOOWWMZOPUCG-UHFFFAOYSA-N", 
-                  formula = "C6H3ClF3NO", 
-                  exactmass = temp_mass)
+cmp <- data.frame(
+    compound_id = "CID725436",     #PubChem CID
+    name = "3-Chloro-5-(trifluoromethyl)-2-pyrindol", 
+    inchi = "InChI=1S/C6H3ClF3NO/c7-4-1-3(6(8,9)10)2-11-5(4)12/h1-2H,(H,11,12)", 
+    inchikey = "AJPOOWWMZOPUCG-UHFFFAOYSA-N", 
+    formula = "C6H3ClF3NO", 
+    exactmass = temp_mass)
 
 #' if no hmdb_id available, add manual with pubchem id instead
 if (!any(compounds(idb, "compound_id")[, 1L] == cmp$compound_id)) {
@@ -367,6 +368,29 @@ pandoc.table(fts, split.tables = Inf, style = "rmarkdown")
 rm(fts) 
 ```
 
+```{r, echo = FALSE, results = "asis"}
+ms2$original_spectrum_id <- spectraNames(ms2)
+ms2$compound_id <- "CID725436"  #no hmdb id, but CID
+ms2$original_file <- basename(ms2$dataOrigin)
+ms2$collisionEnergy <- 20
+ms2$collisionEnergy[grep("CE30", ms2$original_file)] <- 30
+ms2$predicted <- FALSE
+ms2$instrument_type <- "LC-ESI-QTOF"
+ms2$instrument <- "Sciex TripleTOF 5600+"
+ms2$adduct <- feature_table[ms2$feature_id, "adduct"]
+idb <- insertSpectra(
+    idb, ms2, columns = c("original_spectrum_id", "compound_id", "polarity",
+                          "collisionEnergy", "predicted", "instrument_type",
+                          "instrument", "precursorMz", "adduct",
+                          "original_file", "confidence", "acquisitionNum",
+                          "rtime"))
+spectraData(ms2, c("rtime", "original_file", "adduct", "confidence")) |>
+    as.data.frame() |>
+    pandoc.table(style = "rmarkdown", split.tables = Inf)
+rm(ms2)
+
+```
+
 
 ### 3,5-Dichloro-2-hydroxypyridine
 
@@ -377,16 +401,12 @@ std <- "3,5-Dichloro-2-hydroxypyridine"
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
 
-Many features have been assigned to this standard based on m/z matching. Based
-on their retention times, these seem however to represent ions from different
-compounds.
-
 We next plot the EIC for the assigned feature and visually inspect these.
 
 EICs (check D?):
 
 ```{r, echo = FALSE}
-plot_eics(data, std, feature_table, "WP", std_ms2)
+plot_eics(data, std, feature_table, "SP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -408,15 +428,16 @@ fts <- data.frame(feature_id = c("FT01582"),
                   confidence_level = c("D"))
 ```
 
-```{r, add-ions-3,5-Dichloro-2-hydroxypyridine, echo = FALSE, results = "asis"}
+```{r, echo = FALSE, results = "asis"}
 #' make new entry std
 temp_mass <- calculateMass("C5H3Cl2NO")
-cmp <- data.frame(compound_id = "CID79496",     #PubChem CID
-                  name = "3,5-Dichloro-2-hydroxypyridine", 
-                  inchi = "InChI=1S/C5H3Cl2NO/c6-3-1-4(7)5(9)8-2-3/h1-2H,(H,8,9)", 
-                  inchikey = "ZICOPWJJZSJEDL-UHFFFAOYSA-N", 
-                  formula = "C5H3Cl2NO", 
-                  exactmass = temp_mass)
+cmp <- data.frame(
+    compound_id = "CID79496",     #PubChem CID
+    name = "3,5-Dichloro-2-hydroxypyridine", 
+    inchi = "InChI=1S/C5H3Cl2NO/c6-3-1-4(7)5(9)8-2-3/h1-2H,(H,8,9)", 
+    inchikey = "ZICOPWJJZSJEDL-UHFFFAOYSA-N", 
+    formula = "C5H3Cl2NO", 
+    exactmass = temp_mass)
 
 #' if no hmdb_id available, add manual with pubchem id instead
 if (!any(compounds(idb, "compound_id")[, 1L] == cmp$compound_id)) {
@@ -449,16 +470,12 @@ std <- "3,5,6-Trichloro-2-pyrinidol"
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
 
-Many features have been assigned to this standard based on m/z matching. Based
-on their retention times, these seem however to represent ions from different
-compounds.
-
 We next plot the EIC for the assigned feature and visually inspect these.
 
 EICs (check D?):
 
 ```{r, echo = FALSE}
-plot_eics(data, std, feature_table, "WP", std_ms2)
+plot_eics(data, std, feature_table, "SP", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -471,24 +488,25 @@ plot_spectra(std_ms2)
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- FT02077 (RT = 32.28, 1.602 ppm, `[M+H]+` ion) with confidence **D**
-
-
 ```{r, echo = FALSE}
 fts <- data.frame(feature_id = c("FT02077"),
                   confidence_level = c("D"))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT02077_F07.S0100", "FT02077_F08.S0098"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("low")
 ```
 
-```{r, add-ions-3,5,6-Trichloro-2-pyrinidol, echo = FALSE, results = "asis"}
+```{r, echo = FALSE, results = "asis"}
 #make new entry std
 temp_mass <- calculateMass("C5H2Cl3NO")
-cmp <- data.frame(compound_id = "CID23017",     #PubChem CID
-                  name = "3,5,6-Trichloro-2-pyrinidol", 
-                  inchi = "InChI=1S/C5H2Cl3NO/c6-2-1-3(7)5(10)9-4(2)8/h1H,(H,9,10)", 
-                  inchikey = "WCYYAQFQZQEUEN-UHFFFAOYSA-N", 
-                  formula = "C5H2Cl3NO", 
-                  exactmass = temp_mass)                  
+cmp <- data.frame(
+    compound_id = "CID23017",     #PubChem CID
+    name = "3,5,6-Trichloro-2-pyrinidol", 
+    inchi = "InChI=1S/C5H2Cl3NO/c6-2-1-3(7)5(10)9-4(2)8/h1H,(H,9,10)", 
+    inchikey = "WCYYAQFQZQEUEN-UHFFFAOYSA-N", 
+    formula = "C5H2Cl3NO", 
+    exactmass = temp_mass)                  
 
 #' if no hmdb_id available, add manual with pubchem id instead
 if (!any(compounds(idb, "compound_id")[, 1L] == cmp$compound_id)) {
@@ -511,6 +529,29 @@ pandoc.table(fts, split.tables = Inf, style = "rmarkdown")
 rm(fts) 
 ```
 
+```{r, echo = FALSE, results = "asis"}
+ms2$original_spectrum_id <- spectraNames(ms2)
+ms2$compound_id <- "CID23017"  #no hmdb id, but CID
+ms2$original_file <- basename(ms2$dataOrigin)
+ms2$collisionEnergy <- 20
+ms2$collisionEnergy[grep("CE30", ms2$original_file)] <- 30
+ms2$predicted <- FALSE
+ms2$instrument_type <- "LC-ESI-QTOF"
+ms2$instrument <- "Sciex TripleTOF 5600+"
+ms2$adduct <- feature_table[ms2$feature_id, "adduct"]
+idb <- insertSpectra(
+    idb, ms2, columns = c("original_spectrum_id", "compound_id", "polarity",
+                          "collisionEnergy", "predicted", "instrument_type",
+                          "instrument", "precursorMz", "adduct",
+                          "original_file", "confidence", "acquisitionNum",
+                          "rtime"))
+spectraData(ms2, c("rtime", "original_file", "adduct", "confidence")) |>
+    as.data.frame() |>
+    pandoc.table(style = "rmarkdown", split.tables = Inf)
+rm(ms2)
+
+```
+
 
 # Serum, negative polarity
 
@@ -522,6 +563,7 @@ POLARITY <- "NEG"
 data <- filterFile(data_all, which(data_all$polarity == POLARITY))
 hmdb <- hmdb_neg
 hmdb_nl <- hmdb_neg_nl
+csp@tolerance <- 0.01
 ```
 
 ```{r, preprocessing, eval = !file.exists(paste0(RDATA_PATH, "processed_data_", POLARITY, ".RData")), message = FALSE}
@@ -614,16 +656,12 @@ std <- "3-Chloro-5-(trifluoromethyl)-2-pyrindol"
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
 
-Many features have been assigned to this standard based on m/z matching. Based
-on their retention times, these seem however to represent ions from different
-compounds.
-
 We next plot the EIC for the assigned feature and visually inspect these.
 
 EICs (check D?):
 
 ```{r, echo = FALSE}
-plot_eics(data, std, feature_table, "WP", std_ms2)
+plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -637,34 +675,17 @@ plot_spectra(std_ms2)
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- FT0839 (RT = 38.5, 19.8 ppm, `[M-H]-` ion): nice peak but high ppm so 
-  probably other compound or **D**, high ppm? 
-- FT1354 (RT = 32.8, 16.83 ppm, `[M+CHO2]-` ion): high ppm so probably other 
-  compound or **D**, high ppm?
-- FT3231 (RT = 32.38, 15.37 ppm, `[2M-H]-` ion): nice peak but high ppm so 
-  probably other compound or **D**, high ppm?
-
 ```{r, echo = FALSE}
-fts <- data.frame(feature_id = c("FT0839", 'FT1354', 'FT3231'),
-                  confidence_level = c("D", 'D', 'D'))
+fts <- data.frame(feature_id = c("FT0839", "FT1354", "FT3231"),
+                  confidence_level = c("D", "D", "D"))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT0839_F15.S0104", "FT0839_F16.S0101"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("high")
+
 ```
 
-```{r, add-ions-3-Chloro-5-(trifluoromethyl)-2-pyrindol-neg, echo = FALSE, results = "asis"}
-#' make new entry std
-temp_mass <- calculateMass("C6H3ClF3NO")
-cmp <- data.frame(compound_id = "CID725436",     #PubChem CID
-                  name = "3-Chloro-5-(trifluoromethyl)-2-pyrindol", 
-                  inchi = "InChI=1S/C6H3ClF3NO/c7-4-1-3(6(8,9)10)2-11-5(4)12/h1-2H,(H,11,12)", 
-                  inchikey = "AJPOOWWMZOPUCG-UHFFFAOYSA-N", 
-                  formula = "C6H3ClF3NO", 
-                  exactmass = temp_mass)
-
-#' if no hmdb_id available, add manual with pubchem id instead
-if (!any(compounds(idb, "compound_id")[, 1L] == cmp$compound_id)) {
-    idb <- insertCompound(idb, compounds = cmp, addColumns = TRUE) 
-}
-
+```{r, echo = FALSE, results = "asis"}
 stopifnot(all(fts$feature_id %in% rownames(feature_table)))
 fts$sample_matrix <- MATRIX
 fts$original_sample <- paste0("Std_", MIX_NAME)
@@ -681,6 +702,29 @@ pandoc.table(fts, split.tables = Inf, style = "rmarkdown")
 rm(fts) 
 ```
 
+```{r, echo = FALSE, results = "asis"}
+ms2$original_spectrum_id <- spectraNames(ms2)
+ms2$compound_id <- "CID725436"  #no hmdb id, but CID
+ms2$original_file <- basename(ms2$dataOrigin)
+ms2$collisionEnergy <- 20
+ms2$collisionEnergy[grep("CE30", ms2$original_file)] <- 30
+ms2$predicted <- FALSE
+ms2$instrument_type <- "LC-ESI-QTOF"
+ms2$instrument <- "Sciex TripleTOF 5600+"
+ms2$adduct <- feature_table[ms2$feature_id, "adduct"]
+idb <- insertSpectra(
+    idb, ms2, columns = c("original_spectrum_id", "compound_id", "polarity",
+                          "collisionEnergy", "predicted", "instrument_type",
+                          "instrument", "precursorMz", "adduct",
+                          "original_file", "confidence", "acquisitionNum",
+                          "rtime"))
+spectraData(ms2, c("rtime", "original_file", "adduct", "confidence")) |>
+    as.data.frame() |>
+    pandoc.table(style = "rmarkdown", split.tables = Inf)
+rm(ms2)
+
+```
+
 
 ### 3,5-Dichloro-2-hydroxypyridine
 
@@ -691,16 +735,12 @@ std <- "3,5-Dichloro-2-hydroxypyridine"
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
 
-Many features have been assigned to this standard based on m/z matching. Based
-on their retention times, these seem however to represent ions from different
-compounds.
-
 We next plot the EIC for the assigned feature and visually inspect these.
 
 EICs (check D?):
 
 ```{r, echo = FALSE}
-plot_eics(data, std, feature_table, "WP", std_ms2)
+plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -714,32 +754,18 @@ plot_spectra(std_ms2)
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FT0464 (RT = 38.62, 21.26 ppm, `[M-H]-` ion) with confidence **D**, high ppm? 
-- FT1009 (RT = 35.93, 19.85 ppm, `[M+CHO2]-` ion) with confidence **D**, high 
-  ppm? 
 
 ```{r, echo = FALSE}
-fts <- data.frame(feature_id = c("FT0464", 'FT1009'),
-                  confidence_level = c("D", 'D'))
+fts <- data.frame(feature_id = c("FT0464", "FT1009"),
+                  confidence_level = c("D", "D"))
+## Get MS2 spectra:
+ms2 <- std_ms2[match(c("FT0464_F15.S0140"),
+                     spectraNames(std_ms2))]
+ms2$confidence <- c("high")
+
 ```
 
-```{r, add-ions-3,5-Dichloro-2-hydroxypyridine-neg, echo = FALSE, results = "asis"}
-#' make new entry std
-temp_mass <- calculateMass("C5H3Cl2NO")
-cmp <- data.frame(compound_id = "CID79496",     #PubChem CID
-                  name = "3,5-Dichloro-2-hydroxypyridine", 
-                  inchi = "InChI=1S/C5H3Cl2NO/c6-3-1-4(7)5(9)8-2-3/h1-2H,(H,8,9)", 
-                  inchikey = "ZICOPWJJZSJEDL-UHFFFAOYSA-N", 
-                  formula = "C5H3Cl2NO", 
-                  exactmass = temp_mass)
-
-#' if no hmdb_id available, add manual with pubchem id instead
-if (!any(compounds(idb, "compound_id")[, 1L] == cmp$compound_id)) {
-    idb <- insertCompound(idb, compounds = cmp, addColumns = TRUE) 
-}
-
+```{r, echo = FALSE, results = "asis"}
 stopifnot(all(fts$feature_id %in% rownames(feature_table)))
 fts$sample_matrix <- MATRIX
 fts$original_sample <- paste0("Std_", MIX_NAME)
@@ -756,6 +782,29 @@ pandoc.table(fts, split.tables = Inf, style = "rmarkdown")
 rm(fts) 
 ```
 
+```{r, echo = FALSE, results = "asis"}
+ms2$original_spectrum_id <- spectraNames(ms2)
+ms2$compound_id <- "CID79496"  #no hmdb id, but CID
+ms2$original_file <- basename(ms2$dataOrigin)
+ms2$collisionEnergy <- 20
+ms2$collisionEnergy[grep("CE30", ms2$original_file)] <- 30
+ms2$predicted <- FALSE
+ms2$instrument_type <- "LC-ESI-QTOF"
+ms2$instrument <- "Sciex TripleTOF 5600+"
+ms2$adduct <- feature_table[ms2$feature_id, "adduct"]
+idb <- insertSpectra(
+    idb, ms2, columns = c("original_spectrum_id", "compound_id", "polarity",
+                          "collisionEnergy", "predicted", "instrument_type",
+                          "instrument", "precursorMz", "adduct",
+                          "original_file", "confidence", "acquisitionNum",
+                          "rtime"))
+spectraData(ms2, c("rtime", "original_file", "adduct", "confidence")) |>
+    as.data.frame() |>
+    pandoc.table(style = "rmarkdown", split.tables = Inf)
+rm(ms2)
+
+```
+
 
 ### 3,5,6-Trichloro-2-pyrinidol
 
@@ -766,16 +815,12 @@ std <- "3,5,6-Trichloro-2-pyrinidol"
 ```{r, table-feature-matches, results = "asis", echo = FALSE, message = FALSE}
 ```
 
-Many features have been assigned to this standard based on m/z matching. Based
-on their retention times, these seem however to represent ions from different
-compounds.
-
 We next plot the EIC for the assigned feature and visually inspect these.
 
 EICs (check D?):
 
 ```{r, echo = FALSE}
-plot_eics(data, std, feature_table, "WP", std_ms2)
+plot_eics(data, std, feature_table, "SN", std_ms2)
 ```
 
 The cleaned MS2 spectra for the features matched to `r std` are shown below
@@ -789,32 +834,13 @@ plot_spectra(std_ms2)
 
 #### Summary
 
-- No MS2 reference spectra available in HMDB and MassBank.
-- No MS2 spectra available.
-- FT0832 (RT = 31.13, 19.82 ppm, `[M-H]-` ion) with confidence **D**, high ppm?
-- Results previous (wo rt filter):
-  - FT0833 had 4 spectra, but very high rt dev (RT +- 60s) so ignore
 
 ```{r, echo = FALSE}
 fts <- data.frame(feature_id = c("FT0832"),
                   confidence_level = c("D"))
 ```
 
-```{r, add-ions-3,5,6-Trichloro-2-pyrinidol-neg, echo = FALSE, results = "asis"}
-#make new entry std
-temp_mass <- calculateMass("C5H2Cl3NO")
-cmp <- data.frame(compound_id = "CID23017",     #PubChem CID
-                  name = "3,5,6-Trichloro-2-pyrinidol", 
-                  inchi = "InChI=1S/C5H2Cl3NO/c6-2-1-3(7)5(10)9-4(2)8/h1H,(H,9,10)", 
-                  inchikey = "WCYYAQFQZQEUEN-UHFFFAOYSA-N", 
-                  formula = "C5H2Cl3NO", 
-                  exactmass = temp_mass)                  
-
-#' if no hmdb_id available, add manual with pubchem id instead
-if (!any(compounds(idb, "compound_id")[, 1L] == cmp$compound_id)) {
-    idb <- insertCompound(idb, compounds = cmp, addColumns = TRUE) 
-}
-
+```{r, echo = FALSE, results = "asis"}
 stopifnot(all(fts$feature_id %in% rownames(feature_table)))
 fts$sample_matrix <- MATRIX
 fts$original_sample <- paste0("Std_", MIX_NAME)
@@ -831,13 +857,15 @@ pandoc.table(fts, split.tables = Inf, style = "rmarkdown")
 rm(fts) 
 ```
 
-
 # Summary on the ion database
 
 Summarizing the content that was added to the `IonDb`. This chunck is edited, to
 display the found stds that have no hmdb-id.
 
 ```{r, iondb-summary, echo = FALSE, results = "asis"}
+```
+
+```{r no-ion-table, echo = FALSE, results = "asis"}
 ```
 
 # Session information

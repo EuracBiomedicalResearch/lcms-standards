@@ -10,9 +10,13 @@ manually by Mar Garcia-Alloy. In the *new* workflow we aim to use the `xcms` and
 created/measurable from each compound. In the workflow we first:
 
 - Identify chromatographic peaks in each file for one *standard mix*.
-- Plot each chromatographic peak.
 - Perform correspondence analysis to group each chromatographic peak to a
   feature.
+- Identify features with matching *m/z* and approximate retention time.
+- Plot and (visually) inspect their EICs.
+- Extract their MS2 spectra and match them against HMDB and MassBank *reference*
+  spectra.
+- For validated features, add their information to the *ion database*.
 
 
 ## Analysis workflow files
@@ -33,11 +37,11 @@ created/measurable from each compound. In the workflow we first:
 
 #### Standards spiked with QC Pool samples
 
-- [ ] mix 01.
-- [ ] mix 02.
-- [ ] mix 03.
-- [ ] mix 04.
-- [ ] mix 05.
+- [X] mix 01. 2024-12. Created by Andrea, checked by Jo.
+- [X] mix 02. 2024-12. Created by Andrea, checked by Jo.
+- [X] mix 03. 2025-01. Created by Andrea, checked by Jo.
+- [X] mix 04. 2025-01. Created by Andrea, checked by Jo.
+- [X] mix 05. 2025-01. Created by Andrea, checked by Jo.
 - [ ] mix 06.
 - [ ] mix 07.
 - [ ] mix 08.
@@ -51,8 +55,8 @@ created/measurable from each compound. In the workflow we first:
 - [X] mix 16. 2024-12. Created by Marilyn, checked by Jo.
 - [X] mix 17. 2024-12. Created by Marilyn, checked by Jo.
 - [X] mix 18. 2024-12. Created by Marilyn, checked by Jo.
-- [ ] mix 19.
-- [ ] mix 20.
+- [X] mix 19. 2024-12. Created by Marilyn, checked by Jo.
+- [X] mix 20. 2024-12. Created by Marilyn, checked by Jo.
 
 
 ## Data tables
