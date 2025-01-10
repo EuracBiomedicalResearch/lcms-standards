@@ -142,7 +142,7 @@ all_ms2 <- applyProcessing(all_ms2)
 
 ## ---- compare-spectra-param ----
 ## Settings for matchSpectra
-csp <- CompareSpectraParam(ppm = 40, requirePrecursor = FALSE)
+csp <- CompareSpectraParam(ppm = 50, requirePrecursor = FALSE)
 ## Settings for matchSpectra with neutral loss spectra
 csp_nl <- CompareSpectraParam(ppm = 0, tolerance = 0.1,
                               requirePrecursor = FALSE)
