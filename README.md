@@ -42,9 +42,9 @@ created/measurable from each compound. In the workflow we first:
 - [X] mix 03. 2025-01. Created by Andrea, checked by Jo.
 - [X] mix 04. 2025-01. Created by Andrea, checked by Jo.
 - [X] mix 05. 2025-01. Created by Andrea, checked by Jo.
-- [ ] mix 06.
-- [ ] mix 07.
-- [ ] mix 08.
+- [X] mix 06. 2025-01. Created by Andrea, checked by Jo.
+- [X] mix 07. 2025-01. Created by Andrea, checked by Jo.
+- [X] mix 08. 2025-01. Created by Andrea, checked by Jo.
 - [X] mix 09. 2024-11. Created by Andrea, checked by Jo.
 - [X] mix 10. 2024-11. Created by Andrea, checked by Jo.
 - [X] mix 11. 2024-11. Created by Andrea, checked by Jo.
@@ -144,4 +144,3 @@ The code [RT_matrix_effect](std_serum/RT_matrix_effect.Rmd) plots all
 the EICs present in the sample (ie, IS or MIX 01-20) in the folder `images`.  
 In that folder there is also the code [`MS2_plot`](std_serum/MS2_plot.Rmd) 
 to search a MS2 spectrum for a specific mz-rt value
-
