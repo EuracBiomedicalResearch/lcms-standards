@@ -123,7 +123,8 @@ if (!file.exists(fl)) {
     if (length(ids)) idb <- deleteIon(idb, ids = ids)
     ## Delete any MS2 spectra from the current files
     all_sps <- Spectra(idb)
-    ids <- all_sps$spectrum_id[all_sps$original_file %in% std_files$mzML]
+    ids <- all_sps$spectrum_id[basename(all_sps$original_file) %in%
+                               basename(std_files$mzML)]
     if (length(ids)) idb <- deleteSpectra(idb, ids = ids)
 }
 
