@@ -1,5 +1,7 @@
 # Measurement of standards in different LC/MS configurations
 
+**version 1.0.0.0** (2025-01-15)
+
 This repository contains measurement of sets of standards on LC-MS systems with
 specific configurations. The aim is to provide approximate retention times 
 (RTs) and ions for the standard compounds in the respective setups.
@@ -18,6 +20,45 @@ created/measurable from each compound. In the workflow we first:
   spectra.
 - For validated features, add their information to the *ion database*.
 
+## Annotation database
+
+The annotation results of the standards is provided in the SQLite database
+*IonDb.IfB_HILIC.1.0.0.0.sqlite*. This database is in the *IonDb* format of the
+[CompoundDb](https://github.com/RforMassSpectrometry/CompoundDb) Bioconductor
+package and it can be easily integrated into annotation workflows using the
+[MetaboAnnotation](https://github.com/RforMassSpectrometry/MetaboAnnotation)
+Bioconductor package. The database provides retention times and *m/z* values for
+ions of the analyzed standards in database table columns *ion_rt* and
+*ion_exactmz*.
+
+Below is an example how the database could be loaded and how relevant
+information for annotation with *MetaboAnnotation* could be extracted.
+
+```
+library(CompoundDb)
+library(MetaboAnnotation)
+
+#' Load the data as an IonDb database
+idb <- IonDb("IonDb.IfB_HILIC.1.0.0.0.sqlite")
+
+#' Extract ion information from the database
+std_ions <- ions(idb, 
+                 columns = c("compound_id", "name", "ion_adduct", 
+				             "ion_rt", "ion_exactmz", "polarity"))
+
+#' To annotate compounds for positive polarity
+std_ions <- std_ions[std_ions$polarity == "POS", ]
+
+#' Assuming lcms_features is a data.frame with data for LC-MS features
+#' from an LC-MS analysis, e.g. using the xcms package. The columns
+#' mzmed and rtmed in that table would contain the m/z and retention
+#' time values for each feature. Annotation could then be done for
+#' example with
+ann <- matchValues(
+    lcms_features, std_ions, MzRtParam(ppm = 20, toleranceRt = 4),
+	rtColname = c("rtmed", "ion_rt"), mzColname = c("mzmed", "ion_exactmz"))
+```
+
 
 ## Analysis workflow files
 
@@ -28,10 +69,14 @@ created/measurable from each compound. In the workflow we first:
   ultimately defines the retention time, the measured ions and related MS/MS
   spectra of the standards in serum.
 - ...
-- [match-standards-serum-mix08.Rmd](match-standards-mix08.Rmd): matching and
+- [match-standards-serum-mix20.Rmd](match-standards-mix08.Rmd): matching and
   identifying signal from standards of mix 08. This includes preprocessing and
   ultimately defines the retention time, the measured ions and related MS/MS
   spectra of the standards in serum.
+- [create_reference_database.Rmd](create_reference_database.Rmd): document
+  describing the generation of the reference database that can be used for
+  annotation of LC-MS experiments that used the IfB HILIC HPLC-MS setup.
+  
 
 ### Standard mixes process and status
 
@@ -74,7 +119,9 @@ created/measurable from each compound. In the workflow we first:
   concentrations).
 - [standards_dilution.txt](data/standards_dilution.txt): table containing 
   formulas (or neutral exact masses), highest ions in each mode (POS & NEG), 
-  and retention times for each standard.
+  and retention times for each standard. This file is now obsolete. It was used
+  as basis for the new annotation and adduct identification described above. For
+  annotation, the new *IonDb.IfB_HILIC* SQLite database should be used.
 - [exclusion_mz.txt](data/exclusion_mz.txt): table containing the 
   (exact) masses of mz values that probaly are noise / backgroun ions. 
   This is a "dynamic" table that is being updated along the time.
